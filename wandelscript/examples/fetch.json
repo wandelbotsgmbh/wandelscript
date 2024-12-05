@@ -1,0 +1,39 @@
+{
+  "res_get": {
+    "type": "record",
+    "record": {
+      "data": {
+        "type": "record",
+        "record": {
+          "args": { "type": "record", "record": {} },
+          "url": "https://httpbin.org/get"
+        }
+      },
+      "status_code": 200
+    }
+  },
+  "res_get_error": {
+    "type": "record",
+    "record": {
+      "status_code": 404
+    }
+  },
+  "res_post": {
+    "type": "record",
+    "record": {
+      "data": {
+        "type": "record",
+        "record": {
+          "json": {
+            "type": "record",
+            "record": {
+              "name": "JohnDoe"
+            }
+          },
+          "url": "https://httpbin.org/post"
+        }
+      },
+      "status_code": 200
+    }
+  }
+}

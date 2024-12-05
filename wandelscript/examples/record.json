@@ -1,0 +1,118 @@
+{
+  "r_empty": {
+    "type": "record",
+    "record": {}
+  },
+  "r_datatypes": {
+    "type": "record",
+    "record": {
+      "keystr": "str",
+      "keyint": 1,
+      "keyfloat": 1.1,
+      "keybool": true,
+      "keybool2": false
+    }
+  },
+  "r_inline": {
+    "type": "record",
+    "record": {
+      "a": 5,
+      "b": 6,
+      "c": {
+        "type": "record",
+        "record": {
+          "d": 7,
+          "e": 8
+        }
+      }
+    }
+  },
+  "r_multiline": {
+    "type": "record",
+    "record": {
+      "a": 1,
+      "b": 2,
+      "c": {
+        "type": "record",
+        "record": {
+          "d": 3,
+          "e": 4
+        }
+      }
+    }
+  },
+  "r_mixedline": {
+    "type": "record",
+    "record": {
+      "a": 1,
+      "b": 2,
+      "c": {
+        "type": "record",
+        "record": {
+          "d": 3,
+          "e": 4
+        }
+      }
+    }
+  },
+  "r_trailing_comma": {
+    "type": "record",
+    "record": {
+      "a": 10,
+      "b": {
+        "type": "record",
+        "record": {
+          "c": 11,
+          "d": 12
+        }
+      }
+    }
+  },
+  "r_mixedline_written": {
+    "type": "record",
+    "record": {
+      "a": 1,
+      "b": 5,
+      "c": {
+        "type": "record",
+        "record": {
+          "d": 3,
+          "e": 4
+        }
+      }
+    }
+  },
+  "r_mixedline_written_deep": {
+    "type": "record",
+    "record": {
+      "a": 1,
+      "b": 2,
+      "c": {
+        "type": "record",
+        "record": {
+          "d": 6,
+          "e": 4
+        }
+      }
+    }
+  },
+  "r_passed_to_fn": {
+    "type": "record",
+    "record": {
+      "a": 5,
+      "b": 6,
+      "c": {
+        "type": "record",
+        "record": {
+          "d": 7,
+          "e": 8
+        }
+      }
+    }
+  },
+  "read_keystr_attr_access": "str",
+  "read_keystr_item_access": "str",
+  "read_keystr_attr_access_deep": 4,
+  "read_keystr_item_access_deep": 3,
+  "read_keystr_item_access_deep2": 4
+}

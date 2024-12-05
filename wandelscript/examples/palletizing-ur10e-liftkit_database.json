@@ -1,0 +1,26 @@
+{
+  "box_length": 200,
+  "box_width": 100,
+  "box_height": 20,
+  "box_offset": 50,
+  "pickup_base": {
+    "pose": [
+      597,
+      98,
+      140,
+      0,
+      -3.14,
+      0
+    ]
+  },
+  "dropoff_base": {
+    "pose": [
+      -659,
+      -425,
+      180,
+      0,
+      -3.14,
+      0
+    ]
+  }
+}

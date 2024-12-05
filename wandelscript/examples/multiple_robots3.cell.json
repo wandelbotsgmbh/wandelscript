@@ -1,0 +1,112 @@
+{
+  "default": [
+    {
+      "type": "simulated_io",
+      "identifier": "controller"
+    },
+    {
+      "type": "simulated_controller",
+      "identifier": "controller",
+      "robots": [
+        {
+          "type": "simulated_robot",
+          "identifier": "0@controller",
+          "initial_pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "orientation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "tools": {
+            "flange": {
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "orientation": [
+                0,
+                0,
+                0
+              ]
+            },
+            "tool100": {
+              "position": [
+                0,
+                0,
+                2
+              ],
+              "orientation": [
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "type": "simulated_robot",
+          "identifier": "1@controller",
+          "initial_pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "orientation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "tools": {
+            "flange": {
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "orientation": [
+                0,
+                0,
+                0
+              ]
+            },
+            "TOOL 0": {
+              "position": [
+                0,
+                0,
+                2
+              ],
+              "orientation": [
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "wandelengine": [
+    {
+      "type": "controller",
+      "identifier": "controller",
+      "controller_model_name": "UniversalRobots::Controller",
+      "host": "controller"
+    },
+    {
+      "type": "controller",
+      "identifier": "controller2",
+      "controller_model_name": "Yaskawa::YRC1000",
+      "host": "controller2"
+    }
+  ]
+}

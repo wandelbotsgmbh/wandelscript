@@ -1,0 +1,52 @@
+{
+  "sphere_pose_default": {
+    "pose": [
+      500,
+      400,
+      1200,
+      0,
+      0,
+      0
+    ]
+  },
+  "sphere_pose_moved": {
+    "pose": [
+      500,
+      400,
+      900,
+      0,
+      0,
+      0
+    ]
+  },
+  "added_box_pose": {
+    "pose": [
+      1000,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "added_sphere_pose": {
+    "pose": [
+      0,
+      1100,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "added_convex_hull_pose": {
+    "pose": [
+      0,
+      0,
+      1200,
+      0,
+      0,
+      0
+    ]
+  }
+}

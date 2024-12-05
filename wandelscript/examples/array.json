@@ -1,0 +1,9 @@
+{
+  "a": {"type": "array", "array":  [1, 2, 3, 4, {"type": "array", "array": [5, 6]}]},
+  "b": 3,
+  "c": {"type": "array", "array": [5, 6]},
+  "d": 6,
+  "e": 6,
+  "f": {"type": "array", "array": [1, 2, { "type": "record", "record": {"a": 1, "b": 2} }]},
+  "empty": {"type": "array", "array": []}
+}

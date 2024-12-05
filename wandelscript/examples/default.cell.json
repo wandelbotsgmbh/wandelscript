@@ -1,0 +1,77 @@
+{
+  "default": [
+    {
+      "type": "simulated_timer",
+      "identifier": "timer"
+    },
+    {
+      "type": "database",
+      "identifier": "database",
+      "initial_vars": {}
+    },
+    {
+      "type": "simulated_io",
+      "identifier": "controller"
+    },
+    {
+      "type": "simulated_controller",
+      "identifier": "controller",
+      "robots": [
+        {
+          "type": "simulated_robot",
+          "identifier": "0@controller",
+          "initial_pose": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "orientation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "tools": {
+            "flange": {
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "orientation": [
+                0,
+                0,
+                0
+              ]
+            },
+            "tool": {
+              "position": [
+                0,
+                0,
+                2
+              ],
+              "orientation": [
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "wandelengine": [
+    {
+      "type": "database",
+      "identifier": "database"
+    },
+    {
+      "type": "controller",
+      "identifier": "controller",
+      "controller_model_name": "UniversalRobots::Controller",
+      "host": "controller"
+    }
+  ]
+}
