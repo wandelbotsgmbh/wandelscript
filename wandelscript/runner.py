@@ -13,6 +13,7 @@ from enum import Enum
 import anyio
 import anyio.abc
 import pydantic
+from grpclib.client import GRPCError
 from loguru import logger
 from pyjectory import serializer
 from pyriphery.pyrae.clients.motion import MotionException
@@ -141,8 +142,6 @@ class ProgramRunner:
             Optional[float]: execution time in seconds
 
         """
-        if self.skill_run.end_time is None:
-            return None
         return self.skill_run.end_time
 
     async def _run_skill(self, execution_context: ExecutionContext):
@@ -255,10 +254,23 @@ class ProgramRunner:
                     except anyio.get_cancelled_exc_class() as exc:  # noqa: F841
                         # Program was stopped
                         logger.info(f"Program {self.id} cancelled")
-                        with anyio.CancelScope(shield=True):
-                            await robot_cell.stop()
+                        try:
+                            with anyio.CancelScope(shield=True):
+                                await robot_cell.stop()
+                        except ExceptionGroup as eg:
+                            e = eg.exceptions[0]
+                            if (
+                                len(eg.exceptions) == 1
+                                and isinstance(e, GRPCError)
+                                and "is not moving currently" in str(e)
+                            ):
+                                logger.debug(f"Suppressed exception {e!r}; not reraising it")
+                            else:
+                                raise
+
                         self._skill_run.state = ProgramRunState.STOPPED
                         raise
+
                     except NotPlannableError as exc:
                         # Program was not plannable (aka. /plan/ endpoint)
                         self._handle_general_exception(exc)

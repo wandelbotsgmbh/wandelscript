@@ -24,7 +24,6 @@ from pyriphery.robotics import (
     SimulatedRobotCell,
     UnknownPose,
 )
-from pyriphery.robotics.robot import ConfigureableRobot
 
 import wandelscript.exception
 from wandelscript.action_queue import Store
@@ -539,7 +538,7 @@ class Motion(Statement):
             source = await self.frame_relation.source(context)
             target = await self.frame_relation.target(context)
 
-            if isinstance(source, ConfigureableRobot):
+            if isinstance(source, AbstractRobot):
                 start = context.action_queue.last_pose(source.identifier)
                 await self.connector(context, start=start, end=end, tool=target.name, robot=source.identifier)
                 return
