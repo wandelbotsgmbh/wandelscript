@@ -295,7 +295,7 @@ def orientations(
 
     # poses = cga3d.Vector.stack([pose_a, pose_b])
 
-    return dts.Pose.from_versor(pose_a), dts.Pose.from_versor(pose_b), dts.Pose.from_versor(pose_middle)
+    return (dts.Pose.from_versor(pose_a), dts.Pose.from_versor(pose_b), dts.Pose.from_versor(pose_middle))
 
 
 @register_builtin_func()
