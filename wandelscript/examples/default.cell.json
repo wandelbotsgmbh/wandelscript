@@ -21,41 +21,17 @@
           "type": "simulated_robot",
           "identifier": "0@controller",
           "initial_pose": {
-            "position": [
-              0,
-              0,
-              0
-            ],
-            "orientation": [
-              0,
-              0,
-              0
-            ]
+            "position": [0, 0, 0],
+            "orientation": [0, 0, 0]
           },
           "tools": {
             "flange": {
-              "position": [
-                0,
-                0,
-                0
-              ],
-              "orientation": [
-                0,
-                0,
-                0
-              ]
+              "position": [0, 0, 0],
+              "orientation": [0, 0, 0]
             },
             "tool": {
-              "position": [
-                0,
-                0,
-                2
-              ],
-              "orientation": [
-                0,
-                0,
-                0
-              ]
+              "position": [0, 0, 2],
+              "orientation": [0, 0, 0]
             }
           }
         }
