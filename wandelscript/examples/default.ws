@@ -1,9 +1,12 @@
-# Read the current pose of the robot
+# Read the current pose of the robot.
+#
 # Note: Please replace <controller_id> with the controller name you've
 #   selected and <motion_group_id> with the motion group ID
+#
 # Example:
 #   - "0@abb" = get_controller("abb")[0]
 #   - "1@fanuc" = get_controller("fanuc")[1]
+#
 robot = get_controller("controller")[0]
 home = read(robot, "pose")
 sync

@@ -1,4 +1,3 @@
-# TODO: needs to be fixed with https://wandelbots.atlassian.net/browse/WOS-1136
 controller = get_controller("controller")
 tcp1 = frame("tool100")
 tcp2 = frame("TOOL 0")
