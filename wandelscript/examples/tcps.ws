@@ -1,8 +1,8 @@
 controller = get_controller("controller")
 flange = frame("flange")
 tool = frame("tool")
-other_tool = frame(to_string(3.0))  # see WOS-463, fanuc related bug
-another_tool = frame(to_string(4))  # see WOS-463, fanuc related bug
+other_tool = frame(to_string(3.0))
+another_tool = frame(to_string(4))
 
 tcp(flange)
 move via p2p() to (0, 0, 0, 0, 0, 0)

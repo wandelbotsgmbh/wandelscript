@@ -1,8 +1,10 @@
 with velocity(100):
     velocity_uninitialized_global_inside_context = __ms_velocity
     move via p2p() to (243, -440, 241, 0, 3, 0)
+
 # TODO: It's a bit more effort to test this because the velocity is set to Infinity
 # velocity_global_default = __ms_velocity
+
 velocity(200)
 velocity_global_set = __ms_velocity
 move via p2p() to (150, -355, 389, 0, 3, 0)
