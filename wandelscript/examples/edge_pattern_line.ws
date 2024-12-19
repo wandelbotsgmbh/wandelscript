@@ -34,16 +34,16 @@ ci = 0
 for i = 0..<(int(len(steps) / 2) + 1):
     move via line() to start_poses[ci]
     move via line() to end_poses[ci]
-    
+
     if (ci + 1) < len(steps):
         move via line() to end_poses[ci + 1]
         move via line() to start_poses[ci + 1]
-        
+
         if (ci + 2) < len(steps):
             move via line() to start_poses[ci + 2]
-            
+
     ci = ci + 2
-    
+
     if i == 1:
         python_print(planned_pose())
         test_pose = planned_pose()
