@@ -10,7 +10,7 @@ def test_two_step_execution():
     controller = SimulatedController(SimulatedController.Configuration(robots=[config]))
     cell = RobotCell(controller=controller, database=InMemoryDatabase())
     code_step1 = """
-tool2 = frame("TOOL2")    
+tool2 = frame("TOOL2")
 
 move tool2 via p2p() to (0, 0, 0, 0, 0, 0)
 move tool2 via line() to (100, 0, 0, 0, 0, 0)

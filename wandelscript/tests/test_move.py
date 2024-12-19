@@ -13,7 +13,7 @@ from wandelscript.metamodel import run_skill
         (
             """
 velocity(200)
-tcp = frame("flange")    
+tcp = frame("flange")
 move tcp via p2p() to (150, -355, 389, 0, pi, 0)
 move tcp via line() to (150, -355, 392, 0, pi, 0) with velocity(10)
 move tcp via p2p() to (150, -355, 389, 0, pi, 0)
