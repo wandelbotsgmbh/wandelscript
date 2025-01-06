@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-import dataclasses
+from dataclasses import dataclass
 
 from pyjectory import datatypes as dts
 from pyjectory import pathtypes
@@ -12,7 +10,7 @@ from wandelscript.exception import GenericRuntimeError
 from wandelscript.metamodel import Connector
 
 
-@dataclasses.dataclass(repr=False)
+@dataclass(repr=False)
 class JointPointToPoint(Connector.Impl, func_name="joint_p2p"):
     def __call__(
         self,
@@ -25,7 +23,7 @@ class JointPointToPoint(Connector.Impl, func_name="joint_p2p"):
         return dts.jnt(end, settings=motion_settings)
 
 
-@dataclasses.dataclass(repr=False)
+@dataclass(repr=False)
 class Line(Connector.Impl, func_name="line"):
     def __call__(
         self, start: dts.Pose | None, end: dts.Pose, args: Connector.Impl.Args, motion_settings: dts.MotionSettings
@@ -40,9 +38,9 @@ class PointToPoint(Line, func_name="p2p"):
         return dts.p2p(end.to_tuple(), settings=motion_settings)
 
 
-@dataclasses.dataclass(repr=False)
+@dataclass(repr=False)
 class Arc(Connector.Impl, func_name="arc"):
-    @dataclasses.dataclass
+    @dataclass
     class Args(Connector.Impl.Args):
         intermediate: dts.Position | dts.Pose
 
@@ -68,7 +66,7 @@ class Arc(Connector.Impl, func_name="arc"):
 
 
 class Spline(Connector.Impl, func_name="spline"):
-    @dataclasses.dataclass
+    @dataclass
     class Args(Connector.Impl.Args):
         data: tuple[tuple[int | float, dts.Pose], ...]
 
