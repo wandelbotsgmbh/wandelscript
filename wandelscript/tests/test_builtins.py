@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import wb_rae_betterproto.wb.rae.v1.types as rae_types
-from pyjectory import datatypes as dts
+from nova.types import Pose
 from pyriphery.pyrae import Robot
 from pyriphery.pyrae.clients import KinematicServiceClient
 from pyriphery.robotics import SimulatedRobotCell
@@ -72,7 +72,7 @@ async def test_solve_point_forward():
 
     pose = await solve_point_forward(mock_robot, [], "tcp")
 
-    assert dts.Pose.from_tuple((0, 1, 2, 0, 1, 2)) == pose
+    assert Pose.from_tuple((0, 1, 2, 0, 1, 2)) == pose
 
 
 @pytest.mark.asyncio

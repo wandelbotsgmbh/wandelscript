@@ -3,10 +3,11 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, Generic, TypeVar
 
-from pyjectory import datatypes as dts
+import _types as t
+from nova.types import Pose
 from pyjectory.visiontypes import FrameSystem
 
-ElementType = TypeVar("ElementType", bound=dts.ElementType)
+ElementType = TypeVar("ElementType", bound=t.ElementType)
 
 
 @dataclass(frozen=True)
@@ -19,8 +20,8 @@ class Frame:
     def __matmul__(self, other):
         assert False
 
-    def __rmatmul__(self, other: dts.Pose):
-        assert isinstance(other, dts.Pose)
+    def __rmatmul__(self, other: Pose):
+        assert isinstance(other, Pose)
         new_frame = Frame(uuid.uuid4().hex, self.system)
         self.system[self.name, new_frame.name] = other.to_versor()
         return new_frame
@@ -47,13 +48,13 @@ class Closure(Generic[ElementType]):
     """
 
     store: Any
-    body: Callable[..., dts.ElementType]
+    body: Callable[..., t.ElementType]
 
     def __call__(self, store, *args) -> ElementType:
         return self.body(self.store, *args)
 
     def __matmul__(self, other):
-        if isinstance(other, dts.Pose):
+        if isinstance(other, Pose):
 
             async def function(store, *args):  # pylint: disable=unused-argument
                 pose = await self.body(self.store, *args)
@@ -71,7 +72,7 @@ class Closure(Generic[ElementType]):
         return NotImplemented
 
     def __rmatmul__(self, other):
-        assert isinstance(other, dts.Pose)
+        assert isinstance(other, Pose)
 
         async def function(store, *args):  # pylint: disable=unused-argument
             pose = await self.body(self.store, *args)

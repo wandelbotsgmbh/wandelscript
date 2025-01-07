@@ -4,7 +4,8 @@
 import anyio
 import pyjectory.pathtypes.pose as posepath
 import pytest
-from pyjectory import datatypes as dts
+from nova.actions import MotionSettings
+from nova.types import Pose, Vector3d
 from pyjectory.pathtypes import Vector3dPath
 from pyjectory.pathtypes.cga3d.segment import MultiVectorChain, continuous_path
 
@@ -31,11 +32,11 @@ CODE_SAMPLES = {
 
 class Curve(Connector.Impl, func_name="arc_spline"):
     class Args(list):
-        def __init__(self, *args: dts.Vector):
+        def __init__(self, *args: Vector3d):
             super().__init__(args)
 
     def __call__(
-        self, start: dts.Pose, end: dts.Pose, args: Args, motion_settings: dts.MotionSettings
+        self, start: Pose, end: Pose, args: Args, motion_settings: MotionSettings
     ) -> posepath.PosePath:
         start = start.to_posetensor()
         end = end.to_posetensor()

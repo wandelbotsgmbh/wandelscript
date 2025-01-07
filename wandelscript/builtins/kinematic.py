@@ -1,11 +1,11 @@
-from pyjectory import datatypes as dts
+from nova.types import Pose
 from pyriphery.pyrae import Robot as MotionGroup
 
 from wandelscript.metamodel import register_builtin_func
 
 
 @register_builtin_func()
-async def solve_point_forward(motion_group: MotionGroup, joints: list[float], tcp: str) -> dts.Pose:
+async def solve_point_forward(motion_group: MotionGroup, joints: list[float], tcp: str) -> Pose:
     """Returns the pose of the robot based on the joint positions and TCP
 
     Args:
@@ -23,12 +23,12 @@ async def solve_point_forward(motion_group: MotionGroup, joints: list[float], tc
     pos = rae_pose.position
     ori = rae_pose.orientation
 
-    return dts.Pose.from_tuple((pos.x, pos.y, pos.z, ori.x, ori.y, ori.z))
+    return Pose.from_tuple((pos.x, pos.y, pos.z, ori.x, ori.y, ori.z))
 
 
 @register_builtin_func()
 async def solve_point_inverse(
-    motion_group: MotionGroup, pose: dts.Pose, tcp: str, reference_joints: list[float]
+    motion_group: MotionGroup, pose: Pose, tcp: str, reference_joints: list[float]
 ) -> list[float]:
     """Returns the joint positions of the robot based on the pose and TCP
 

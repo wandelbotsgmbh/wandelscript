@@ -1,8 +1,15 @@
 import numpy as np
 import pytest
-from pyjectory.datatypes import P2P, JointP2P, Linear, Pose
+from nova.actions import PTP, JointPTP, Linear
+from pyjectory.datatypes import Pose
 from pyjectory.pathtypes.vector3d import CircularSegment, Line, Point
-from pyriphery.robotics import RobotCell, SimulatedController, SimulatedRobot, SimulatedRobotCell, get_robot_cell
+from pyriphery.robotics import (
+    RobotCell,
+    SimulatedController,
+    SimulatedRobot,
+    SimulatedRobotCell,
+    get_robot_cell,
+)
 
 import wandelscript
 from wandelscript.exception import SkillRuntimeError
@@ -11,7 +18,7 @@ from wandelscript.metamodel import run_skill
 
 def test_forbidden_tcp_change_in_one_motion_example():
     code = """
-move via p2p() to (0, 0, 0, 0, 0, 0)
+move via PTP() to (0, 0, 0, 0, 0, 0)
 move frame("flange") to (1, 2, 0)
 move frame("tool") to (2, 2, 0)
 """
@@ -26,7 +33,7 @@ move frame("tool") to (2, 2, 0)
 
 def test_simple_motion():
     code = """
-move via p2p() to (0, 0, 10, 0, 0, 0)
+move via PTP() to (0, 0, 10, 0, 0, 0)
 move via line() to (0, 10, 10, 0, 0, 0)
 """
     cell = get_robot_cell()
@@ -44,17 +51,17 @@ def test_no_robot():
 
 def test_motion_type_p2p_line():
     code = """
-move via p2p() to (1, 0, 626, 0, 0, 0)
+move via PTP() to (1, 0, 626, 0, 0, 0)
 move via line() to (2, 0, 1111, 0, 0, 0)
-move via p2p() to (3, 0, 626, 0, 0, 0)
+move via PTP() to (3, 0, 626, 0, 0, 0)
 sync
-move via p2p() to (11, 0, 626, 0, 0, 0)
+move via PTP() to (11, 0, 626, 0, 0, 0)
 move via line() to (12, 0, 1111, 0, 0, 0)
 sync
 move via line() to (21, 0, 1111, 0, 0, 0)
-move via p2p() to (23, 0, 626, 0, 0, 0)
+move via PTP() to (23, 0, 626, 0, 0, 0)
 """
-    expected_motion_types = [[P2P, Linear, P2P], [P2P, Linear], [Linear, P2P]]
+    expected_motion_types = [[PTP, Linear, PTP], [PTP, Linear], [Linear, PTP]]
 
     cell = get_robot_cell()
     runner = wandelscript.run(code, cell, default_tcp="flange")
@@ -70,12 +77,12 @@ move via p2p() to (23, 0, 626, 0, 0, 0)
             ), f"The point has a wrong motion type - {expected_motion_types[j][i]=} == {type(motion)=}"
 
 
-@pytest.mark.skip("JointP2P not supported by simulated robot")
+@pytest.mark.skip("JointPTP not supported by simulated robot")
 def test_motion_type_joint_p2p():
     code = """
 move via joint_p2p() to [1, 0, 626, 0, 0, 0]
 move via line() to (2, 0, 1111, 0, 0, 0)
-move via p2p() to (3, 0, 626, 0, 0, 0)
+move via PTP() to (3, 0, 626, 0, 0, 0)
 move via joint_p2p() to [4, 0, 626, 0, 0, 0]
 move via joint_p2p() to [5, 0, 626, 0, 0, 0]
 move via joint_p2p() to [6, 0, 626, 0, 0, 0]
@@ -91,42 +98,42 @@ move via joint_p2p() to [31, 0, 626, 0, 0, 0]
     expected_joint_values = [
         [(1, 0, 626, 0, 0, 0), None, None, (4, 0, 626, 0, 0, 0), (5, 0, 626, 0, 0, 0), (6, 0, 626, 0, 0, 0)],
         [
-            # After a sync there will always first be a p2p motion added (this point has joints of a previous point)
+            # After a sync there will always first be a PTP motion added (this point has joints of a previous point)
             (6, 0, 626, 0, 0, 0),
             (11, 0, 626, 0, 0, 0),
             None,
         ],
         [
-            # After a sync there will always first be a p2p motion added
+            # After a sync there will always first be a PTP motion added
             None,
             None,
             (23, 0, 626, 0, 0, 0),
         ],
         [
-            # After a sync there will always first be a p2p motion added
+            # After a sync there will always first be a PTP motion added
             (23, 0, 626, 0, 0, 0),
             (31, 0, 626, 0, 0, 0),
         ],
     ]
 
     expected_motion_types = [
-        [JointP2P, Linear, P2P, JointP2P, JointP2P, JointP2P],
+        [JointPTP, Linear, PTP, JointPTP, JointPTP, JointPTP],
         [
-            # After a sync there will always first be a p2p motion added
-            JointP2P,
-            JointP2P,
+            # After a sync there will always first be a PTP motion added
+            JointPTP,
+            JointPTP,
             Linear,
         ],
         [
-            # After a sync there will always first be a p2p motion added
+            # After a sync there will always first be a PTP motion added
             Linear,
             Linear,
-            JointP2P,
+            JointPTP,
         ],
         [
-            # After a sync there will always first be a p2p motion added
-            JointP2P,
-            JointP2P,
+            # After a sync there will always first be a PTP motion added
+            JointPTP,
+            JointPTP,
         ],
     ]
     # Create a robot cell:
@@ -145,13 +152,13 @@ move via joint_p2p() to [31, 0, 626, 0, 0, 0]
                 motion, expected_motion_types[j][i]
             ), f"The point has a wrong motion type - {expected_motion_types[j][i]=} == {type(path[i])=}"
 
-            if isinstance(path[i], JointP2P):
+            if isinstance(path[i], JointPTP):
                 assert (
                     motion.target == expected_joint_values[j][i]
                 ), f"The joint values don't match - {expected_joint_values[j][i]=} == {path[i].target=}"
 
 
-@pytest.mark.skip("JointP2P not supported by simulated robot")
+@pytest.mark.skip("JointPTP not supported by simulated robot")
 def test_joint_p2p_on_io_write():
     code = """
 joints = read(controller[0], "joints")
@@ -166,7 +173,7 @@ move via joint_p2p() to joints
 
     path = runner.execution_context.robot_cell.robot.record_of_commands[0]
     assert path[1].callback is not None
-    assert isinstance(path[1], JointP2P)
+    assert isinstance(path[1], JointPTP)
 
 
 @pytest.mark.skip(
@@ -175,7 +182,7 @@ move via joint_p2p() to joints
 @pytest.mark.asyncio
 async def test_collapse_to_point():
     cell = get_robot_cell()
-    code = """move via p2p() to (0, 0, 0, 0, 0, 0)
+    code = """move via PTP() to (0, 0, 0, 0, 0, 0)
 move via line() to (0, 0, 0, 0, pi, 0)"""
 
     result = await run_skill(code, cell, default_robot="0@controller")
@@ -187,7 +194,7 @@ move via line() to (0, 0, 0, 0, pi, 0)"""
 @pytest.mark.asyncio
 async def test_bug_wos_1012():
     cell = get_robot_cell()
-    code = """move via p2p() to (0, 0, 0, 0, pi, 0)
+    code = """move via PTP() to (0, 0, 0, 0, pi, 0)
 move via arc((1, 2, 3)) to  (3, 4, 5, 0, pi, 0)
 sync
 move via line() to (0, 0, 0, 0, pi, 0)"""

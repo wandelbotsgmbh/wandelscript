@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
-from pyjectory.datatypes import Orientation, Pose, Position, as_builtin_type
+from nova.types import Pose
+from pyjectory.datatypes import Orientation, Position, as_builtin_type
 
 from wandelscript.serializer import dumps, loads
 

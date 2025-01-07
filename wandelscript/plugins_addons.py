@@ -9,13 +9,16 @@ from pathlib import Path
 import numpy as np
 from geometricalgebra import cga3d
 from geometricalgebra.cga import project_to_flat
+from nova.actions import CombinedActions, MotionSettings
+from nova.types import Pose
 from PIL import Image
-from pyjectory import datatypes as dts
 from pyjectory import serializer
 from pyjectory.pathtypes import CircularSegment, ComposedPosePath, PosePath, Slerp
 from pyjectory.tensortypes import QuaternionTensor
 from pyjectory.visiontypes import Body, Capture, Features, PointCloud, calibrate_camera
-from pyjectory.visiontypes.handeyecalibration import refine_hand_eye_calibration as refine_hand_eye_calibration_
+from pyjectory.visiontypes.handeyecalibration import (
+    refine_hand_eye_calibration as refine_hand_eye_calibration_,
+)
 from pyjectory.visiontypes.poser import triangulate
 from pyriphery.hardware import OmniCam, WandelcamClient
 from pyriphery.hardware.aov import BaseAOV, IOValue
@@ -33,7 +36,7 @@ except ImportError:
 
 # TODO: SPLIT: What's this?
 class Screw(Connector.Impl, func_name="screw"):
-    def __call__(self, start: dts.Pose, end: dts.Pose, _args, motion_settings: dts.MotionSettings) -> PosePath:
+    def __call__(self, start: Pose, end: Pose, _args, motion_settings: MotionSettings) -> PosePath:
         v = cga3d.Vector.from_motor_estimation(start.to_versor().apply(cga3d.FRAME), end.to_versor().apply(cga3d.FRAME))
         # TODO: should be
         # v = end.to_versor() & start.to_versor().invert()
@@ -52,7 +55,7 @@ class Screw(Connector.Impl, func_name="screw"):
 
 
 @register_builtin_func()
-def pose_diff(body, image_a, image_b) -> dts.Pose:
+def pose_diff(body, image_a, image_b) -> Pose:
     """
     Args:
         body (Body): the object which is used as reference
@@ -63,7 +66,7 @@ def pose_diff(body, image_a, image_b) -> dts.Pose:
         The pose between the two frames
     """
     pose, residual = body.pose_difference(image_a, image_b)
-    localize_guess = dts.Pose.from_versor(pose)
+    localize_guess = Pose.from_versor(pose)
     return localize_guess
 
 
@@ -95,7 +98,7 @@ def pose_diff(body, image_a, image_b) -> dts.Pose:
 @register_builtin_func()
 def load(filename: str, type_: str) -> dts.ElementType:
     if type_ == "pose":
-        return dts.Pose.load(filename)
+        return Pose.load(filename)
     if type_ == "body":
         return Body.load(filename)
     return pickle.load(open(filename, "rb"))
@@ -103,7 +106,7 @@ def load(filename: str, type_: str) -> dts.ElementType:
 
 @register_builtin_func()
 def save(value: dts.ElementType, filename: str):
-    if isinstance(value, (Body, dts.Pose)):
+    if isinstance(value, (Body, Pose)):
         value.save(filename)
     else:
         with open(filename, "wb", encoding="utf-8") as f:
@@ -132,8 +135,8 @@ def load_json(filename: str) -> dts.ElementType:
 
 @register_builtin_func()
 def calibrate_hand2eye_and_robot2world(
-    observations: list[Capture] | list[Features], poses: list[dts.Pose], world: Body
-) -> tuple[dts.Pose, dts.Pose]:
+    observations: list[Capture] | list[Features], poses: list[Pose], world: Body
+) -> tuple[Pose, Pose]:
     """The hand-eye calibration
 
     Args:
@@ -147,16 +150,16 @@ def calibrate_hand2eye_and_robot2world(
     p = [i.to_versor() for i in poses]
     flange2camera, roboter2object, calib_error = calibrate_camera(observations, p, world)
     print(f"Calibration error {calib_error}")
-    return dts.Pose.from_versor(flange2camera), dts.Pose.from_versor(roboter2object)
+    return Pose.from_versor(flange2camera), Pose.from_versor(roboter2object)
 
 
 @register_builtin_func()
-def absolute_pose(a: Capture, body: Body) -> dts.Pose:
+def absolute_pose(a: Capture, body: Body) -> Pose:
     pose, (alg_error, geo_error) = body.localize(a)
     print("absolute pose", alg_error, geo_error)
     if alg_error > 25:
         raise NotImplementedError()
-    return dts.Pose.from_versor(pose.inverse())
+    return Pose.from_versor(pose.inverse())
 
 
 # def plane_from_poses(poses: List[Pose]) -> Pose:
@@ -169,25 +172,25 @@ def absolute_pose(a: Capture, body: Body) -> dts.Pose:
 
 # TODO: Is robotcell still a device inside the wandelscript??
 @register_builtin_func()
-def read_tcp(robotcell, name: str) -> dts.Pose:
-    return dts.Pose.from_pose(robotcell.robot.get_tool_names()[name])
+def read_tcp(robotcell, name: str) -> Pose:
+    return Pose.from_pose(robotcell.robot.get_tool_names()[name])
 
 
 @register_builtin_func()
-async def get_tcp_pose(robot: Robot, name: str) -> dts.Pose:
+async def get_tcp_pose(robot: Robot, name: str) -> Pose:
     tcps = await robot.get_tcps()
     return tcps[name]
 
 
 @register_builtin_func()
-def cap_to_pose(capture) -> dts.Pose:
-    return dts.Pose.from_versor(capture.pose)
+def cap_to_pose(capture) -> Pose:
+    return Pose.from_versor(capture.pose)
 
 
 @register_builtin_func()
-def posquat_to_pose(x, y, z, rw, rx, ry, rz) -> dts.Pose:  # pylint: disable=too-many-positional-arguments
+def posquat_to_pose(x, y, z, rw, rx, ry, rz) -> Pose:  # pylint: disable=too-many-positional-arguments
     vec = QuaternionTensor([rw, rx, ry, rz]).to_rotation_vector()
-    pose = dts.Pose(position=dts.Position(x, y, z), orientation=dts.Orientation(vec[0], vec[1], vec[2]))
+    pose = Pose(position=dts.Position(x, y, z), orientation=dts.Orientation(vec[0], vec[1], vec[2]))
     return pose
 
 
@@ -208,14 +211,14 @@ def board_to_inner_corners(board: Body) -> list[dts.Position]:
 
 
 @register_builtin_func()
-def point_set_registration(source: list[dts.Position], target: list[dts.Position]) -> dts.Pose:
+def point_set_registration(source: list[dts.Position], target: list[dts.Position]) -> Pose:
     p = cga3d.Vector.stack([a.as_multivector() for a in source])
     q = cga3d.Vector.stack([a.as_multivector() for a in target])
-    return dts.Pose.from_versor(cga3d.Vector.from_motor_estimation(p, q))
+    return Pose.from_versor(cga3d.Vector.from_motor_estimation(p, q))
 
 
 @register_builtin_func()
-def rectify_capture(obj2cam: dts.Pose, capture: Capture, body: Body, dpi=100, debug=False) -> Capture:
+def rectify_capture(obj2cam: Pose, capture: Capture, body: Body, dpi=100, debug=False) -> Capture:
     capture.pose = None  # avoid using the default pose (flange)
     versor = obj2cam.to_versor()
     corners_in_object = [body["corner_ul"], body["corner_ur"], body["corner_ll"], body["corner_lr"]]
@@ -240,15 +243,15 @@ def rectify_capture(obj2cam: dts.Pose, capture: Capture, body: Body, dpi=100, de
 
 
 @register_builtin_func()
-def rotation_axis(a: dts.Position, b: dts.Position, angle: float) -> dts.Pose:
+def rotation_axis(a: dts.Position, b: dts.Position, angle: float) -> Pose:
     v = cga3d.Vector.from_screw(angle * (a.as_multivector() ^ b.as_multivector() ^ cga3d.e_inf).normed(), 0)
-    return dts.Pose.from_versor(v)
+    return Pose.from_versor(v)
 
 
 @register_builtin_func()
 def orientations(
     start1: dts.Position, end1: dts.Position, left: dts.Position, right: dts.Position
-) -> tuple[dts.Pose, dts.Pose, dts.Pose]:
+) -> tuple[Pose, Pose, Pose]:
     """Return the orientations of the planes thought points (start, end, left), (start, end, right) and the average
 
     Args:
@@ -295,7 +298,7 @@ def orientations(
 
     # poses = cga3d.Vector.stack([pose_a, pose_b])
 
-    return (dts.Pose.from_versor(pose_a), dts.Pose.from_versor(pose_b), dts.Pose.from_versor(pose_middle))
+    return (Pose.from_versor(pose_a), Pose.from_versor(pose_b), Pose.from_versor(pose_middle))
 
 
 @register_builtin_func()
@@ -310,7 +313,7 @@ def random_normal(scale=1):
 
 @register_builtin_func()
 def random_pose_normal(pos_scale=10, rot_scale=0.1):
-    return dts.Pose(
+    return Pose(
         position=dts.Position(*np.random.normal(scale=pos_scale, size=3)),
         orientation=dts.Orientation(*np.random.normal(scale=rot_scale, size=3)),
     )
@@ -318,7 +321,7 @@ def random_pose_normal(pos_scale=10, rot_scale=0.1):
 
 @register_builtin_func()
 def random_pose_uniform(pos_scale=10, rot_scale=0.1):
-    return dts.Pose(
+    return Pose(
         position=dts.Position(*(pos_scale * (np.random.random(size=3) - 0.5))),
         orientation=dts.Orientation(*(rot_scale * (np.random.normal(scale=rot_scale, size=3) - 0.5))),
     )
@@ -345,7 +348,7 @@ def equidistant_point_on_line(start: dts.Position, end: dts.Position, max_distan
 
 
 @register_builtin_func()
-def equidistant_orientations(start: dts.Pose, end: dts.Pose, steps: int) -> list[dts.Pose]:
+def equidistant_orientations(start: Pose, end: Pose, steps: int) -> list[Pose]:
     """Sample equidistant points between start and end
 
     Args:
@@ -365,11 +368,11 @@ def equidistant_orientations(start: dts.Pose, end: dts.Pose, steps: int) -> list
     rotation_axis, translation = v.motor_to_screw()  # pylint: disable=redefined-outer-name
     phi = np.linspace(0, 1, steps)
     intermediates = cga3d.Vector.from_screw(rotation_axis * phi, translation * phi) & start.to_versor()
-    return [dts.Pose.from_versor(i) for i in intermediates]
+    return [Pose.from_versor(i) for i in intermediates]
 
 
 @register_builtin_func()
-def distance_from_corner(a: dts.Pose, b: dts.Pose, radius) -> float:
+def distance_from_corner(a: Pose, b: Pose, radius) -> float:
     plane = cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_2 ^ cga3d.e_inf
     cos_angle = a.to_versor().apply(plane).scalar_product(b.to_versor().apply(plane))
     cos_angle = np.clip(cos_angle, -1, 1)
@@ -386,7 +389,7 @@ def find_edge(  # pylint: disable=too-many-positional-arguments
     right_start: dts.Position,
     right_end: dts.Position,
     right_auxiliary: dts.Position,
-) -> tuple[dts.Pose, dts.Pose]:
+) -> tuple[Pose, Pose]:
     # TODO: 6 points? What 6 points? Is there a typo?
     """Given 6 points, two poses describing the edge are returned
 
@@ -417,13 +420,13 @@ def find_edge(  # pylint: disable=too-many-positional-arguments
         )
         for i in range(2)
     ]
-    return dts.Pose.from_versor(poses[0]), dts.Pose.from_versor(poses[1])
+    return Pose.from_versor(poses[0]), Pose.from_versor(poses[1])
 
 
 @register_builtin_func()
 def find_edge_from_4_poses(
-    left_start: dts.Pose, left_end: dts.Pose, right_start: dts.Pose, right_end: dts.Pose
-) -> tuple[dts.Pose, dts.Pose]:
+    left_start: Pose, left_end: Pose, right_start: Pose, right_end: Pose
+) -> tuple[Pose, Pose]:
     """Given 6 points, two poses describing the edge are returned
 
     Args:
@@ -484,11 +487,11 @@ def find_edge_from_4_poses(
         )
         for i in range(2)
     ]
-    return dts.Pose.from_versor(poses[0]), dts.Pose.from_versor(poses[1])
+    return Pose.from_versor(poses[0]), Pose.from_versor(poses[1])
 
 
 @register_builtin_func()
-def refine_hand_eye_calibration(features: list[Features], poses_hand2robot: list[dts.Pose], guess_eye2hand: dts.Pose):
+def refine_hand_eye_calibration(features: list[Features], poses_hand2robot: list[Pose], guess_eye2hand: Pose):
     d = cga3d.Vector.from_scaling(0.02)
     ids: list[str] = list(reduce(set.union, features, set()))  # type: ignore
     result = refine_hand_eye_calibration_(
@@ -496,7 +499,7 @@ def refine_hand_eye_calibration(features: list[Features], poses_hand2robot: list
         hand2robot=d.apply(cga3d.Vector.stack([p.to_versor().inverse() for p in poses_hand2robot])),
         guess=d.apply(guess_eye2hand.to_versor()),
     )
-    return dts.Pose.from_versor(d.inverse().apply(result))
+    return Pose.from_versor(d.inverse().apply(result))
 
 
 @register_builtin_func()
@@ -529,8 +532,8 @@ def sketch(image: Capture) -> tuple[tuple[dts.Position, ...], ...]:
 def zip_dataset(  # pylint: disable=too-many-positional-arguments
     name: str,
     info: str,
-    calibration: dts.Pose,
-    flange_poses: list[dts.Pose],
+    calibration: Pose,
+    flange_poses: list[Pose],
     captures: list[Capture],
     point_clouds: list[PointCloud] | None = None,
     camera=None,
@@ -604,7 +607,7 @@ async def motion_trajectory_to_json_string(context: ExecutionContext, robot: Rob
 def motion_trajectory_from_json_string(
     context: ExecutionContext, robot: Robot, json_string: str, tcp_name: str | None = None
 ):
-    trajectory = dts.MotionTrajectory.model_validate_json(json_string)
+    trajectory = CombinedActions.model_validate_json(json_string)
     context.action_queue._record[robot.configuration.identifier] = trajectory  # pylint: disable=protected-access
     if tcp_name is not None:
         context.action_queue._tcp[robot.configuration.identifier] = tcp_name  # pylint: disable=protected-access
@@ -613,7 +616,7 @@ def motion_trajectory_from_json_string(
 @register_builtin_func()
 def estimate_plane(
     origin: dts.Position, point_on_positive_x_axis: dts.Position, point_on_xy_plane: dts.Position
-) -> dts.Pose:
+) -> Pose:
     """
     Estimate the plane from three points
 
@@ -643,7 +646,7 @@ def estimate_plane(
         ]
     )
     m = cga3d.Vector.from_motor_estimation(p, q)
-    return dts.Pose.from_versor(m)
+    return Pose.from_versor(m)
 
 
 @register_builtin_func()
@@ -672,7 +675,7 @@ def get_aov_motor_ios(state: bool, aov_device: BaseAOV) -> tuple[tuple[str], tup
 
 
 @register_builtin_func()
-def add_calibration_point(camera: CalibratableCamera, robot_pose: dts.Pose) -> bool:
+def add_calibration_point(camera: CalibratableCamera, robot_pose: Pose) -> bool:
     return camera.add_calibration_point(robot_pose.to_posetensor())
 
 
@@ -682,10 +685,10 @@ def reset_calibration(camera: CalibratableCamera) -> bool:
 
 
 @register_builtin_func()
-def get_calibration_from_camera(camera: CalibratableCamera) -> dts.Pose:
-    return dts.Pose.from_posetensor(camera.get_calibration())
+def get_calibration_from_camera(camera: CalibratableCamera) -> Pose:
+    return Pose.from_posetensor(camera.get_calibration())
 
 
 @register_builtin_func()
-def get_calibration_board_pose(camera: CalibratableCamera) -> dts.Pose:
-    return dts.Pose.from_posetensor(camera.get_calibration_board_pose())
+def get_calibration_board_pose(camera: CalibratableCamera) -> Pose:
+    return Pose.from_posetensor(camera.get_calibration_board_pose())

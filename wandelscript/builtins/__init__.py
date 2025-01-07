@@ -1,7 +1,7 @@
 import time
 from typing import Any
 
-from pyjectory import datatypes as dts
+from nova.actions import MotionSettings
 from pyriphery.robotics import AbstractRobot
 
 import wandelscript.builtins.array
@@ -60,10 +60,10 @@ def python_print(a):
 
 
 def make_settings_modifier(name):
-    varname = dts.MotionSettings.field_to_varname(name)
+    varname = MotionSettings.field_to_varname(name)
 
     def modifier(ctx, val):
-        previous = ctx.store.get(varname, dts.MotionSettings.model_fields[name].default)
+        previous = ctx.store.get(varname, MotionSettings.model_fields[name].default)
         ctx.store[varname] = val
 
         async def on_exit(_store):
@@ -74,7 +74,7 @@ def make_settings_modifier(name):
     return modifier
 
 
-for setting in dts.MotionSettings.model_fields:
+for setting in MotionSettings.model_fields:
     register_builtin_func(name=setting, pass_context=True)(make_settings_modifier(setting))
 
 

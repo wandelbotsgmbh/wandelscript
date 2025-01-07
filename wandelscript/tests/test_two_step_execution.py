@@ -1,11 +1,16 @@
-from pyjectory import datatypes as dts
-from pyriphery.robotics import InMemoryDatabase, RobotCell, SimulatedController, SimulatedRobot
+from nova.types import Pose
+from pyriphery.robotics import (
+    InMemoryDatabase,
+    RobotCell,
+    SimulatedController,
+    SimulatedRobot,
+)
 
 import wandelscript
 
 
 def test_two_step_execution():
-    tools = {"TOOL1": dts.Pose.from_tuple((0, 0, 0, 0, 0, 0)), "TOOL2": dts.Pose.from_tuple((0, 0, 0, 0, 0, 0))}
+    tools = {"TOOL1": Pose.from_tuple((0, 0, 0, 0, 0, 0)), "TOOL2": Pose.from_tuple((0, 0, 0, 0, 0, 0))}
     config = SimulatedRobot.Configuration(identifier="0@controller", tools=tools)
     controller = SimulatedController(SimulatedController.Configuration(robots=[config]))
     cell = RobotCell(controller=controller, database=InMemoryDatabase())

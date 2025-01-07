@@ -1,24 +1,24 @@
 import math
 
 from geometricalgebra import cga3d
-from pyjectory import datatypes as dts
+from nova.types import Pose
 
 from wandelscript.metamodel import register_builtin_func
 
 
 @register_builtin_func()
-def interpolate(a: dts.Pose, b: dts.Pose, param: float | list[float]) -> dts.Pose | list[dts.Pose]:
+def interpolate(a: Pose, b: Pose, param: float | list[float]) -> Pose | list[Pose]:
     """Interpolate between two poses"""
     va = a.to_versor()
     vb = b.to_versor()
     vc = (vb & va.inverse()).motor_interpolation(param) & va
     if isinstance(param, list):
-        return [dts.Pose.from_versor(i) for i in vc]
-    return dts.Pose.from_versor(vc)
+        return [Pose.from_versor(i) for i in vc]
+    return Pose.from_versor(vc)
 
 
 @register_builtin_func()
-def distance(a: dts.Pose | dts.Position, b: dts.Pose | dts.Position) -> float:
+def distance(a: Pose | dts.Position, b: Pose | dts.Position) -> float:
     """Distance in [mm] between two poses or positions
 
     Args:
@@ -35,18 +35,18 @@ def distance(a: dts.Pose | dts.Position, b: dts.Pose | dts.Position) -> float:
 
 
 @register_builtin_func()
-def to_position(pose: dts.Pose) -> dts.Position:
+def to_position(pose: Pose) -> dts.Position:
     """Extract the position from a pose."""
     return pose.position
 
 
 @register_builtin_func()
-def to_orientation(pose: dts.Pose) -> dts.Pose:
+def to_orientation(pose: Pose) -> Pose:
     """Extract the orientation from a pose."""
-    return dts.Pose(position=dts.Position(0, 0, 0), orientation=pose.orientation)
+    return Pose(position=dts.Position(0, 0, 0), orientation=pose.orientation)
 
 
 @register_builtin_func()
-def to_pose(vec: dts.Position) -> dts.Pose:
+def to_pose(vec: dts.Position) -> Pose:
     """Convert a position to a pose."""
-    return dts.Pose(position=vec, orientation=dts.Orientation(0, 0, 0))
+    return Pose(position=vec, orientation=dts.Orientation(0, 0, 0))

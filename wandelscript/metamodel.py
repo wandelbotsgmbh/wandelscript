@@ -1,6 +1,4 @@
 # pylint: disable=protected-access
-from __future__ import annotations
-
 import asyncio
 import inspect
 from abc import ABC, abstractmethod
@@ -12,7 +10,16 @@ from pathlib import Path as FilePath
 from typing import Any, ClassVar, Generic, Literal, TypeVar
 
 import anyio
-from pyjectory import datatypes as dts
+from nova.actions import (
+    CallAction,
+    Motion,
+    MotionSettings,
+    ReadAction,
+    ReadJointsAction,
+    ReadPoseAction,
+    WriteAction,
+)
+from nova.types import Pose, Vector3d
 from pyjectory.visiontypes import estimate_pose
 from pyriphery.robotics import (
     AbstractRobot,
@@ -43,7 +50,7 @@ from wandelscript.runtime import ExecutionContext
 ElementType = TypeVar("ElementType", bound=dts.ElementType)
 
 
-def add_orientation(strategy: str, position: dts.Position, previous_pose: dts.Pose) -> dts.Pose:
+def add_orientation(strategy: str, position: dts.Position, previous_pose: Pose) -> Pose:
     """Augments a position with an orientation based on a strategy
 
     Might depend on futures also in last keyframes, ... and a strategy (like orientation relative to path)
@@ -65,7 +72,7 @@ def add_orientation(strategy: str, position: dts.Position, previous_pose: dts.Po
         orientation = previous_pose.orientation
     else:
         raise ValueError(f"Unexpected strategy {strategy}")
-    return dts.Pose(position=position, orientation=orientation)
+    return Pose(position=position, orientation=orientation)
 
 
 class Factory(ABC):
@@ -517,7 +524,7 @@ class Motion(Statement):
     """
 
     connector: Connector
-    end: Expression[dts.Pose] | Expression[dts.Vector]
+    end: Expression[Pose] | Expression[Vector3d]
     modifier: Modifier | None = None
     tcp: Expression[Frame] | None = None
     frame_relation: FrameRelation | None = None
@@ -542,7 +549,7 @@ class Motion(Statement):
                 start = context.action_queue.last_pose(source.identifier)
                 await self.connector(context, start=start, end=end, tool=target.name, robot=source.identifier)
                 return
-            if isinstance(end, dts.Vector):
+            if isinstance(end, Vector3d):
                 raise wandelscript.exception.SkillSyntaxError(
                     location=self.location, text="No position is supported when here"
                 )
@@ -550,7 +557,7 @@ class Motion(Statement):
             fs[(await self.frame_relation.target(context)).name, (await self.frame_relation.source(context)).name] = (
                 end.to_versor()
             )
-            end = dts.Pose.from_versor(fs.eval(context.store.ROBOT.name, context.store.FLANGE.name))
+            end = Pose.from_versor(fs.eval(context.store.ROBOT.name, context.store.FLANGE.name))
             tcp = None  # TODO can we still allow this
         elif self.tcp:
             tcp = await self.tcp(context)
@@ -837,7 +844,7 @@ class ConstantOrientation(Constant[dts.Orientation]):
     """A simple vector value"""
 
 
-class ConstantPose(Constant[dts.Pose]):
+class ConstantPose(Constant[Pose]):
     """A simple pose value"""
 
 
@@ -854,7 +861,7 @@ class Array(Atom[tuple[dts.ElementType, ...]]):
     (1, 2, 3)
     """
 
-    value: tuple[Atom[float] | Atom[str] | Atom[dts.Pose], ...]
+    value: tuple[Atom[float] | Atom[str] | Atom[Pose], ...]
 
     async def call(self, context: ExecutionContext, **kwargs) -> tuple[dts.ElementType, ...]:
         return tuple([await v(context) for v in self.value])  # pylint: disable=consider-using-generator
@@ -910,11 +917,11 @@ class ExpressionsList(Atom[dts.ElementType]):
 
     value: tuple[Atom[float], ...]
 
-    async def call(self, context: ExecutionContext, **kwargs) -> dts.Vector | dts.Pose:
+    async def call(self, context: ExecutionContext, **kwargs) -> Vector3d | Pose:
         if len(self.value) == 3:
             return dts.Position(*[float(await v(context)) for v in self.value])
         if len(self.value) == 6:
-            return dts.Pose(
+            return Pose(
                 position=dts.Position(*[float(await v(context)) for v in self.value[:3]]),
                 orientation=dts.Orientation(*[float(await v(context)) for v in self.value[3:]]),
             )
@@ -969,12 +976,12 @@ class Connector(Rule):
 
         @abstractmethod
         def __call__(
-            self, start: dts.Pose, end: dts.Pose, args: Any, motion_settings: dts.MotionSettings
-        ) -> dts.Motion | tuple[dts.Motion, ...]:
+            self, start: Pose, end: Pose, args: Any, motion_settings: MotionSettings
+        ) -> Motion | tuple[Motion, ...]:
             pass
 
     async def call(self, context: ExecutionContext, **kwargs):
-        async def kwargs_packed(start: dts.Pose | None, end: dts.Pose | dts.Vector, *, tool: str, robot: str):
+        async def kwargs_packed(start: Pose | None, end: Pose | Vector3d, *, tool: str, robot: str):
             if cls := self.Impl.from_name(self.name):
                 func = cls()
                 args = cls.Args(*[(await var(context)) for var in self.args])
@@ -1152,10 +1159,10 @@ class FunctionCall(Atom[ElementType], Statement):
             assert isinstance(arguments[0], str)
             return Frame(arguments[0], context.store.frame_system)  # type: ignore
         if func := context.store.get(self.name, None):
-            if isinstance(func, dts.Pose):
-                if isinstance(arguments[0], dts.Pose):
+            if isinstance(func, Pose):
+                if isinstance(arguments[0], Pose):
                     assert len(arguments) == 1
-                    return dts.Pose.from_versor(func.to_versor().apply(arguments[0].to_versor()))
+                    return Pose.from_versor(func.to_versor().apply(arguments[0].to_versor()))
                 return func.to_versor().apply(*arguments)
             return await func(context, *arguments)
         raise wandelscript.exception.NameError_(
@@ -1269,7 +1276,7 @@ class Multiplication(Atom[ElementType]):
 
 
 @dataclass(frozen=True, eq=False)
-class FrameRelation(Atom[dts.Pose]):
+class FrameRelation(Atom[Pose]):
     """The pose describing the relation between two frames (coordinate systems)
 
     Example:
@@ -1289,17 +1296,17 @@ class FrameRelation(Atom[dts.Pose]):
     target: Reference
     source: Reference
 
-    async def call(self, context: ExecutionContext, **kwargs) -> dts.Pose:
+    async def call(self, context: ExecutionContext, **kwargs) -> Pose:
         target = await self.target(context)
         source = await self.source(context)
         if isinstance(target, Frame) and isinstance(source, Frame):
             fs = context.store.frame_system.copy()
             if (current_pose_of_robot := context.action_queue.last_pose(context.active_robot)) is not None:
                 fs[context.store.ROBOT.name, context.store.FLANGE.name] = current_pose_of_robot.to_versor()
-            return dts.Pose.from_versor(fs.eval(target.name, source.name))
+            return Pose.from_versor(fs.eval(target.name, source.name))
         if isinstance(target, Frame) ^ isinstance(source, Frame):
             raise TypeError("Either both or neither of the two arguments must be of type 'Frame'")
-        return dts.Pose.from_versor(estimate_pose(source, target)[0])
+        return Pose.from_versor(estimate_pose(source, target)[0])
 
 
 @dataclass(frozen=True, eq=False)
@@ -1364,7 +1371,7 @@ class Assignment(Atom[ElementType], Statement):
                 raise TypeError()
             return tuple(value)  # type: ignore
         if isinstance(self.name, FrameRelation):
-            if not isinstance(value, dts.Pose):
+            if not isinstance(value, Pose):
                 raise TypeError(f"Unexpected type: Expected Pose but received: {type(value)}")
             try:
                 target = await self.name.target(context)
@@ -1511,7 +1518,7 @@ class MoveDefinition(Statement):
     parameters: Parameters
 
     async def call(self, context: ExecutionContext, **kwargs):
-        async def func(start: dts.Pose, end: dts.Pose, store: Store, _args=()):
+        async def func(start: Pose, end: Pose, store: Store, _args=()):
             init_locals = {start: start, end: end}
             if self.parameters:
                 init_locals.update(zip(self.parameters.names, _args))
@@ -1558,16 +1565,16 @@ class Read(Atom[ElementType]):
         try:
             if isinstance(device, AbstractRobot):
                 if key == "pose":
-                    action = dts.ReadPoseAction(device_id=device.identifier, tcp=None)
+                    action = ReadPoseAction(device_id=device.identifier, tcp=None)
                 elif key == "joints":
-                    action = dts.ReadJointsAction(device_id=device.identifier)
+                    action = ReadJointsAction(device_id=device.identifier)
                 else:
                     # read pose from robot with given tcp offset
                     if isinstance(key, Frame):
                         key = key.name
-                    action = dts.ReadPoseAction(device_id=device.identifier, tcp=key)
+                    action = ReadPoseAction(device_id=device.identifier, tcp=key)
             else:
-                action = dts.ReadAction(device_id=device.identifier, key=key)
+                action = ReadAction(device_id=device.identifier, key=key)
 
             return await context.action_queue.run_action(action)
         except UnknownPose as e:
@@ -1606,7 +1613,7 @@ class Write(Statement, Generic[ElementType]):
             )
 
         # classify write action according to user input
-        action = dts.WriteAction(device_id=device.identifier, key=key, value=value)
+        action = WriteAction(device_id=device.identifier, key=key, value=value)
 
         # run write action based on sync context
         if context.action_queue.is_empty():
@@ -1641,7 +1648,7 @@ class Call(Atom[ElementType], Statement):
         if not isinstance(device, AsyncCallableDevice):
             raise GenericRuntimeError(self.location, text=f"{device.identifier} does not support the call operation.")
         try:
-            action = dts.CallAction(device_id=device.identifier, key=key, arguments=arguments)
+            action = CallAction(device_id=device.identifier, key=key, arguments=arguments)
             result = await context.action_queue.run_action(action)
         except TypeError as e:
             # accepting the leakage of the Python error message for now

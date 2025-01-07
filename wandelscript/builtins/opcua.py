@@ -1,6 +1,6 @@
 from typing import Any
 
-from pyjectory import datatypes as dts
+import _types as t
 from pyriphery.opcua_v2 import OPCUA, SubscriptionConfig
 
 from wandelscript.metamodel import register_builtin_func
@@ -71,7 +71,7 @@ async def opcua_call(url: str, object_id: str, function_id: str, *args) -> Any:
 
 
 @register_builtin_func()
-async def wait_for_opcua_value(url: str, node_id: str, value: Any, config: dts.Record | None = None):
+async def wait_for_opcua_value(url: str, node_id: str, value: Any, config: t.Record | None = None):
     """watches the opcua node with the given key until it matches the given value
 
     Node ids should be based on opcua standard.
@@ -84,7 +84,7 @@ async def wait_for_opcua_value(url: str, node_id: str, value: Any, config: dts.R
         value: value that the node should have
         config: configuration for the subscription
     """
-    config = config or dts.Record()
+    config = config or t.Record()
     subscription_config = SubscriptionConfig(**config.to_dict())
 
     async with OPCUA(url) as opc:
