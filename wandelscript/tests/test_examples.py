@@ -4,7 +4,7 @@ import _types as t
 import numpy as np
 import pytest
 from loguru import logger
-from nova.types import Pose
+from nova.types import Pose, Vector3d
 from pyriphery.robotics import RobotCell, SimulatedRobotCell
 
 import wandelscript
@@ -39,7 +39,7 @@ def test_example(example_name):
         if isinstance(expected, Pose):
             assert np.allclose(expected.position, store[key].position, atol=1e-3, rtol=1e-3)
             assert np.allclose(expected.orientation, store[key].orientation, atol=1e-3, rtol=1e-3)
-        elif isinstance(expected, (dts.Position, dts.Orientation)):
+        elif isinstance(expected, (Vector3d, Vector3d)):
             assert np.allclose(expected, store[key], atol=1e-3, rtol=1e-3)
         elif isinstance(expected, t.Record):
             _check_record(expected, store[key])

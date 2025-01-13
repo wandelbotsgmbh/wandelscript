@@ -10,21 +10,20 @@ import numpy as np
 from geometricalgebra import cga3d
 from geometricalgebra.cga import project_to_flat
 from nova.actions import CombinedActions, MotionSettings
-from nova.types import Pose
+from nova.types import Pose, Vector3d
 from PIL import Image
 from pyjectory import serializer
 from pyjectory.pathtypes import CircularSegment, ComposedPosePath, PosePath, Slerp
 from pyjectory.tensortypes import QuaternionTensor
 from pyjectory.visiontypes import Body, Capture, Features, PointCloud, calibrate_camera
-from pyjectory.visiontypes.handeyecalibration import (
-    refine_hand_eye_calibration as refine_hand_eye_calibration_,
-)
+from pyjectory.visiontypes.handeyecalibration import refine_hand_eye_calibration as refine_hand_eye_calibration_
 from pyjectory.visiontypes.poser import triangulate
 from pyriphery.hardware import OmniCam, WandelcamClient
 from pyriphery.hardware.aov import BaseAOV, IOValue
 from pyriphery.pyrae import Robot
 from pyriphery.robotics import CalibratableCamera
 
+import wandelscript._types as t
 from wandelscript.metamodel import Connector, register_builtin_func
 from wandelscript.runtime import ExecutionContext
 
@@ -45,7 +44,7 @@ class Screw(Connector.Impl, func_name="screw"):
 
         return ComposedPosePath(
             position=CircularSegment.from_three_points(
-                start.position, end.position, dts.Position.from_multivector(intermediate.apply(cga3d.e_0))
+                start.position, end.position, Vector3d.from_multivector(intermediate.apply(cga3d.e_0))
             ),
             orientation=Slerp(
                 QuaternionTensor.from_rotation_vector(start.orientation),
@@ -96,7 +95,7 @@ def pose_diff(body, image_a, image_b) -> Pose:
 
 
 @register_builtin_func()
-def load(filename: str, type_: str) -> dts.ElementType:
+def load(filename: str, type_: str) -> t.ElementType:
     if type_ == "pose":
         return Pose.load(filename)
     if type_ == "body":
@@ -105,7 +104,7 @@ def load(filename: str, type_: str) -> dts.ElementType:
 
 
 @register_builtin_func()
-def save(value: dts.ElementType, filename: str):
+def save(value: t.ElementType, filename: str):
     if isinstance(value, (Body, Pose)):
         value.save(filename)
     else:
@@ -114,14 +113,14 @@ def save(value: dts.ElementType, filename: str):
 
 
 @register_builtin_func()
-def save_json(value: dts.ElementType, filename: str):
+def save_json(value: t.ElementType, filename: str):
     encoding = serializer.encode(value)
     with open(filename, "wb") as f:
         f.write(encoding.json().encode("utf-8"))
 
 
 @register_builtin_func()
-def load_json(filename: str) -> dts.ElementType:
+def load_json(filename: str) -> t.ElementType:
     with open(filename, "rb") as f:
         return serializer.decode(serializer.ElementType(value=json.loads(f.read())))
 
@@ -190,28 +189,28 @@ def cap_to_pose(capture) -> Pose:
 @register_builtin_func()
 def posquat_to_pose(x, y, z, rw, rx, ry, rz) -> Pose:  # pylint: disable=too-many-positional-arguments
     vec = QuaternionTensor([rw, rx, ry, rz]).to_rotation_vector()
-    pose = Pose(position=dts.Position(x, y, z), orientation=dts.Orientation(vec[0], vec[1], vec[2]))
+    pose = Pose(position=Vector3d(x, y, z), orientation=Vector3d(vec[0], vec[1], vec[2]))
     return pose
 
 
 @register_builtin_func()
-def board_to_corner_points(board: Body) -> list[dts.Position]:
+def board_to_corner_points(board: Body) -> list[Vector3d]:
     mx = np.max(board.points, axis=0)
-    return [dts.Position(0, 0, 0), dts.Position(mx[0], 0, 0), dts.Position(mx[0], mx[1], 0), dts.Position(0, mx[1], 0)]
+    return [Vector3d(0, 0, 0), Vector3d(mx[0], 0, 0), Vector3d(mx[0], mx[1], 0), Vector3d(0, mx[1], 0)]
 
 
 @register_builtin_func()
-def board_to_inner_corners(board: Body) -> list[dts.Position]:
+def board_to_inner_corners(board: Body) -> list[Vector3d]:
     return [
-        dts.Position(*board["corner_ul"]),
-        dts.Position(*board["corner_ll"]),
-        dts.Position(*board["corner_ur"]),
-        dts.Position(*board["corner_lr"]),
+        Vector3d(*board["corner_ul"]),
+        Vector3d(*board["corner_ll"]),
+        Vector3d(*board["corner_ur"]),
+        Vector3d(*board["corner_lr"]),
     ]
 
 
 @register_builtin_func()
-def point_set_registration(source: list[dts.Position], target: list[dts.Position]) -> Pose:
+def point_set_registration(source: list[Vector3d], target: list[Vector3d]) -> Pose:
     p = cga3d.Vector.stack([a.as_multivector() for a in source])
     q = cga3d.Vector.stack([a.as_multivector() for a in target])
     return Pose.from_versor(cga3d.Vector.from_motor_estimation(p, q))
@@ -243,15 +242,13 @@ def rectify_capture(obj2cam: Pose, capture: Capture, body: Body, dpi=100, debug=
 
 
 @register_builtin_func()
-def rotation_axis(a: dts.Position, b: dts.Position, angle: float) -> Pose:
+def rotation_axis(a: Vector3d, b: Vector3d, angle: float) -> Pose:
     v = cga3d.Vector.from_screw(angle * (a.as_multivector() ^ b.as_multivector() ^ cga3d.e_inf).normed(), 0)
     return Pose.from_versor(v)
 
 
 @register_builtin_func()
-def orientations(
-    start1: dts.Position, end1: dts.Position, left: dts.Position, right: dts.Position
-) -> tuple[Pose, Pose, Pose]:
+def orientations(start1: Vector3d, end1: Vector3d, left: Vector3d, right: Vector3d) -> tuple[Pose, Pose, Pose]:
     """Return the orientations of the planes thought points (start, end, left), (start, end, right) and the average
 
     Args:
@@ -303,7 +300,7 @@ def orientations(
 
 @register_builtin_func()
 def random_position_normal(scale=1):
-    return dts.Position(*np.random.normal(scale=scale, size=3))
+    return Vector3d(*np.random.normal(scale=scale, size=3))
 
 
 @register_builtin_func()
@@ -314,21 +311,21 @@ def random_normal(scale=1):
 @register_builtin_func()
 def random_pose_normal(pos_scale=10, rot_scale=0.1):
     return Pose(
-        position=dts.Position(*np.random.normal(scale=pos_scale, size=3)),
-        orientation=dts.Orientation(*np.random.normal(scale=rot_scale, size=3)),
+        position=Vector3d(*np.random.normal(scale=pos_scale, size=3)),
+        orientation=Vector3d(*np.random.normal(scale=rot_scale, size=3)),
     )
 
 
 @register_builtin_func()
 def random_pose_uniform(pos_scale=10, rot_scale=0.1):
     return Pose(
-        position=dts.Position(*(pos_scale * (np.random.random(size=3) - 0.5))),
-        orientation=dts.Orientation(*(rot_scale * (np.random.normal(scale=rot_scale, size=3) - 0.5))),
+        position=Vector3d(*(pos_scale * (np.random.random(size=3) - 0.5))),
+        orientation=Vector3d(*(rot_scale * (np.random.normal(scale=rot_scale, size=3) - 0.5))),
     )
 
 
 @register_builtin_func()
-def equidistant_point_on_line(start: dts.Position, end: dts.Position, max_distance) -> list[dts.Position]:
+def equidistant_point_on_line(start: Vector3d, end: Vector3d, max_distance) -> list[Vector3d]:
     """Sample equidistant points between start and end
 
     Args:
@@ -344,7 +341,7 @@ def equidistant_point_on_line(start: dts.Position, end: dts.Position, max_distan
     length = np.sqrt(np.maximum(0, -2 * a.scalar_product(b)))
     num_of_points = int(length / max_distance)
     params = np.linspace(0, 1, num_of_points + 1)
-    return [dts.Position.from_multivector(a * (1 - p) + b * p) for p in params]
+    return [Vector3d.from_multivector(a * (1 - p) + b * p) for p in params]
 
 
 @register_builtin_func()
@@ -383,12 +380,12 @@ def distance_from_corner(a: Pose, b: Pose, radius) -> float:
 
 @register_builtin_func()
 def find_edge(  # pylint: disable=too-many-positional-arguments
-    left_start: dts.Position,
-    left_end: dts.Position,
-    left_auxiliary: dts.Position,
-    right_start: dts.Position,
-    right_end: dts.Position,
-    right_auxiliary: dts.Position,
+    left_start: Vector3d,
+    left_end: Vector3d,
+    left_auxiliary: Vector3d,
+    right_start: Vector3d,
+    right_end: Vector3d,
+    right_auxiliary: Vector3d,
 ) -> tuple[Pose, Pose]:
     # TODO: 6 points? What 6 points? Is there a typo?
     """Given 6 points, two poses describing the edge are returned
@@ -424,9 +421,7 @@ def find_edge(  # pylint: disable=too-many-positional-arguments
 
 
 @register_builtin_func()
-def find_edge_from_4_poses(
-    left_start: Pose, left_end: Pose, right_start: Pose, right_end: Pose
-) -> tuple[Pose, Pose]:
+def find_edge_from_4_poses(left_start: Pose, left_end: Pose, right_start: Pose, right_end: Pose) -> tuple[Pose, Pose]:
     """Given 6 points, two poses describing the edge are returned
 
     Args:
@@ -518,13 +513,13 @@ def body_(features, detector):
 
 
 @register_builtin_func()
-def sketch(image: Capture) -> tuple[tuple[dts.Position, ...], ...]:
+def sketch(image: Capture) -> tuple[tuple[Vector3d, ...], ...]:
     if sketch_image is None:
         raise ValueError("Install linedraw")
     s = max(image.data.shape[:2])
     with contextlib.redirect_stdout(None):
         lines = sketch_image(Image.fromarray(image.data))
-    strokes = tuple(tuple(dts.Position(x / s, y / s, 0) for (x, y) in line) for line in lines)
+    strokes = tuple(tuple(Vector3d(x / s, y / s, 0) for (x, y) in line) for line in lines)
     return strokes
 
 
@@ -614,9 +609,7 @@ def motion_trajectory_from_json_string(
 
 
 @register_builtin_func()
-def estimate_plane(
-    origin: dts.Position, point_on_positive_x_axis: dts.Position, point_on_xy_plane: dts.Position
-) -> Pose:
+def estimate_plane(origin: Vector3d, point_on_positive_x_axis: Vector3d, point_on_xy_plane: Vector3d) -> Pose:
     """
     Estimate the plane from three points
 

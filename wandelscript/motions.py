@@ -1,24 +1,13 @@
 from dataclasses import dataclass
 
-from nova.actions import (
-    PTP,
-    Circular,
-    CombinedActions,
-    JointPTP,
-    Linear,
-    MotionSettings,
-    cir,
-    jnt,
-    lin,
-    ptp,
-    spl,
-)
-from nova.types import Pose
+from nova.actions import PTP, Circular, CombinedActions, JointPTP, Linear, MotionSettings, cir, jnt, lin, ptp, spl
+from nova.types import Pose, Vector3d
 from pyjectory import pathtypes
 from pyjectory.datatypes.mapper import pose_path_to_motion_trajectory
 from pyjectory.tensortypes import QuaternionTensor
 from pyjectory.tensortypes.quaternion import Quaternion
 
+import wandelscript._types as t
 from wandelscript.exception import GenericRuntimeError
 from wandelscript.metamodel import Connector
 
@@ -26,11 +15,7 @@ from wandelscript.metamodel import Connector
 @dataclass(repr=False)
 class JointPointToPoint(Connector.Impl, func_name="joint_p2p"):
     def __call__(
-        self,
-        start: Pose | None,
-        end: tuple[float, ...],
-        args: Connector.Impl.Args,
-        motion_settings: MotionSettings,
+        self, start: Pose | None, end: tuple[float, ...], args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> JointPTP:
         # TODO: should be improved and streamlined with https://wandelbots.atlassian.net/browse/WP-679
         return jnt(end, settings=motion_settings)
@@ -55,12 +40,10 @@ class PointToPoint(Line, func_name="p2p"):
 class Arc(Connector.Impl, func_name="arc"):
     @dataclass
     class Args(Connector.Impl.Args):
-        intermediate: dts.Position | Pose
+        intermediate: Vector3d | Pose
 
-    def __call__(
-        self, start: Pose | None, end: Pose, args: Args, motion_settings: MotionSettings
-    ) -> Circular:
-        if isinstance(args.intermediate, dts.Position):
+    def __call__(self, start: Pose | None, end: Pose, args: Args, motion_settings: MotionSettings) -> Circular:
+        if isinstance(args.intermediate, Vector3d):
             if start is None:
                 raise GenericRuntimeError(
                     location=None,
@@ -83,9 +66,7 @@ class Spline(Connector.Impl, func_name="spline"):
     class Args(Connector.Impl.Args):
         data: tuple[tuple[int | float, Pose], ...]
 
-    def __call__(
-        self, start: Pose | None, end: Pose, args: Args, motion_settings: MotionSettings
-    ) -> Spline:
+    def __call__(self, start: Pose | None, end: Pose, args: Args, motion_settings: MotionSettings) -> Spline:
         def transform(geometry) -> Spline:
             motion_trajectory = pose_path_to_motion_trajectory(geometry)
             if len(motion_trajectory) == 0 or not isinstance(motion_trajectory[0], Spline):
@@ -94,7 +75,7 @@ class Spline(Connector.Impl, func_name="spline"):
 
         if start is None:
             raise GenericRuntimeError(location=None, text="First segment can't be a spline")
-        if isinstance(end, dts.Position) or isinstance(start, dts.Position):
+        if isinstance(end, Vector3d) or isinstance(start, Vector3d):
             raise GenericRuntimeError(location=None, text="Spline only supports poses but positions are given")
 
         for p in args.data:

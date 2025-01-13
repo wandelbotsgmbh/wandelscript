@@ -1,4 +1,4 @@
-from nova.types import Pose
+from nova.types import Pose, Vector3d
 from nova.types.collision_scene import Box, Collider, ConvexHull, Sphere
 from pyriphery.pyrae import Robot
 
@@ -33,7 +33,7 @@ async def add_static_box(  # pylint: disable=too-many-positional-arguments
 @register_builtin_func(pass_context=True)
 async def add_static_convex_hull(
     context: ExecutionContext,
-    vertices: list[dts.Position],
+    vertices: list[Vector3d],
     pose: Pose = Pose.from_tuple([0] * 6),
     identifier: str = "convex_hull",
 ):

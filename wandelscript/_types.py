@@ -1,58 +1,9 @@
 """Types and constructs for internal use."""
-from typing import Any, Mapping, Union
 
-import numpy as np
+from typing import Mapping, Union
+
 import pydantic
 from nova.types import Pose, Vector3d
-
-
-class Orientation(Vector3d):
-    """An orientation (given as rotation vector)"""
-
-    def as_quaternion(self):
-        values = np.asarray(self)
-        half_angle = np.linalg.norm(values) / 2
-        return np.concatenate([np.cos(half_angle)[None], values * np.sinc(half_angle / np.pi) / 2])
-
-
-class Position(Vector3d):
-    """A position
-
-    Example:
-    >>> a = Position(10, 20, 30)
-    >>> b = Position(1, 1, 1)
-    >>> a + b == Position(11, 21, 31)
-    True
-    >>> a - b == Position(9, 19, 29)
-    True
-    """
-
-    def __add__(self, other: Any) -> "Position":
-        if not isinstance(other, Position):
-            return NotImplemented
-        return Position(self.x + other.x, self.y + other.y, self.z + other.z)
-
-    def __sub__(self, other: Any) -> "Position":
-        if not isinstance(other, Position):
-            return NotImplemented
-        return Position(self.x - other.x, self.y - other.y, self.z - other.z)
-
-    # TODO
-    # def __rmatmul__(self, other) -> "Position":
-    #     if not isinstance(other, Pose):
-    #         return NotImplemented
-    #     versor = other.to_versor()
-    #     point = cga3d.Vector.from_euclid(list(self))
-    #     return Position(*versor.apply(point).to_euclid())
-
-    # TODO``
-    # def as_multivector(self) -> cga3d.Vector:
-    #     return cga3d.Vector.from_euclid(list(self))
-
-    # TODO
-    # @classmethod
-    # def from_multivector(cls, vector: cga3d.Vector) -> Position:
-    #     return cls(*vector.to_euclid())
 
 
 class Record(pydantic.BaseModel, Mapping):
@@ -94,4 +45,4 @@ class Record(pydantic.BaseModel, Mapping):
         return self.data.items()
 
 
-ElementType = Union[bool, int, float, Vector3d, Position, Orientation, Pose, str, Record, tuple, dict]
+ElementType = Union[bool, int, float, Vector3d, Pose, str, Record, tuple, dict]
