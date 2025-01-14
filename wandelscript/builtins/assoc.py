@@ -14,8 +14,31 @@ T = TypeVar("T")
 @register_builtin_func()
 @singledispatch
 def assoc(_: T, key: int, val: Any) -> T:
-    """Update the value at the given key in a sequence."""
+    """Update the value at the given key in a sequence.
+
+    Args:
+        _: The sequence.
+        key: The key to update.
+        val: The new value.
+
+    Return:
+        The updated sequence.
+
+    Raises:
+        NotImplementedError: If the sequence type is not supported.
+
+    Examples:
+    >>> assoc((1, 2, 3), 1, 4)
+    (1, 4, 3)
+    """
     raise NotImplementedError(f"assoc is not defined for {type(_)}.")
+
+
+@assoc.register
+def _(tup: tuple, key: int, val: Any) -> tuple:
+    tmp = list(tup)
+    tmp[key] = val
+    return tuple(tmp)
 
 
 @assoc.register
