@@ -13,6 +13,7 @@ from enum import Enum
 import anyio
 import anyio.abc
 import pydantic
+from exceptiongroup import ExceptionGroup
 from grpclib.client import GRPCError
 from loguru import logger
 from pyjectory import serializer

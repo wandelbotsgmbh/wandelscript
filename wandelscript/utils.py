@@ -3,6 +3,7 @@ from collections.abc import Awaitable
 from typing import TextIO
 
 import anyio
+from exceptiongroup import ExceptionGroup
 
 
 class Tee(io.StringIO):
