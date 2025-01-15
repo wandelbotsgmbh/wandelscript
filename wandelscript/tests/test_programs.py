@@ -1,15 +1,8 @@
-# pylint: disable=protected-access
 """Test the execution of sample skills"""
-
 import anyio
-import pyjectory.pathtypes.pose as posepath
 import pytest
-from nova.actions import MotionSettings
-from nova.types import Pose, Vector3d
-from pyjectory.pathtypes import Vector3dPath
-from pyjectory.pathtypes.cga3d.segment import MultiVectorChain, continuous_path
 
-from wandelscript.metamodel import Connector, run_skill
+from wandelscript.metamodel import run_skill
 
 CODE_FUNC_DEF = """
 move via p2p() to (home=(0, 0.1, 0, 0, 0, 0))
@@ -28,28 +21,6 @@ CODE_SAMPLES = {
     "arc_move": "move via p2p() to (0, 0, 0, 0, 0, 0)\nmove via arc((0, 2, 0)) to (1, 1, 0)\n",
     "movedef": CODE_FUNC_DEF,
 }
-
-
-class Curve(Connector.Impl, func_name="arc_spline"):
-    class Args(list):
-        def __init__(self, *args: Vector3d):
-            super().__init__(args)
-
-    def __call__(
-        self, start: Pose, end: Pose, args: Args, motion_settings: MotionSettings
-    ) -> posepath.PosePath:
-        start = start.to_posetensor()
-        end = end.to_posetensor()
-        args_as_points = [posepath.Vector3d(a) for a in args]
-        position = Vector3dPath.from_segment_path(
-            continuous_path(MultiVectorChain.from_euclid([start.position, *args_as_points, end.position]))
-        )
-        return posepath.SequentialPosePath(
-            [
-                posepath.ComposedPosePath(position=p, orientation=posepath.Slerp(start.orientation, start.orientation))
-                for p in position.flatted()
-            ]
-        )
 
 
 @pytest.mark.parametrize("sample_code_key", CODE_SAMPLES)
