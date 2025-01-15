@@ -14,10 +14,11 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.10"
 aiostream = "^0.6.1"
-wandelbots-nova = "^0.9.0"
 antlr4-python3-runtime = "4.13.1"
 anyio = "^4"
+numpy = "^2.2.1"
 pydantic = "^2.10.3"
+wandelbots-nova = "^0.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
