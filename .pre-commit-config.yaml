@@ -30,3 +30,13 @@ repos:
         entry: yamllint
         language: python
         types: [file, yaml]
+  - repo: https://github.com/terrencepreilly/darglint
+    rev: 'v1.8.1'
+    hooks:
+    - id: darglint
+      name: darglint
+      description: '`darglint` is a tool for linting python docstrings.'
+      entry: darglint
+      language: python
+      types: [python]
+      require_serial: true
