@@ -3,54 +3,28 @@ import json
 import pickle
 import shutil
 from datetime import datetime
-from functools import reduce
 from pathlib import Path
 
 import numpy as np
-from geometricalgebra import cga3d
-from geometricalgebra.cga import project_to_flat
-from nova.actions import CombinedActions, MotionSettings
+from nova.actions import CombinedActions
 from nova.types import Pose, Vector3d
 from PIL import Image
 from pyjectory import serializer
-from pyjectory.pathtypes import CircularSegment, ComposedPosePath, PosePath, Slerp
 from pyjectory.tensortypes import QuaternionTensor
 from pyjectory.visiontypes import Body, Capture, Features, PointCloud, calibrate_camera
-from pyjectory.visiontypes.handeyecalibration import refine_hand_eye_calibration as refine_hand_eye_calibration_
-from pyjectory.visiontypes.poser import triangulate
 from pyriphery.hardware import OmniCam, WandelcamClient
 from pyriphery.hardware.aov import BaseAOV, IOValue
 from pyriphery.pyrae import Robot
 from pyriphery.robotics import CalibratableCamera
 
 import wandelscript._types as t
-from wandelscript.metamodel import Connector, register_builtin_func
+from wandelscript.metamodel import register_builtin_func
 from wandelscript.runtime import ExecutionContext
 
 try:
     from linedraw.linedraw import sketch_image
 except ImportError:
     sketch_image = None
-
-
-# TODO: SPLIT: What's this?
-class Screw(Connector.Impl, func_name="screw"):
-    def __call__(self, start: Pose, end: Pose, _args, motion_settings: MotionSettings) -> PosePath:
-        v = cga3d.Vector.from_motor_estimation(start.to_versor().apply(cga3d.FRAME), end.to_versor().apply(cga3d.FRAME))
-        # TODO: should be
-        # v = end.to_versor() & start.to_versor().invert()
-        screw = v.view(cga3d.Vector).motor_to_screw()
-        intermediate = cga3d.Vector.from_screw(screw[0] / 2, screw[1] / 2) & start.to_versor()
-
-        return ComposedPosePath(
-            position=CircularSegment.from_three_points(
-                start.position, end.position, Vector3d.from_multivector(intermediate.apply(cga3d.e_0))
-            ),
-            orientation=Slerp(
-                QuaternionTensor.from_rotation_vector(start.orientation),
-                QuaternionTensor.from_rotation_vector(end.orientation),
-            ),
-        )
 
 
 @register_builtin_func()
@@ -161,14 +135,6 @@ def absolute_pose(a: Capture, body: Body) -> Pose:
     return Pose.from_versor(pose.inverse())
 
 
-# def plane_from_poses(poses: List[Pose]) -> Pose:
-#     assert len(poses) == 3
-#     versors = cga3d.Vector.stack([poses.to_versor()])
-#     points = versors.apply(cga3d.e_0)
-#     plane = points[0] ^ points[1] ^ points[2] ^ cga3d.e_inf
-#     cga3d.Vector.from_motor_estimation()
-
-
 # TODO: Is robotcell still a device inside the wandelscript??
 @register_builtin_func()
 def read_tcp(robotcell, name: str) -> Pose:
@@ -210,95 +176,6 @@ def board_to_inner_corners(board: Body) -> list[Vector3d]:
 
 
 @register_builtin_func()
-def point_set_registration(source: list[Vector3d], target: list[Vector3d]) -> Pose:
-    p = cga3d.Vector.stack([a.as_multivector() for a in source])
-    q = cga3d.Vector.stack([a.as_multivector() for a in target])
-    return Pose.from_versor(cga3d.Vector.from_motor_estimation(p, q))
-
-
-@register_builtin_func()
-def rectify_capture(obj2cam: Pose, capture: Capture, body: Body, dpi=100, debug=False) -> Capture:
-    capture.pose = None  # avoid using the default pose (flange)
-    versor = obj2cam.to_versor()
-    corners_in_object = [body["corner_ul"], body["corner_ur"], body["corner_ll"], body["corner_lr"]]
-    corners_in_camera = versor.inverse().apply(cga3d.Vector.from_euclid(corners_in_object))
-    corners_in_pixel = capture.intrinsics.direction_to_pixel(
-        (corners_in_camera ^ cga3d.e_0 ^ cga3d.e_inf).line_to_point_direction()[1]
-    )
-    width = int(np.linalg.norm(np.asarray(body["corner_ul"]) - body["corner_ur"]) / 25.4 * dpi)
-    height = int(np.linalg.norm(np.asarray(body["corner_ul"]) - body["corner_ll"]) / 25.4 * dpi)
-    rectified = capture.rectified(corners_in_pixel, (height, width))
-
-    if debug:
-        import matplotlib.pyplot as plt  # pylint: disable=import-outside-toplevel
-
-        plt.figure()
-        plt.imshow(capture.data)
-        plt.scatter(*corners_in_pixel.T)
-        plt.figure()
-        plt.imshow(rectified.data)
-        plt.scatter(*rectified.intrinsics.direction_to_pixel(corners_in_camera).T)
-    return rectified
-
-
-@register_builtin_func()
-def rotation_axis(a: Vector3d, b: Vector3d, angle: float) -> Pose:
-    v = cga3d.Vector.from_screw(angle * (a.as_multivector() ^ b.as_multivector() ^ cga3d.e_inf).normed(), 0)
-    return Pose.from_versor(v)
-
-
-@register_builtin_func()
-def orientations(start1: Vector3d, end1: Vector3d, left: Vector3d, right: Vector3d) -> tuple[Pose, Pose, Pose]:
-    """Return the orientations of the planes thought points (start, end, left), (start, end, right) and the average
-
-    Args:
-        start1: the start of the edge
-        end1: the end of the edge
-        left: any point of the left-hand-side plane
-        right: any point of the right-hand-side plane
-
-    Returns:
-        Tuple (a, b, c)
-    """
-    a = left.as_multivector()
-    b = right.as_multivector()
-    start = start1.as_multivector()
-    end = end1.as_multivector()
-
-    planes = (start ^ end ^ cga3d.Vector.stack([a, -b]) ^ cga3d.e_inf).normed()
-
-    plane_middle = sum(planes)
-
-    pose_middle = cga3d.Vector.from_motor_estimation(
-        cga3d.Vector.stack(
-            [cga3d.e_0, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_inf, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_2 ^ cga3d.e_inf]
-        ),
-        cga3d.Vector.stack([start, start ^ end ^ cga3d.e_inf, plane_middle]),
-    )
-
-    center_point = pose_middle.apply((0.9 * cga3d.e_3).up())
-    touching_points = project_to_flat(center_point, planes)
-
-    pose_a = cga3d.Vector.from_motor_estimation(
-        cga3d.Vector.stack(
-            [cga3d.e_0, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_inf, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_2 ^ cga3d.e_inf]
-        ),
-        cga3d.Vector.stack([touching_points[0], start ^ end ^ cga3d.e_inf, planes[0]]),
-    )
-
-    pose_b = cga3d.Vector.from_motor_estimation(
-        cga3d.Vector.stack(
-            [cga3d.e_0, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_inf, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_2 ^ cga3d.e_inf]
-        ),
-        cga3d.Vector.stack([touching_points[1], start ^ end ^ cga3d.e_inf, planes[1]]),
-    )
-
-    # poses = cga3d.Vector.stack([pose_a, pose_b])
-
-    return (Pose.from_versor(pose_a), Pose.from_versor(pose_b), Pose.from_versor(pose_middle))
-
-
-@register_builtin_func()
 def random_position_normal(scale=1):
     return Vector3d(*np.random.normal(scale=scale, size=3))
 
@@ -325,191 +202,8 @@ def random_pose_uniform(pos_scale=10, rot_scale=0.1):
 
 
 @register_builtin_func()
-def equidistant_point_on_line(start: Vector3d, end: Vector3d, max_distance) -> list[Vector3d]:
-    """Sample equidistant points between start and end
-
-    Args:
-        start: first point
-        end: final point
-        max_distance: the spacing between sampled points is maximal `max_distance'
-
-    Returns:
-        list of points interpolation from start to end
-    """
-    a = cga3d.Vector.from_euclid(start)
-    b = cga3d.Vector.from_euclid(end)
-    length = np.sqrt(np.maximum(0, -2 * a.scalar_product(b)))
-    num_of_points = int(length / max_distance)
-    params = np.linspace(0, 1, num_of_points + 1)
-    return [Vector3d.from_multivector(a * (1 - p) + b * p) for p in params]
-
-
-@register_builtin_func()
-def equidistant_orientations(start: Pose, end: Pose, steps: int) -> list[Pose]:
-    """Sample equidistant points between start and end
-
-    Args:
-        start: first point
-        end: final point
-        steps: the number of steps
-
-    Returns:
-        list of poses interpolating from start to end
-
-    TODO: - pose interpolation
-    TODO: motor to screw from identity
-    """
-    v = cga3d.Vector.from_motor_estimation(
-        start.to_versor().apply(cga3d.FRAME), end.to_versor().apply(cga3d.FRAME)
-    ).view(cga3d.Vector)
-    rotation_axis, translation = v.motor_to_screw()  # pylint: disable=redefined-outer-name
-    phi = np.linspace(0, 1, steps)
-    intermediates = cga3d.Vector.from_screw(rotation_axis * phi, translation * phi) & start.to_versor()
-    return [Pose.from_versor(i) for i in intermediates]
-
-
-@register_builtin_func()
-def distance_from_corner(a: Pose, b: Pose, radius) -> float:
-    plane = cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_2 ^ cga3d.e_inf
-    cos_angle = a.to_versor().apply(plane).scalar_product(b.to_versor().apply(plane))
-    cos_angle = np.clip(cos_angle, -1, 1)
-    angle = np.arccos(cos_angle)
-    hypotenuse = radius / np.sin(angle / 2)
-    return hypotenuse
-
-
-@register_builtin_func()
-def find_edge(  # pylint: disable=too-many-positional-arguments
-    left_start: Vector3d,
-    left_end: Vector3d,
-    left_auxiliary: Vector3d,
-    right_start: Vector3d,
-    right_end: Vector3d,
-    right_auxiliary: Vector3d,
-) -> tuple[Pose, Pose]:
-    # TODO: 6 points? What 6 points? Is there a typo?
-    """Given 6 points, two poses describing the edge are returned
-
-    Args:
-        left_start: approximate start position at the left plane
-        left_end: approximate end position at the left plane
-        left_auxiliary: a third point on the left plane
-        right_start: approximate start position at the right plane
-        right_end: approximate end position at the right plane
-        right_auxiliary: a third point on the right plane
-
-    Returns:
-        start_pose: a pose with position at the start and an orientation normal to the left plane
-        end_pose: a pose with position at the start and an orientation normal to the right plane
-    """
-    points = cga3d.Vector.from_euclid(
-        [[left_start, left_end, left_auxiliary], [right_start, right_end, right_auxiliary]]
-    )
-    planes = points[:, 0] ^ points[:, 1] ^ points[:, 2] ^ cga3d.e_inf * np.array([1, -1])
-    edge = -planes[0].meet(planes[1])
-    start_end = project_to_flat(sum(points[:, :2]), edge)
-    poses = [
-        cga3d.Vector.from_motor_estimation(
-            cga3d.Vector.stack(
-                [cga3d.e_0, -cga3d.e_1 ^ cga3d.e_2 ^ cga3d.e_0 ^ cga3d.e_inf, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_inf]
-            ),
-            cga3d.Vector.stack([start_end[i], planes[i], edge]),
-        )
-        for i in range(2)
-    ]
-    return Pose.from_versor(poses[0]), Pose.from_versor(poses[1])
-
-
-@register_builtin_func()
-def find_edge_from_4_poses(left_start: Pose, left_end: Pose, right_start: Pose, right_end: Pose) -> tuple[Pose, Pose]:
-    """Given 6 points, two poses describing the edge are returned
-
-    Args:
-        left_start: pose whose xy-plane is parallel to the left surface and the origin is close to start position
-        left_end: pose whose xy-plane is parallel to the left surface and the origin is close to end position
-        right_start: pose whose xy-plane is parallel to the right surface and the origin is close to start position
-        right_end: pose whose xy-plane is parallel to the right surface and the origin is close to end position
-
-    Returns:
-        start_pose: a pose with position at the start and an orientation normal to the left plane
-        end_pose: a pose with position at the end and an orientation normal to the right plane
-    """
-    right_start_versor = right_start.to_versor()
-    right_end_versor = right_end.to_versor()
-    left_start_versor = left_start.to_versor()
-    left_end_versor = left_end.to_versor()
-
-    xy_plane = cga3d.e_1 ^ cga3d.e_2 ^ cga3d.e_inf ^ cga3d.e_0
-    pose_plane_right = cga3d.Vector.from_motor_estimation(
-        cga3d.Vector.stack([cga3d.e_0, cga3d.e_0, xy_plane, xy_plane]),
-        cga3d.Vector.stack(
-            [
-                right_start_versor.apply(cga3d.e_0),
-                right_end_versor.apply(cga3d.e_0),
-                right_start_versor.apply(xy_plane),
-                right_end_versor.apply(xy_plane),
-            ]
-        ),
-    )
-    pose_plane_left = cga3d.Vector.from_motor_estimation(
-        cga3d.Vector.stack([cga3d.e_0, cga3d.e_0, xy_plane, xy_plane]),
-        cga3d.Vector.stack(
-            [
-                left_start_versor.apply(cga3d.e_0),
-                left_end_versor.apply(cga3d.e_0),
-                left_start_versor.apply(xy_plane),
-                left_end_versor.apply(xy_plane),
-            ]
-        ),
-    )
-
-    points = cga3d.Vector.from_euclid(
-        [
-            [left_start_versor.apply(cga3d.e_0).to_euclid(), left_end_versor.apply(cga3d.e_0).to_euclid()],
-            [right_start_versor.apply(cga3d.e_0).to_euclid(), right_end_versor.apply(cga3d.e_0).to_euclid()],
-        ]
-    )
-
-    planes = cga3d.Vector.stack([pose_plane_left.apply(xy_plane), pose_plane_right.apply(xy_plane)])
-    edge = -planes[0].meet(planes[1])
-    start_end = project_to_flat(sum(points[:, :2]), edge)
-    poses = [
-        cga3d.Vector.from_motor_estimation(
-            cga3d.Vector.stack(
-                [cga3d.e_0, -cga3d.e_1 ^ cga3d.e_2 ^ cga3d.e_0 ^ cga3d.e_inf, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_inf]
-            ),
-            cga3d.Vector.stack([start_end[i], planes[i], edge]),
-        )
-        for i in range(2)
-    ]
-    return Pose.from_versor(poses[0]), Pose.from_versor(poses[1])
-
-
-@register_builtin_func()
-def refine_hand_eye_calibration(features: list[Features], poses_hand2robot: list[Pose], guess_eye2hand: Pose):
-    d = cga3d.Vector.from_scaling(0.02)
-    ids: list[str] = list(reduce(set.union, features, set()))  # type: ignore
-    result = refine_hand_eye_calibration_(
-        light_rays=cga3d.Vector.stack([f.as_lightfield(ids) for f in features]),
-        hand2robot=d.apply(cga3d.Vector.stack([p.to_versor().inverse() for p in poses_hand2robot])),
-        guess=d.apply(guess_eye2hand.to_versor()),
-    )
-    return Pose.from_versor(d.inverse().apply(result))
-
-
-@register_builtin_func()
 def detect_features(detector, captures):
     return detector(captures)
-
-
-@register_builtin_func(name="body")
-def body_(features, detector):
-    ids = np.array(list(reduce(set.union, features, set())))
-    z = cga3d.Vector.stack([f.as_lightfield(ids) for f in features])
-    z._values = z._values.swapaxes(1, 0)  # pylint: disable=protected-access
-    a = triangulate(z ^ cga3d.e_inf)
-    mask = -a.scalar_product(cga3d.e_inf) > 1e-8
-    return Body(dict(zip(ids[mask], a[mask].to_euclid())), detector)
 
 
 @register_builtin_func()
@@ -564,12 +258,6 @@ def zip_dataset(  # pylint: disable=too-many-positional-arguments
 
 
 @register_builtin_func()
-def get_mocked_pointcloud(number_points) -> PointCloud:
-    points = cga3d.Vector.from_euclid(1000 * np.random.random((int(number_points), 3)))
-    return PointCloud(points)
-
-
-@register_builtin_func()
 def to_string(value) -> str:
     """
     This function is required due to a bug in wandelscript. The Fanuc TCP '3' is converted to float 3.0
@@ -606,40 +294,6 @@ def motion_trajectory_from_json_string(
     context.action_queue._record[robot.configuration.identifier] = trajectory  # pylint: disable=protected-access
     if tcp_name is not None:
         context.action_queue._tcp[robot.configuration.identifier] = tcp_name  # pylint: disable=protected-access
-
-
-@register_builtin_func()
-def estimate_plane(origin: Vector3d, point_on_positive_x_axis: Vector3d, point_on_xy_plane: Vector3d) -> Pose:
-    """
-    Estimate the plane from three points
-
-    Args:
-        origin: the origin of the plane
-        point_on_positive_x_axis: a point on the positive x-axis
-        point_on_xy_plane: a point on the xy-plane with y>0
-
-    Returns:
-        Pose with the orientation of the plane
-    """
-    points = cga3d.Vector.stack(
-        [
-            cga3d.Vector.from_euclid(origin),
-            cga3d.Vector.from_euclid(point_on_positive_x_axis),
-            cga3d.Vector.from_euclid(point_on_xy_plane),
-        ]
-    )
-    p = cga3d.Vector.stack(
-        [cga3d.e_0, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_inf, cga3d.e_0 ^ cga3d.e_1 ^ cga3d.e_2 ^ cga3d.e_inf]
-    )
-    q = cga3d.Vector.stack(
-        [
-            points[0],
-            (points[0] ^ points[1] ^ cga3d.e_inf).normed(),
-            (points[0] ^ points[1] ^ points[2] ^ cga3d.e_inf).normed(),
-        ]
-    )
-    m = cga3d.Vector.from_motor_estimation(p, q)
-    return Pose.from_versor(m)
 
 
 @register_builtin_func()

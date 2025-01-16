@@ -1,6 +1,5 @@
 import math
 
-from geometricalgebra import cga3d
 from nova.types import Pose, Vector3d
 
 from wandelscript.metamodel import register_builtin_func
@@ -31,7 +30,8 @@ def distance(a: Pose | Vector3d, b: Pose | Vector3d) -> float:
     """
     a = a if isinstance(a, Vector3d) else a.position
     b = b if isinstance(b, Vector3d) else b.position
-    return math.sqrt((-2 * cga3d.Vector.from_euclid(a) | cga3d.Vector.from_euclid(b)).to_scalar())
+
+    return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2)
 
 
 @register_builtin_func()
