@@ -2,7 +2,6 @@ import time
 from typing import Any
 
 from nova.actions import MotionSettings
-from pyriphery.robotics import AbstractRobot
 
 import wandelscript.builtins.array
 import wandelscript.builtins.assoc
@@ -97,16 +96,6 @@ def tcp(context, tcp_: str | Frame):
         context.store["__tcp__"] = previous
 
     return on_exit
-
-
-@register_builtin_func(pass_context=True)
-async def tcp_pose(context, tcp_: str | Frame, robot: AbstractRobot = None):
-    tcp_name = tcp_ if isinstance(tcp_, str) else tcp_.name
-    if robot is None:
-        robot = context.get_robot(context.active_robot)
-
-    tcps = await robot.get_tcps()
-    return tcps[tcp_name]
 
 
 # ### Extended functionality - still considered core, but probably not part of the language---------------------
