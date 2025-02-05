@@ -10,9 +10,9 @@ from pathlib import Path as FilePath
 from typing import Any, ClassVar, Generic, Literal, TypeVar
 
 import anyio
-from nova.actions import CallAction, Motion, MotionSettings, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
+from nova.actions import CallAction, MotionSettings, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
 from nova.types import Pose, Vector3d
-from pyjectory.visiontypes import estimate_pose
+# from pyjectory.visiontypes import estimate_pose
 from pyriphery.robotics import (
     AbstractRobot,
     AsyncCallableDevice,
@@ -24,7 +24,7 @@ from pyriphery.robotics import (
     UnknownPose,
 )
 
-import wandelscript._types as t
+import wandelscript.types as t
 import wandelscript.exception
 from wandelscript.action_queue import Store
 from wandelscript.datatypes import Closure, Frame
@@ -945,6 +945,87 @@ class Break(Statement):
 
 
 @dataclass(frozen=True, eq=False)
+class Expression(Atom[ElementType]):
+    r"""The (top-level) type of handling various expressions
+
+    Example:
+    >>> code = '''
+    ... a = 1
+    ... b = 2
+    ... c = (a < b)
+    ... d = (a >= b)
+    ... '''
+    >>> store = _run_skill_debug(code).store
+    >>> store['c']
+    True
+    >>> store['d']
+    False
+    """
+
+    a: Atom[ElementType]
+    b: tuple[Atom[ElementType], ...] = ()
+    op: tuple[ComparisonOperator, ...] = ()
+
+    async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
+        result_a = await self.a(context)
+        # assert isinstance(result, (bool, float, int, str, Vector, Pose)), result
+        if self.b:
+            assert len(self.b) == 1, "Otherwise not implemented"
+            result_b = await self.b[0](context)
+            return self.op[0](result_a, result_b)
+        return result_a
+
+    def simplify(self) -> Atom[ElementType]:
+        return self if self.b else self.a.simplify()
+
+    def __str__(self):
+        return "".join(map(str, [self.a, *chain(*zip(self.op, self.b))]))
+
+@dataclass(frozen=True)
+class Print(Statement):
+    r"""A simple Python print statement that print a given text
+
+    Example:
+    >>> code = '''
+    ... print("Hello Wandelscript")
+    ... '''
+    >>> _ = _run_skill_debug(code)
+    Hello Wandelscript
+    """
+
+    text: Expression[str]
+
+    async def call(self, context: ExecutionContext, **kwargs):
+        text = str(await self.text(context))
+        print(text)
+
+@dataclass(frozen=True)
+class WhileLoop(Statement):
+    r"""A while loop
+
+    Example:
+    >>> code = '''
+    ... i = 0
+    ... while i < 100:
+    ...     i = i + 13
+    ... '''
+    >>> store = _run_skill_debug(code).store
+    >>> store['i']
+    104
+    """
+
+    condition: Expression[bool]
+    body: Suite
+
+    async def call(self, context: ExecutionContext, **kwargs):
+        while await self.condition(context):
+            try:
+                await self.body(context)
+            except wandelscript.exception.BreakSignal:
+                break
+
+
+@dataclass(frozen=True, eq=False)
 class Return(Statement):
     """Return statement to stop executing a function and optionally returning a value"""
 
@@ -992,89 +1073,6 @@ class Connector(Rule):
                 raise wandelscript.exception.NameError_(location=self.location, name=self.name)
 
         await kwargs_packed(**kwargs)  # pylint: disable=missing-kwoa
-
-
-@dataclass(frozen=True)
-class WhileLoop(Statement):
-    r"""A while loop
-
-    Example:
-    >>> code = '''
-    ... i = 0
-    ... while i < 100:
-    ...     i = i + 13
-    ... '''
-    >>> store = _run_skill_debug(code).store
-    >>> store['i']
-    104
-    """
-
-    condition: Expression[bool]
-    body: Suite
-
-    async def call(self, context: ExecutionContext, **kwargs):
-        while await self.condition(context):
-            try:
-                await self.body(context)
-            except wandelscript.exception.BreakSignal:
-                break
-
-
-@dataclass(frozen=True)
-class Print(Statement):
-    r"""A simple Python print statement that print a given text
-
-    Example:
-    >>> code = '''
-    ... print("Hello Wandelscript")
-    ... '''
-    >>> _ = _run_skill_debug(code)
-    Hello Wandelscript
-    """
-
-    text: Expression[str]
-
-    async def call(self, context: ExecutionContext, **kwargs):
-        text = str(await self.text(context))
-        print(text)
-
-
-@dataclass(frozen=True, eq=False)
-class Expression(Atom[ElementType]):
-    r"""The (top-level) type of handling various expressions
-
-    Example:
-    >>> code = '''
-    ... a = 1
-    ... b = 2
-    ... c = (a < b)
-    ... d = (a >= b)
-    ... '''
-    >>> store = _run_skill_debug(code).store
-    >>> store['c']
-    True
-    >>> store['d']
-    False
-    """
-
-    a: Atom[ElementType]
-    b: tuple[Atom[ElementType], ...] = ()
-    op: tuple[ComparisonOperator, ...] = ()
-
-    async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
-        result_a = await self.a(context)
-        # assert isinstance(result, (bool, float, int, str, Vector, Pose)), result
-        if self.b:
-            assert len(self.b) == 1, "Otherwise not implemented"
-            result_b = await self.b[0](context)
-            return self.op[0](result_a, result_b)
-        return result_a
-
-    def simplify(self) -> Atom[ElementType]:
-        return self if self.b else self.a.simplify()
-
-    def __str__(self):
-        return "".join(map(str, [self.a, *chain(*zip(self.op, self.b))]))
 
 
 @dataclass(frozen=True, eq=False)
@@ -1269,6 +1267,32 @@ class Multiplication(Atom[ElementType]):
 
 
 @dataclass(frozen=True, eq=False)
+class Reference(Atom[ElementType]):
+    """Access to a variable in the namespace
+
+    Example:
+    >>> code = '''
+    ... a = 3
+    ... b = a * 2
+    ... '''
+    >>> store = _run_skill_debug(code).store
+    >>> store["b"]
+    6
+    """
+
+    name: str
+
+    async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
+        try:
+            return context.store[self.name]
+        except KeyError as error:
+            raise wandelscript.exception.NameError_(location=self.location, name=self.name) from error
+
+    def to_expression(self) -> Expression[ElementType]:
+        return Expression(a=self)
+
+
+@dataclass(frozen=True, eq=False)
 class FrameRelation(Atom[Pose]):
     """The pose describing the relation between two frames (coordinate systems)
 
@@ -1299,34 +1323,9 @@ class FrameRelation(Atom[Pose]):
             return Pose.from_versor(fs.eval(target.name, source.name))
         if isinstance(target, Frame) ^ isinstance(source, Frame):
             raise TypeError("Either both or neither of the two arguments must be of type 'Frame'")
-        return Pose.from_versor(estimate_pose(source, target)[0])
-
-
-@dataclass(frozen=True, eq=False)
-class Reference(Atom[ElementType]):
-    """Access to a variable in the namespace
-
-    Example:
-    >>> code = '''
-    ... a = 3
-    ... b = a * 2
-    ... '''
-    >>> store = _run_skill_debug(code).store
-    >>> store["b"]
-    6
-    """
-
-    name: str
-
-    async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
-        try:
-            return context.store[self.name]
-        except KeyError as error:
-            raise wandelscript.exception.NameError_(location=self.location, name=self.name) from error
-
-    def to_expression(self) -> Expression[ElementType]:
-        return Expression(a=self)
-
+        raise TypeError("Both arguments must be of type 'Frame'")
+        # See: https://code.wabo.run/ai/wandelbrain/-/blob/main/packages/pyjectory/pyjectory/visiontypes/body.py
+        # return Pose.from_versor(estimate_pose(source, target)[0])
 
 @dataclass(frozen=True, eq=False)
 class Assignment(Atom[ElementType], Statement):
