@@ -217,9 +217,7 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
                 # If there's any other custom action type, handle it here
                 raise ValueError(f"Unsupported action type {type(action)}")
 
-            # -----------------------------------------------------------------
             # Interpolate from current_joints -> final_joints in N steps
-            # -----------------------------------------------------------------
             for step in range(steps_per_action):
                 alpha = float(step) / (steps_per_action - 1)  # from 0 to 1
                 # Linear interpolation in joint space
@@ -236,21 +234,6 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
 
             # The final position of this action is the start of the next
             current_joints = final_joints
-
-        # ---------------------------------------------------------------------
-        # Construct and return the JointTrajectory
-        # ---------------------------------------------------------------------
-        # The JointTrajectory model expects a list of joint_positions,
-        # a matching list of times, and a matching list of locations.
-        # Example type:
-        #    class JointTrajectory(BaseModel):
-        #        joint_positions: List[Joints]
-        #        times: List[Union[StrictFloat, StrictInt]]
-        #        locations: List[Union[StrictFloat, StrictInt]]
-        #
-        # We'll assume you have imported the correct path: `api.models.JointTrajectory`
-        # and your "Joints" type is effectively a tuple[float, ...] or similar.
-        # ---------------------------------------------------------------------
 
         joint_positions = [api.models.Joints(joints=list(j)) for j in joint_positions]
         return api.models.JointTrajectory(joint_positions=joint_positions, times=times, locations=locations)
@@ -281,8 +264,7 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
           - 2→3 for Action 3
         """
 
-        # Initialize or reset the trajectory list
-        self._trajectory: list[MotionState] = []
+        self._trajectory = []
 
         # Start time for optional synchronization
         start_time = time.time()
