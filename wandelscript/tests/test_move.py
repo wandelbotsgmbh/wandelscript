@@ -2,7 +2,7 @@ import asyncio
 
 import numpy as np
 import pytest
-from pyjectory.datatypes import MS, MotionTrajectory, lin, p2p
+from nova.actions import CombinedActions, MotionSettings, lin, ptp
 
 from wandelscript.metamodel import run_skill
 
@@ -14,20 +14,20 @@ from wandelscript.metamodel import run_skill
             """
 velocity(200)
 tcp = frame("flange")
-move tcp via p2p() to (150, -355, 389, 0, pi, 0)
+move tcp via ptp() to (150, -355, 389, 0, pi, 0)
 move tcp via line() to (150, -355, 392, 0, pi, 0) with velocity(10)
-move tcp via p2p() to (150, -355, 389, 0, pi, 0)
+move tcp via ptp() to (150, -355, 389, 0, pi, 0)
 move tcp via line() to (-95, -363, 387, 0, pi, 0) with velocity(250)
-move tcp via p2p() to (150, -355, 389, 0, pi, 0)
+move tcp via ptp() to (150, -355, 389, 0, pi, 0)
 """,
             [
-                MotionTrajectory(
+                CombinedActions(
                     items=(
-                        p2p((150, -355, 389), MS(velocity=200)),
-                        lin((150, -355, 392), MS(velocity=10)),
-                        p2p((150, -355, 389), MS(velocity=200)),
-                        lin((-95, -363, 387), MS(velocity=250)),
-                        p2p((150, -355, 389), MS(velocity=200)),
+                        ptp((150, -355, 389), MotionSettings(velocity=200)),
+                        lin((150, -355, 392), MotionSettings(velocity=10)),
+                        ptp((150, -355, 389), MotionSettings(velocity=200)),
+                        lin((-95, -363, 387), MotionSettings(velocity=250)),
+                        ptp((150, -355, 389), MotionSettings(velocity=200)),
                     )
                 )
             ],
@@ -35,40 +35,40 @@ move tcp via p2p() to (150, -355, 389, 0, pi, 0)
         (
             """
 velocity(200)
-move via p2p() to (150, -355, 389, 0, pi, 0)
+move via ptp() to (150, -355, 389, 0, pi, 0)
 move via line() to (150, -355, 392, 0, pi, 0) with velocity(10)
-move via p2p() to (150, -355, 389, 0, pi, 0)
+move via ptp() to (150, -355, 389, 0, pi, 0)
 move via line() to (-95, -363, 387) with velocity(250)
-move via p2p() to (150, -355, 389, 0, pi, 0)
+move via ptp() to (150, -355, 389, 0, pi, 0)
 """,
             [
-                MotionTrajectory(
+                CombinedActions(
                     items=(
-                        p2p((150, -355, 389), MS(velocity=200)),
-                        lin((150, -355, 392), MS(velocity=10)),
-                        p2p((150, -355, 389), MS(velocity=200)),
-                        lin((-95, -363, 387), MS(velocity=250)),
-                        p2p((150, -355, 389), MS(velocity=200)),
+                        ptp((150, -355, 389), MotionSettings(velocity=200)),
+                        lin((150, -355, 392), MotionSettings(velocity=10)),
+                        ptp((150, -355, 389), MotionSettings(velocity=200)),
+                        lin((-95, -363, 387), MotionSettings(velocity=250)),
+                        ptp((150, -355, 389), MotionSettings(velocity=200)),
                     )
                 )
             ],
         ),
         (
             """
-move via p2p() to (150, -355, 389, 0, pi, 0)
+move via ptp() to (150, -355, 389, 0, pi, 0)
 move via line() to (150, -355, 392, 0, pi, 0) with blending(2)
-move via p2p() to (150, -355, 389, 0, pi, 0) with velocity(100)
+move via ptp() to (150, -355, 389, 0, pi, 0) with velocity(100)
 move via line() to (-95, -363, 387) with blending(4)
-move via p2p() to (150, -355, 389, 0, pi, 0)
+move via ptp() to (150, -355, 389, 0, pi, 0)
 """,
             [
-                MotionTrajectory(
+                CombinedActions(
                     items=(
-                        p2p((150, -355, 389), MS(velocity=None)),
-                        lin((150, -355, 392), MS(blending=2)),
-                        p2p((150, -355, 389), MS(velocity=100)),
-                        lin((-95, -363, 387), MS(blending=4)),
-                        p2p((150, -355, 389), MS(velocity=None)),
+                        ptp((150, -355, 389), MotionSettings(velocity=None)),
+                        lin((150, -355, 392), MotionSettings(blending=2)),
+                        ptp((150, -355, 389), MotionSettings(velocity=100)),
+                        lin((-95, -363, 387), MotionSettings(blending=4)),
+                        ptp((150, -355, 389), MotionSettings(velocity=None)),
                     )
                 )
             ],

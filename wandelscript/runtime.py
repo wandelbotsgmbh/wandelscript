@@ -1,14 +1,11 @@
 # pylint: disable=too-many-instance-attributes
-
-from __future__ import annotations
-
 import asyncio
 import contextvars
 from collections.abc import Callable, Coroutine, Iterator
 from contextlib import contextmanager
 
 import anyio
-from pyjectory import datatypes as dts
+from nova.types import Pose
 from pyjectory import serializer
 from pyriphery.robotics import AbstractRobot, Device, RobotCell
 
@@ -141,7 +138,7 @@ class ExecutionContext:
         except KeyError as exc:
             raise wsexception.WrongRobotError(location=self.location_in_code, text=f"Unknown robot: '{name}'") from exc
 
-    async def read_pose(self, robot_name: str, tcp: str | None = None) -> dts.Pose:
+    async def read_pose(self, robot_name: str, tcp: str | None = None) -> Pose:
         tcp = tcp or await self.get_robot(robot_name).get_active_tcp_name()
         tcp_pose = await self.get_robot(robot_name).get_state(tcp)
         return tcp_pose.pose

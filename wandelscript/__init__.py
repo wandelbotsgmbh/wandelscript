@@ -3,11 +3,12 @@
 
 Example:
 >>> import asyncio
+>>> from nova.types import Vector3d
 >>> from wandelscript.metamodel import run_skill
 >>> code = 'a = (0, 1, 2) + (0, 0, 3)'
 >>> context = asyncio.run(run_skill(code))
 >>> context.store['a']
-Position(x=0.0, y=1.0, z=5.0)
+Vector3d(x=0.0, y=1.0, z=5.0)
 """
 
 import wandelscript.antlrvisitor  # load Skill.from_code

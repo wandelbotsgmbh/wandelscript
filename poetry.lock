@@ -338,7 +338,6 @@ description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "dev"]
-markers = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.2-py3-none-any.whl", hash = "sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b"},
     {file = "exceptiongroup-1.2.2.tar.gz", hash = "sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"},
@@ -496,25 +495,6 @@ files = [
 [package.dependencies]
 orderedmultidict = ">=1.0.1"
 six = ">=1.8.0"
-
-[[package]]
-name = "geometricalgebra"
-version = "0.1.3"
-description = "A package for conformal geometric algebra"
-optional = false
-python-versions = "<4.0,>=3.9"
-groups = ["main"]
-files = [
-    {file = "geometricalgebra-0.1.3-py3-none-any.whl", hash = "sha256:2483944d2c878088aabc5a6af7d3b1f209eb54ae6008863c18f13e4cb232058c"},
-    {file = "geometricalgebra-0.1.3.tar.gz", hash = "sha256:7488dd206fbae146edfca941c673c980bf7ea8a0390f4528db367b193ea5643d"},
-]
-
-[package.dependencies]
-numpy = ">=1.19.0"
-scipy = ">=1.8.0"
-
-[package.extras]
-all = ["jax (>=0.4.27)", "jaxlib (>=0.4.27)", "matplotlib (>=3.4.2)", "tensorflow (>=2.16.1)"]
 
 [[package]]
 name = "h11"
@@ -1605,14 +1585,14 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 
 [[package]]
 name = "wandelbots-api-client"
-version = "24.9.0rc3"
+version = "24.10.0"
 description = "Wandelbots Python Client: Interact with robots in an easy and intuitive way."
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "wandelbots_api_client-24.9.0rc3-py3-none-any.whl", hash = "sha256:8494adac80937dbb536c484779b9d56e007b26e2e6d1bd5fc5c6dd046fc0b2de"},
-    {file = "wandelbots_api_client-24.9.0rc3.tar.gz", hash = "sha256:b11f9e8743d32bf7ef6f44da88dd4d0bad968b740e10b1541c2634ecf64ced9d"},
+    {file = "wandelbots_api_client-24.10.0-py3-none-any.whl", hash = "sha256:11e55ae647456edbdda02a1e006f343ea675db07d8aeb331d5319f9205fe7972"},
+    {file = "wandelbots_api_client-24.10.0.tar.gz", hash = "sha256:3819ab8cabdd6c823cc8ced19959f58de89f5871027be1845aa49e5d04d7123b"},
 ]
 
 [package.dependencies]
@@ -1630,14 +1610,14 @@ websockets = "*"
 
 [[package]]
 name = "wandelbots-nova"
-version = "0.1.9"
+version = "0.9.1"
 description = "Official Python SDK for the Wandelbots"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "wandelbots_nova-0.1.9-py3-none-any.whl", hash = "sha256:72f441ae863c103edf7e77e3305ed293522db9b65eabd72f25e7363cfa7a60cf"},
-    {file = "wandelbots_nova-0.1.9.tar.gz", hash = "sha256:fd977301f3d27f7cb7309f40fdd92e5143e67e3ec28953a50c45354835203778"},
+    {file = "wandelbots_nova-0.9.1-py3-none-any.whl", hash = "sha256:d1ba2253dc7dc4a47d6b38313f4befdc9f4e03d028f1c83dbf1bc5f12bab0091"},
+    {file = "wandelbots_nova-0.9.1.tar.gz", hash = "sha256:d02f1c44f52b467b27bbccb7452da43bbe6c476415606483bf3cfe79b7d5ab95"},
 ]
 
 [package.dependencies]
@@ -1647,7 +1627,7 @@ numpy = ">=2.1.3,<3.0.0"
 pydantic = ">=2.10.3,<3.0.0"
 python-decouple = ">=3.8,<4.0"
 scipy = ">=1.14.1,<2.0.0"
-wandelbots_api_client = "24.9.0rc3"
+wandelbots_api_client = "24.10.0"
 websockets = ">=14.1.0,<15.0.0"
 
 [[package]]
@@ -1857,4 +1837,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "7af8d1313a8ef6cc19e0080c6b0001ec361962cc337b03065955606878bf31b5"
+content-hash = "65d71b1047cdc9450d3c2f4ea10088c5caeead7b2514607558213e02e290588b"

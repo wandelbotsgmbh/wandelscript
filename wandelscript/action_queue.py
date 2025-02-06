@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import AsyncGenerator, Generator, Mapping
 from functools import singledispatch
 from math import inf, isinf
@@ -7,7 +5,17 @@ from typing import TYPE_CHECKING, Any
 
 from aiostream import stream
 from loguru import logger
-from pyjectory import datatypes as dts
+from nova.actions import (
+    CallAction,
+    CombinedActions,
+    Motion,
+    MotionSettings,
+    ReadAction,
+    ReadJointsAction,
+    ReadPoseAction,
+    WriteAction,
+)
+from nova.types.state import MotionState
 from pyjectory import serializer
 from pyjectory.visiontypes.frames import FrameSystem
 
@@ -16,6 +24,9 @@ from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.utils import stoppable_run
 
 if TYPE_CHECKING:
+    from nova.actions import Action, ActionLocation
+    from nova.types import Pose
+
     from wandelscript.runtime import ExecutionContext
 
 
@@ -24,30 +35,30 @@ def run_action(arg, context: ExecutionContext):
     raise NotImplementedError(f"_run not implemented for Action {type(arg)}")
 
 
-@run_action.register(dts.WriteAction)
-async def _(arg: dts.WriteAction, context: ExecutionContext) -> None:
+@run_action.register(WriteAction)
+async def _(arg: WriteAction, context: ExecutionContext) -> None:
     device = context.robot_cell.get(arg.device_id)
     return await device.write(arg.key, arg.value)
 
 
-@run_action.register(dts.ReadAction)
-async def _(arg: dts.ReadAction, context: ExecutionContext):
+@run_action.register(ReadAction)
+async def _(arg: ReadAction, context: ExecutionContext):
     device = context.robot_cell.get(arg.device_id)
-    return dts.as_builtin_type(await device.read(arg.key))
+    return as_builtin_type(await device.read(arg.key))
 
 
-@run_action.register(dts.ReadPoseAction)
-async def _(arg: dts.ReadPoseAction, context: ExecutionContext):
+@run_action.register(ReadPoseAction)
+async def _(arg: ReadPoseAction, context: ExecutionContext):
     return await context.read_pose(arg.device_id, arg.tcp)
 
 
-@run_action.register(dts.ReadJointsAction)
-async def _(arg: dts.ReadJointsAction, context: ExecutionContext):
+@run_action.register(ReadJointsAction)
+async def _(arg: ReadJointsAction, context: ExecutionContext):
     return await context.read_joints(arg.device_id)
 
 
-@run_action.register(dts.CallAction)
-async def _(arg: dts.CallAction, context: ExecutionContext) -> None:
+@run_action.register(CallAction)
+async def _(arg: CallAction, context: ExecutionContext) -> None:
     device = context.robot_cell.get(arg.device_id)
     return await device(arg.key, *arg.arguments)
 
@@ -71,10 +82,10 @@ class ActionQueue:
         # A dictionary of robot identifier with corresponding TCP name
         self._tcp: dict[str, str] = {}
         # Collected motion trajectory of the corresponding robot names
-        self._record: dict[str, dts.MotionTrajectory] = {}
-        self._last_motions: dict[str, dts.Motion] = {}
+        self._record: dict[str, CombinedActions] = {}
+        self._last_motions: dict[str, Motion] = {}
         self._on_motion_callbacks: dict[str, Any] = {}
-        self._path_history: list[dts.MotionTrajectory] = []
+        self._path_history: list[CombinedActions] = []
 
     def reset(self):
         self._tcp.clear()
@@ -86,8 +97,8 @@ class ActionQueue:
         return not any(self._record.values())
 
     async def trigger_actions(
-        self, motion_iter: AsyncGenerator[dts.MotionState], actions: list[dts.ActionContainer]
-    ) -> AsyncGenerator[dts.MotionState]:
+        self, motion_iter: AsyncGenerator[MotionState], actions: list[ActionLocation]
+    ) -> AsyncGenerator[MotionState]:
         actions = sorted(actions, key=lambda action: action.path_parameter)
         async for motion_state in motion_iter:
             logger.debug(motion_state)
@@ -140,7 +151,7 @@ class ActionQueue:
         self._record.clear()
         self._tcp.clear()
 
-    async def run_action(self, action: dts.Action):
+    async def run_action(self, action: Action):
         return await run_action(action, self._execution_context)
 
     async def run(self, stop_event):
@@ -162,7 +173,7 @@ class ActionQueue:
         for callback in self._on_motion_callbacks.values():
             await callback(None, motion_state.path_parameter, motion_state.state.pose)
 
-    def last_pose(self, robot: str) -> dts.Pose | None:
+    def last_pose(self, robot: str) -> Pose | None:
         """Return the last pose of the collected motion trajectory
 
         Args:
@@ -176,7 +187,7 @@ class ActionQueue:
         return None
 
     # TODO: should be combined with push method
-    def attach_action(self, action: dts.Action, motion_group_id: str):
+    def attach_action(self, action: Action, motion_group_id: str):
         """Append a new action to the queue
 
         Args:
@@ -184,10 +195,10 @@ class ActionQueue:
             motion_group_id: the robot to append the action to
         """
         if motion_group_id not in self._record:
-            self._record[motion_group_id] = dts.MotionTrajectory()
+            self._record[motion_group_id] = CombinedActions()
         self._record[motion_group_id].append(action)
 
-    def push(self, motions: dts.Motion | tuple[dts.Motion, ...], tool: str, motion_group_id: str):
+    def push(self, motions: Motion | tuple[Motion, ...], tool: str, motion_group_id: str):
         """Append a new motion to the queue.
 
         Args:
@@ -215,7 +226,7 @@ class ActionQueue:
 
         for motion in motions:
             if motion_group_id not in self._record:
-                self._record[motion_group_id] = dts.MotionTrajectory()
+                self._record[motion_group_id] = CombinedActions()
 
             if len(self._record[motion_group_id]) >= self.MOTION_LIMIT_IN:
                 raise MotionError(
@@ -226,7 +237,7 @@ class ActionQueue:
             self._record[motion_group_id].append(motion)
             self._last_motions[motion_group_id] = motion
 
-    def _update_path_history(self, path: dts.MotionTrajectory):
+    def _update_path_history(self, path: CombinedActions):
         """Update the path history for debugging
 
         Args:
@@ -249,11 +260,11 @@ class PlannableActionQueue(ActionQueue):
     MOTION_LIMIT_IN = 1000  # maximal length of motion trajectory to be used for planning
     MOTION_LIMIT_OUT = 1000  # maximal length of path history to be stored
 
-    async def run_action(self, action: dts.Action):
+    async def run_action(self, action: Action):
         # TODO: we only want to support reading from the initial args
         # in the story https://wandelbots.atlassian.net/browse/WOS-1924 the we will update the initial arguments to be
         # a record in Wandelscript. On the long run we will work on removing the support for the etcd database.
-        if isinstance(action, dts.ReadAction):
+        if isinstance(action, ReadAction):
             device = self._execution_context.robot_cell[action.device_id]
             # allow reading from initial arguments & etcd database
             if device.configuration.type in ("database",):
@@ -331,16 +342,16 @@ class Store:
         serialized_store = {k: v for k, v in serialized_store.items() if not isinstance(v, float) or not isinf(v)}
         return serialized_store
 
-    def get_motion_settings(self) -> dts.MotionSettings:
+    def get_motion_settings(self) -> MotionSettings:
         """Return the motion settings from the current scope
 
         Returns:
             The motion settings
         """
-        return dts.MotionSettings(
+        return MotionSettings(
             **{
-                field: self[dts.MotionSettings.field_to_varname(field)]
-                for field in dts.MotionSettings.model_fields
-                if dts.MotionSettings.field_to_varname(field) in self
+                field: self[MotionSettings.field_to_varname(field)]
+                for field in MotionSettings.model_fields
+                if MotionSettings.field_to_varname(field) in self
             }
         )

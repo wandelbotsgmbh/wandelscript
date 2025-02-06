@@ -2,7 +2,7 @@ import re
 import sys
 from typing import TextIO
 
-from antlr4 import Lexer, InputStream
+from antlr4 import InputStream, Lexer
 from antlr4.Token import CommonToken
 
 from .wandelscriptParser import wandelscriptParser

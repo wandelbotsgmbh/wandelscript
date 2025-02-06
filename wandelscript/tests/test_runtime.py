@@ -1,5 +1,9 @@
 import pytest
-from pyriphery.robotics.simulation import SimulatedController, SimulatedRobotCell, get_simulated_robot_configs
+from pyriphery.robotics.simulation import (
+    SimulatedController,
+    SimulatedRobotCell,
+    get_simulated_robot_configs,
+)
 
 from wandelscript import exception as wsexception
 from wandelscript.exception import NameError_

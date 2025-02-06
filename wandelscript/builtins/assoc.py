@@ -1,7 +1,8 @@
 from functools import singledispatch
 from typing import Any, TypeVar
 
-from pyjectory import datatypes as dts
+import _types as t
+from nova.types import Pose, Vector3d
 
 from wandelscript.metamodel import register_builtin_func
 
@@ -42,17 +43,17 @@ def _(tup: tuple, key: int, val: Any) -> tuple:
 
 
 @assoc.register
-def _(vec: dts.Vector, key: int, val: float) -> dts.Vector:
+def _(vec: Vector3d, key: int, val: float) -> Vector3d:
     tmp = list(vec)
     tmp[key] = val
     return vec.__class__(*tmp)
 
 
 @assoc.register
-def _(pose: dts.Pose, key: int, val: float) -> dts.Pose:
+def _(pose: Pose, key: int, val: float) -> Pose:
     tmp = list(pose.to_tuple())
     tmp[key] = val
-    return dts.Pose.from_tuple(tmp)
+    return Pose.from_tuple(tmp)
 
 
 # TODO: In the future we want to improve record manipulation. For example we could use frozen keyword like:
@@ -61,7 +62,7 @@ def _(pose: dts.Pose, key: int, val: float) -> dts.Pose:
 # rec_frozen.a = 4 # throws error
 # rec.a = 4 # works
 @assoc.register
-def _(record: dts.Record, key: str, val: Any) -> dts.Record:
+def _(record: t.Record, key: str, val: Any) -> t.Record:
     tmp = dict(record)
     tmp[key] = val
-    return dts.Record(data=tmp)
+    return t.Record(data=tmp)

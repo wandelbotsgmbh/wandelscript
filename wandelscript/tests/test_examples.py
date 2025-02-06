@@ -1,22 +1,23 @@
 import tempfile
 
+import _types as t
 import numpy as np
 import pytest
 from loguru import logger
-from pyjectory import datatypes as dts
+from nova.types import Pose, Vector3d
 from pyriphery.robotics import RobotCell, SimulatedRobotCell
 
 import wandelscript
 from wandelscript.examples import EXAMPLES
 
 
-def _check_record(a: dts.Record, b: dts.Record, keypath=""):
+def _check_record(a: t.Record, b: t.Record, keypath=""):
     for k, v in a.items():
         # For the test we may not want to check every key in the record e.g. sender IP
         if k not in b:
             logger.warning(f"Key {k} not found in b")
             continue
-        if isinstance(v, dts.Record):
+        if isinstance(v, t.Record):
             _check_record(v, b[k], f"{keypath}.{k}")
             continue
         assert v == b[k], f"{keypath}.{k}"
@@ -35,12 +36,12 @@ def test_example(example_name):
     for key, expected in data.items():
         if isinstance(expected, list):
             expected = tuple(tuple(v) if isinstance(v, list) else v for v in expected)
-        if isinstance(expected, dts.Pose):
+        if isinstance(expected, Pose):
             assert np.allclose(expected.position, store[key].position, atol=1e-3, rtol=1e-3)
             assert np.allclose(expected.orientation, store[key].orientation, atol=1e-3, rtol=1e-3)
-        elif isinstance(expected, (dts.Position, dts.Orientation)):
+        elif isinstance(expected, (Vector3d, Vector3d)):
             assert np.allclose(expected, store[key], atol=1e-3, rtol=1e-3)
-        elif isinstance(expected, dts.Record):
+        elif isinstance(expected, t.Record):
             _check_record(expected, store[key])
         else:
             assert expected == store[key], f"{key=}: got: {store[key]} expected: {expected}"

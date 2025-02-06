@@ -52,7 +52,7 @@ poetry install
 Key dependencies:
 - Python 3.10+
 - ANTLR4 for grammar processing
-- Pyjectory for robot data types
+- wandelbots-nova for data types and interaction with robot
 - Pydantic for data validation
 - Additional libraries for AI streaming, OPC UA, and geometric algebra.
 

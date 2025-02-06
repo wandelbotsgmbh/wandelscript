@@ -1,19 +1,13 @@
 import time
 from typing import Any
 
-from pyjectory import datatypes as dts
-from pyriphery.robotics import AbstractRobot
+from nova.actions import MotionSettings
 
 import wandelscript.builtins.array
 import wandelscript.builtins.assoc
-import wandelscript.builtins.collider
 import wandelscript.builtins.controller
 import wandelscript.builtins.fetch
-import wandelscript.builtins.image
-import wandelscript.builtins.kinematic
 import wandelscript.builtins.math
-import wandelscript.builtins.opcua
-import wandelscript.builtins.pose
 import wandelscript.builtins.string
 import wandelscript.builtins.wait
 from wandelscript.datatypes import Frame
@@ -60,10 +54,10 @@ def python_print(a):
 
 
 def make_settings_modifier(name):
-    varname = dts.MotionSettings.field_to_varname(name)
+    varname = MotionSettings.field_to_varname(name)
 
     def modifier(ctx, val):
-        previous = ctx.store.get(varname, dts.MotionSettings.model_fields[name].default)
+        previous = ctx.store.get(varname, MotionSettings.model_fields[name].default)
         ctx.store[varname] = val
 
         async def on_exit(_store):
@@ -74,7 +68,7 @@ def make_settings_modifier(name):
     return modifier
 
 
-for setting in dts.MotionSettings.model_fields:
+for setting in MotionSettings.model_fields:
     register_builtin_func(name=setting, pass_context=True)(make_settings_modifier(setting))
 
 
@@ -97,16 +91,6 @@ def tcp(context, tcp_: str | Frame):
         context.store["__tcp__"] = previous
 
     return on_exit
-
-
-@register_builtin_func(pass_context=True)
-async def tcp_pose(context, tcp_: str | Frame, robot: AbstractRobot = None):
-    tcp_name = tcp_ if isinstance(tcp_, str) else tcp_.name
-    if robot is None:
-        robot = context.get_robot(context.active_robot)
-
-    tcps = await robot.get_tcps()
-    return tcps[tcp_name]
 
 
 # ### Extended functionality - still considered core, but probably not part of the language---------------------

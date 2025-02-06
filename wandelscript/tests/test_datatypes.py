@@ -1,12 +1,13 @@
 import numpy as np
 import pytest
-from pyjectory.datatypes import Orientation, Pose, Position, as_builtin_type
+from nova.types import Pose, Vector3d
+from pyjectory.datatypes import as_builtin_type
 
 from wandelscript.serializer import dumps, loads
 
 
 def test_pose_to_and_from_tuple():
-    pose = Pose(position=Position(1, 2, 3), orientation=Orientation(4, 5, 6))
+    pose = Pose(position=Vector3d(1, 2, 3), orientation=Vector3d(4, 5, 6))
     t = pose.to_tuple()
     assert t == (1, 2, 3, 4, 5, 6)
     p = Pose.from_tuple(t)
@@ -17,10 +18,10 @@ def test_pose_to_and_from_tuple():
 @pytest.mark.parametrize(
     "data",
     [
-        Pose(position=Position(1.0, 2.0, 3.0), orientation=Orientation(4.0, 5.0, 6.0)),
-        Position(1.0, 2.0, 3.0),
-        Orientation(4.0, 5.0, 6.0),
-        (1, "asd", 2.3, Position(1.0, 2.0, 3.0)),
+        Pose(position=Vector3d(1.0, 2.0, 3.0), orientation=Vector3d(4.0, 5.0, 6.0)),
+        Vector3d(1.0, 2.0, 3.0),
+        Vector3d(4.0, 5.0, 6.0),
+        (1, "asd", 2.3, Vector3d(1.0, 2.0, 3.0)),
     ],
 )
 def test_pose_save_and_load(data, concise):
