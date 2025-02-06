@@ -65,8 +65,7 @@ async def test_solve_point_forward():
     # create mocks
     mock_kinematics_service = MagicMock(spec=KinematicServiceClient)
     mock_kinematics_service.calculate_tcp_pose.return_value = rae_types.Pose(
-        position=rae_types.Vector3D(x=0, y=1, z=2),
-        orientation=rae_types.Vector3D(x=0, y=1, z=2),
+        position=rae_types.Vector3D(x=0, y=1, z=2), orientation=rae_types.Vector3D(x=0, y=1, z=2)
     )
     mock_robot = MagicMock(spec=Robot)
     mock_robot._kinematic_service_client = mock_kinematics_service

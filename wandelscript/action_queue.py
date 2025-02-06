@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator, Generator, Mapping
 from functools import singledispatch
-from math import inf, isinf
+from math import inf
 from typing import TYPE_CHECKING, Any
 
 from aiostream import stream
@@ -16,12 +16,14 @@ from nova.actions import (
     WriteAction,
 )
 from nova.types.state import MotionState
-from pyjectory import serializer
-from pyjectory.visiontypes.frames import FrameSystem
 
-from wandelscript.datatypes import Frame
+# from pyjectory import serializer
+from wandelscript.frames import FrameSystem
+
+from wandelscript.types import Frame
 from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.utils import stoppable_run
+from wandelscript.types import as_builtin_type
 
 if TYPE_CHECKING:
     from nova.actions import Action, ActionLocation
@@ -278,7 +280,7 @@ class PlannableActionQueue(ActionQueue):
 class Store:
     """Store all variables"""
 
-    def __init__(self, init_vars: Mapping[str, Any] | None = None, parent: Store | None = None):
+    def __init__(self, init_vars: Mapping[str, Any] | None = None, parent: "Store" | None = None):
         self.frame_system: FrameSystem = FrameSystem() if parent is None else parent.frame_system
         self._parent: Store | None = parent
         self._data: dict[str, Any] = {}
@@ -321,26 +323,27 @@ class Store:
     def update_local(self, other: Mapping[str, Any]):
         self._data.update(other)
 
-    def scope_of_name(self, name: str) -> Store | None:
+    def scope_of_name(self, name: str) -> "Store" | None:
         return next((scope for scope in self.scope_chain() if scope.contains_local(name)), None)
 
-    def scope_chain(self) -> Generator[Store]:
+    def scope_chain(self) -> Generator["Store"]:
         yield self
         if self._parent:
             yield from self._parent.scope_chain()
 
-    def descent(self, init_vars: Mapping[str, Any] | None = None) -> Store:
+    def descent(self, init_vars: Mapping[str, Any] | None = None) -> "Store":
         return Store(init_vars=init_vars, parent=self)
 
     @property
     def data(self) -> dict[str, Any]:
         return self._data.copy()
 
-    @property
-    def data_dict(self) -> dict[str, serializer.ElementType]:
-        serialized_store = {k: serializer.encode(v) for k, v in self.data.items() if serializer.is_encodable(v)}
-        serialized_store = {k: v for k, v in serialized_store.items() if not isinstance(v, float) or not isinf(v)}
-        return serialized_store
+    # TODO: Do we still need this?
+    # @property
+    # def data_dict(self) -> dict[str, serializer.ElementType]:
+    #    serialized_store = {k: serializer.encode(v) for k, v in self.data.items() if serializer.is_encodable(v)}
+    #    serialized_store = {k: v for k, v in serialized_store.items() if not isinstance(v, float) or not isinf(v)}
+    #    return serialized_store
 
     def get_motion_settings(self) -> MotionSettings:
         """Return the motion settings from the current scope

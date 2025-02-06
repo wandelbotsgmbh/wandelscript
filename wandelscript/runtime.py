@@ -6,8 +6,8 @@ from contextlib import contextmanager
 
 import anyio
 from nova.types import Pose
-from pyjectory import serializer
-from pyriphery.robotics import AbstractRobot, Device, RobotCell
+from wandelscript import serializer
+from nova.core.robot_cell import AbstractRobot, Device, RobotCell
 
 from wandelscript import exception as wsexception
 from wandelscript.action_queue import ActionQueue, Store
@@ -48,7 +48,7 @@ class ExecutionContext:
         if initial_vars is None:
             initial_vars = {}
 
-        initial_vars.update(__tcp__=default_tcp, **robot_cell)
+        initial_vars.update(__tcp__=default_tcp, **robot_cell._devices)
         self.call_stack = CallStack(DEFAULT_CALL_STACK_SIZE)
         self.call_stack.push(Store(initial_vars))
         self.interceptors: list[Interceptor] = []

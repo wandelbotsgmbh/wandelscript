@@ -12,8 +12,9 @@ from typing import Any, ClassVar, Generic, Literal, TypeVar
 import anyio
 from nova.actions import CallAction, MotionSettings, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
 from nova.types import Pose, Vector3d
+
 # from pyjectory.visiontypes import estimate_pose
-from pyriphery.robotics import (
+from nova.core.robot_cell import (
     AbstractRobot,
     AsyncCallableDevice,
     InputDevice,
@@ -27,7 +28,7 @@ from pyriphery.robotics import (
 import wandelscript.types as t
 import wandelscript.exception
 from wandelscript.action_queue import Store
-from wandelscript.datatypes import Closure, Frame
+from wandelscript.types import Closure, Frame
 from wandelscript.exception import GenericRuntimeError, TextRange
 from wandelscript.operators import (
     AdditionOperator,
@@ -138,62 +139,6 @@ class Block(Suite):
     async def call(self, context: ExecutionContext, **kwargs):
         for statement in self.statements:
             await statement(context)
-
-
-@dataclass(frozen=True)
-class Interrupt(Statement):
-    r"""Being able to react to specific signals, e. g. when waiting for an input from an asynchronous device for
-    every automation process. An interrupt can be used to listen to an event and executing statements when the
-    event occurs.
-
-    Note:
-        We don't recommend to use this interrupt for safety critical events since those needs to be handled
-        directly on the robot controller.
-
-    A interrupt can be defined with
-    ```
-    interrupt <name>() when <condition>:
-        <statements>
-    ```
-
-    A interrupt needs to be activated with `activate <name>` in order to listen to the event and can be deactivated
-    with `deactivate <name>`.
-
-    TODO: refine & describe condition syntax
-
-    Example:
-    >>> code = '''
-    ... b = 20
-    ... interrupt inter1() when is_equal("input4", 2 + b):
-    ...     a = 12
-    ... home = (0, 0, 0, 0, 0, 0)
-    ... activate inter1
-    ... move via p2p() to home
-    ... deactivate inter1
-    ... '''
-    >>> _ = _run_skill_debug(code)
-    """
-
-    name: str
-    parameters: Parameters
-    condition: str
-    arguments: Arguments
-    body: Suite
-
-    async def call(self, context: ExecutionContext, **kwargs):
-        async def func(store, *args):
-            init_locals = dict(zip(await self.parameters(context), args))
-            with context.new_call_frame(store, init_locals):
-                try:
-                    await self.body(context)
-                except wandelscript.exception.ReturnSignal as e:
-                    result = e.value
-                else:
-                    result = None
-                return result
-
-        arguments = await self.arguments(context)
-        context.store[self.name] = (self.condition, arguments, Closure(context.store, func))
 
 
 @dataclass(frozen=True)
@@ -338,39 +283,6 @@ class RepeatLoop(Statement):
                 await self.body(context)
             except wandelscript.exception.BreakSignal:
                 break
-
-
-@dataclass(frozen=True)
-class Conditional(Statement):
-    r"""The if-elif-else condition
-
-    Example:
-    >>> code = '''
-    ... a = 0
-    ... if 2 > 1:
-    ...     a = 10
-    ... else:
-    ...     a = 1
-    ... '''
-    >>> store = asyncio.run(run_skill(code)).store
-    >>> store['a']
-    10
-    """
-
-    condition: Expression[bool]
-    body: Suite
-    elif_condition: tuple[Expression[bool], ...]
-    elif_body: tuple[Suite, ...]
-    else_body: Suite | None = None
-
-    async def call(self, context: ExecutionContext, **kwargs):
-        for condition, body in zip([self.condition, *self.elif_condition], [self.body, *self.elif_body]):
-            if await condition(context):
-                await body(context)
-                break
-        else:
-            if self.else_body is not None:
-                await self.else_body(context)
 
 
 @dataclass(frozen=True)
@@ -747,32 +659,6 @@ class Atom(Rule, Generic[ElementType], ABC):
 
 
 @dataclass(frozen=True, eq=False)
-class Unary(Atom[ElementType]):
-    """Inverting (for poses)
-
-    Example:
-    >>> code = '''
-    ... a = ~(1.0, 2.0, 3.0, 0, 0, 0)
-    ... '''
-    >>> store = _run_skill_debug(code).store
-    >>> store['a']
-    Pose(position=Vector3d(x=-1.0, y=-2.0, z=-3.0), orientation=Vector3d(x=0.0, y=0.0, z=0.0))
-    """
-
-    a: Atom[ElementType]
-    op: Inverse | Not | None = None
-
-    async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
-        result = await self.a(context)
-        if self.op:
-            result = self.op(result)
-        return result
-
-    def to_expression(self) -> Expression[ElementType]:
-        return Expression(a=self)
-
-
-@dataclass(frozen=True, eq=False)
 class Constant(Atom[ElementType]):
     r"""Stores (typed) values
 
@@ -981,6 +867,66 @@ class Expression(Atom[ElementType]):
     def __str__(self):
         return "".join(map(str, [self.a, *chain(*zip(self.op, self.b))]))
 
+
+@dataclass(frozen=True, eq=False)
+class Unary(Atom[ElementType]):
+    """Inverting (for poses)
+
+    Example:
+    >>> code = '''
+    ... a = ~(1.0, 2.0, 3.0, 0, 0, 0)
+    ... '''
+    >>> store = _run_skill_debug(code).store
+    >>> store['a']
+    Pose(position=Vector3d(x=-1.0, y=-2.0, z=-3.0), orientation=Vector3d(x=0.0, y=0.0, z=0.0))
+    """
+
+    a: Atom[ElementType]
+    op: Inverse | Not | None = None
+
+    async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
+        result = await self.a(context)
+        if self.op:
+            result = self.op(result)
+        return result
+
+    def to_expression(self) -> Expression[ElementType]:
+        return Expression(a=self)
+
+
+@dataclass(frozen=True)
+class Conditional(Statement):
+    r"""The if-elif-else condition
+
+    Example:
+    >>> code = '''
+    ... a = 0
+    ... if 2 > 1:
+    ...     a = 10
+    ... else:
+    ...     a = 1
+    ... '''
+    >>> store = asyncio.run(run_skill(code)).store
+    >>> store['a']
+    10
+    """
+
+    condition: Expression[bool]
+    body: Suite
+    elif_condition: tuple[Expression[bool], ...]
+    elif_body: tuple[Suite, ...]
+    else_body: Suite | None = None
+
+    async def call(self, context: ExecutionContext, **kwargs):
+        for condition, body in zip([self.condition, *self.elif_condition], [self.body, *self.elif_body]):
+            if await condition(context):
+                await body(context)
+                break
+        else:
+            if self.else_body is not None:
+                await self.else_body(context)
+
+
 @dataclass(frozen=True)
 class Print(Statement):
     r"""A simple Python print statement that print a given text
@@ -998,6 +944,7 @@ class Print(Statement):
     async def call(self, context: ExecutionContext, **kwargs):
         text = str(await self.text(context))
         print(text)
+
 
 @dataclass(frozen=True)
 class WhileLoop(Statement):
@@ -1073,92 +1020,6 @@ class Connector(Rule):
                 raise wandelscript.exception.NameError_(location=self.location, name=self.name)
 
         await kwargs_packed(**kwargs)  # pylint: disable=missing-kwoa
-
-
-@dataclass(frozen=True, eq=False)
-class FunctionCall(Atom[ElementType], Statement):
-    r"""
-    Example: an inefficient(!) way to implement the power function
-    >>> import wandelscript.builtins
-    >>> code = '''
-    ... def power2(a, e):
-    ...     if e:
-    ...         result = a * power2(a, e - 1)
-    ...     else:
-    ...         result = 1
-    ...     return result
-    ... a = power2(3, 4)
-    ... b = power(3, 4)
-    ... '''
-    >>> store = _run_skill_debug(code).store
-    >>> store['a']
-    81
-    >>> store['b']
-    81
-    """
-
-    @dataclass(frozen=True)
-    class Builtin:
-        """Describes a builtin wandelscript function.
-
-        Attributes:
-            func: the python callable representing the wandelscript function
-            name: how the function is named inside wandelscript
-            pass_context: whether func should receive the execution context as the first argument
-        """
-
-        func: Callable
-        name: str
-        pass_context: bool = False
-
-    name: str
-    arguments: Arguments
-    _builtins: ClassVar[dict[str, Builtin]] = {}
-
-    @classmethod
-    def register_builtin(cls, func: Callable, name: str, pass_context: bool = False):
-        """Registers a python callable as a function callable from wandelscript.
-
-        Args:
-            func: the python callable representing the wandelscript function
-            name: how the function is named inside wandelscript
-            pass_context: whether func should receive the execution context as the first argument
-        """
-        script_func_name = name if name else func.__name__
-        cls._builtins[script_func_name] = cls.Builtin(func, script_func_name, pass_context)
-
-    def __post_init__(self, *_args):
-        assert isinstance(self.arguments, Arguments)
-
-    # pylint: disable=too-many-return-statements
-    async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
-        arguments = await self.arguments(context)
-
-        if self.name in self._builtins:
-            builtin = self._builtins[self.name]
-            call_args = [context] + list(arguments) if builtin.pass_context else arguments
-            if inspect.iscoroutinefunction(builtin.func):
-                return await builtin.func(*call_args)
-            return builtin.func(*call_args)
-        if self.name == "planned_pose":
-            result = context.action_queue.last_pose(context.active_robot)
-            if result is None:
-                raise RuntimeError("Before planned pose can be used, a move commands needs to be executed")
-            return result
-        if self.name == "frame":
-            assert len(arguments) == 1
-            assert isinstance(arguments[0], str)
-            return Frame(arguments[0], context.store.frame_system)  # type: ignore
-        if func := context.store.get(self.name, None):
-            if isinstance(func, Pose):
-                if isinstance(arguments[0], Pose):
-                    assert len(arguments) == 1
-                    return Pose.from_versor(func.to_versor().apply(arguments[0].to_versor()))
-                return func.to_versor().apply(*arguments)
-            return await func(context, *arguments)
-        raise wandelscript.exception.NameError_(
-            location=self.location, name=self.name
-        )  # (f"Function is not defined: {self.name}")
 
 
 def register_builtin_func(name=None, pass_context=False):
@@ -1244,16 +1105,16 @@ class Multiplication(Atom[ElementType]):
             result = operation(result, await value(context))
         return result
 
-    def __mul__(self, other: Atom | Multiplication) -> Atom:
+    def __mul__(self, other: Atom | "Multiplication") -> Atom:
         return self.to_expression() * other.to_expression()
 
-    def __truediv__(self, other: Atom | Multiplication) -> Atom:
+    def __truediv__(self, other: Atom | "Multiplication") -> Atom:
         return self.to_expression() / other.to_expression()
 
-    def __add__(self, other: Atom | Multiplication):
+    def __add__(self, other: Atom | "Multiplication"):
         return self.to_expression() + other.to_expression()
 
-    def __sub__(self, other: Atom | Multiplication):
+    def __sub__(self, other: Atom | "Multiplication"):
         return self.to_expression() - other.to_expression()
 
     def to_expression(self) -> Expression[ElementType]:
@@ -1327,6 +1188,7 @@ class FrameRelation(Atom[Pose]):
         # See: https://code.wabo.run/ai/wandelbrain/-/blob/main/packages/pyjectory/pyjectory/visiontypes/body.py
         # return Pose.from_versor(estimate_pose(source, target)[0])
 
+
 @dataclass(frozen=True, eq=False)
 class Assignment(Atom[ElementType], Statement):
     r"""Assign a value to a variable
@@ -1390,6 +1252,16 @@ PLUGINS = BUILTINS + PLUGINS_ADDONS
 
 
 @dataclass(frozen=True)
+class RootBlock(Rule):
+    body: Block
+
+    async def call(self, context: ExecutionContext, **kwargs):
+        await plugins()(context)  # TODO move to somewhere where it is called not for every test (maybe at startup)
+        await self.body(context)
+        await context.sync()
+
+
+@dataclass(frozen=True)
 class Skill:
     r"""The root of the meta-model
 
@@ -1416,7 +1288,7 @@ class Skill:
         await self.body(context)
 
     @classmethod
-    def from_file(cls, filename: str) -> Skill:
+    def from_file(cls, filename: str) -> "Skill":
         return cls.from_code(open(filename, encoding="utf-8").read())
 
     def simulate(self, initial_vars: dict[str, t.ElementType] | None = None):
@@ -1424,18 +1296,8 @@ class Skill:
         return context.robot_cell.get_robot("0@controller").recorded_trajectories()
 
     @staticmethod
-    def from_code(code: str) -> Skill:
+    def from_code(code: str) -> "Skill":
         raise NotImplementedError()
-
-
-@dataclass(frozen=True)
-class RootBlock(Rule):
-    body: Block
-
-    async def call(self, context: ExecutionContext, **kwargs):
-        await plugins()(context)  # TODO move to somewhere where it is called not for every test (maybe at startup)
-        await self.body(context)
-        await context.sync()
 
 
 @dataclass(frozen=True)
@@ -1475,6 +1337,148 @@ class Arguments(Rule):
     async def call(self, context: ExecutionContext, **kwargs) -> tuple:
         # pylint: disable=consider-using-generator
         return tuple([await expression(context) for expression in self.data])
+
+
+@dataclass(frozen=True, eq=False)
+class FunctionCall(Atom[ElementType], Statement):
+    r"""
+    Example: an inefficient(!) way to implement the power function
+    >>> import wandelscript.builtins
+    >>> code = '''
+    ... def power2(a, e):
+    ...     if e:
+    ...         result = a * power2(a, e - 1)
+    ...     else:
+    ...         result = 1
+    ...     return result
+    ... a = power2(3, 4)
+    ... b = power(3, 4)
+    ... '''
+    >>> store = _run_skill_debug(code).store
+    >>> store['a']
+    81
+    >>> store['b']
+    81
+    """
+
+    @dataclass(frozen=True)
+    class Builtin:
+        """Describes a builtin wandelscript function.
+
+        Attributes:
+            func: the python callable representing the wandelscript function
+            name: how the function is named inside wandelscript
+            pass_context: whether func should receive the execution context as the first argument
+        """
+
+        func: Callable
+        name: str
+        pass_context: bool = False
+
+    name: str
+    arguments: Arguments
+    _builtins: ClassVar[dict[str, Builtin]] = {}
+
+    @classmethod
+    def register_builtin(cls, func: Callable, name: str, pass_context: bool = False):
+        """Registers a python callable as a function callable from wandelscript.
+
+        Args:
+            func: the python callable representing the wandelscript function
+            name: how the function is named inside wandelscript
+            pass_context: whether func should receive the execution context as the first argument
+        """
+        script_func_name = name if name else func.__name__
+        cls._builtins[script_func_name] = cls.Builtin(func, script_func_name, pass_context)
+
+    def __post_init__(self, *_args):
+        assert isinstance(self.arguments, Arguments)
+
+    # pylint: disable=too-many-return-statements
+    async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
+        arguments = await self.arguments(context)
+
+        if self.name in self._builtins:
+            builtin = self._builtins[self.name]
+            call_args = [context] + list(arguments) if builtin.pass_context else arguments
+            if inspect.iscoroutinefunction(builtin.func):
+                return await builtin.func(*call_args)
+            return builtin.func(*call_args)
+        if self.name == "planned_pose":
+            result = context.action_queue.last_pose(context.active_robot)
+            if result is None:
+                raise RuntimeError("Before planned pose can be used, a move commands needs to be executed")
+            return result
+        if self.name == "frame":
+            assert len(arguments) == 1
+            assert isinstance(arguments[0], str)
+            return Frame(arguments[0], context.store.frame_system)
+        if func := context.store.get(self.name, None):
+            if isinstance(func, Pose):
+                if isinstance(arguments[0], Pose):
+                    assert len(arguments) == 1
+                    return Pose.from_versor(func.to_versor().apply(arguments[0].to_versor()))
+                return func.to_versor().apply(*arguments)
+            return await func(context, *arguments)
+        raise wandelscript.exception.NameError_(
+            location=self.location, name=self.name
+        )  # (f"Function is not defined: {self.name}")
+
+
+@dataclass(frozen=True)
+class Interrupt(Statement):
+    r"""Being able to react to specific signals, e. g. when waiting for an input from an asynchronous device for
+    every automation process. An interrupt can be used to listen to an event and executing statements when the
+    event occurs.
+
+    Note:
+        We don't recommend to use this interrupt for safety critical events since those needs to be handled
+        directly on the robot controller.
+
+    A interrupt can be defined with
+    ```
+    interrupt <name>() when <condition>:
+        <statements>
+    ```
+
+    A interrupt needs to be activated with `activate <name>` in order to listen to the event and can be deactivated
+    with `deactivate <name>`.
+
+    TODO: refine & describe condition syntax
+
+    Example:
+    >>> code = '''
+    ... b = 20
+    ... interrupt inter1() when is_equal("input4", 2 + b):
+    ...     a = 12
+    ... home = (0, 0, 0, 0, 0, 0)
+    ... activate inter1
+    ... move via p2p() to home
+    ... deactivate inter1
+    ... '''
+    >>> _ = _run_skill_debug(code)
+    """
+
+    name: str
+    parameters: Parameters
+    condition: str
+    arguments: Arguments
+    body: Suite
+
+    async def call(self, context: ExecutionContext, **kwargs):
+        async def func(store, *args):
+            init_locals = dict(zip(await self.parameters(context), args))
+            with context.new_call_frame(store, init_locals):
+                try:
+                    await self.body(context)
+                except wandelscript.exception.ReturnSignal as e:
+                    result = e.value
+                else:
+                    result = None
+                return result
+
+        arguments = await self.arguments(context)
+        context.store[self.name] = (self.condition, arguments, Closure(context.store, func))
 
 
 @dataclass(frozen=True)

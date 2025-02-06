@@ -3,13 +3,7 @@ import pytest
 from nova.actions import PTP, JointPTP, Linear
 from pyjectory.datatypes import Pose
 from pyjectory.pathtypes.vector3d import CircularSegment, Line, Point
-from pyriphery.robotics import (
-    RobotCell,
-    SimulatedController,
-    SimulatedRobot,
-    SimulatedRobotCell,
-    get_robot_cell,
-)
+from pyriphery.robotics import RobotCell, SimulatedController, SimulatedRobot, SimulatedRobotCell, get_robot_cell
 
 import wandelscript
 from wandelscript.exception import SkillRuntimeError

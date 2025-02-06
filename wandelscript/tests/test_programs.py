@@ -1,4 +1,5 @@
 """Test the execution of sample skills"""
+
 import anyio
 import pytest
 

@@ -41,15 +41,9 @@ async def test_trigger_actions():
     actions = [
         ActionLocation(path_parameter=0, action=WriteAction(device_id="controller", key="some_io", value=0.5)),
         ActionLocation(path_parameter=3, action=WriteAction(device_id="controller", key="some_io", value=3.3)),
-        ActionLocation(
-            path_parameter=5, action=WriteAction(device_id="controller", key="some_io", value=5.71)
-        ),
-        ActionLocation(
-            path_parameter=5, action=WriteAction(device_id="controller", key="some_other_io", value=11)
-        ),
-        ActionLocation(
-            path_parameter=19, action=WriteAction(device_id="controller", key="some_io", value=190)
-        ),
+        ActionLocation(path_parameter=5, action=WriteAction(device_id="controller", key="some_io", value=5.71)),
+        ActionLocation(path_parameter=5, action=WriteAction(device_id="controller", key="some_other_io", value=11)),
+        ActionLocation(path_parameter=19, action=WriteAction(device_id="controller", key="some_io", value=190)),
     ]
 
     cell = RobotCell(controller=SimulatedController(), database=InMemoryDatabase())

@@ -1,6 +1,6 @@
-import _types as t
+import wandelscript.types as t
 import httpx
-from pyjectory import serializer
+from wandelscript import serializer
 
 from wandelscript.metamodel import register_builtin_func
 

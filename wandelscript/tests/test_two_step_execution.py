@@ -1,10 +1,5 @@
 from nova.types import Pose
-from pyriphery.robotics import (
-    InMemoryDatabase,
-    RobotCell,
-    SimulatedController,
-    SimulatedRobot,
-)
+from pyriphery.robotics import InMemoryDatabase, RobotCell, SimulatedController, SimulatedRobot
 
 import wandelscript
 
