@@ -21,9 +21,8 @@ from nova.core.robot_cell import (
     OutputDevice,
     RobotCell,
     RobotMotionError,
-    SimulatedRobotCell,
-    UnknownPose,
 )
+from wandelscript.simulation import SimulatedRobotCell, UnknownPose
 
 import wandelscript.types as t
 import wandelscript.exception
