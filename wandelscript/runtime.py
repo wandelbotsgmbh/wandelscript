@@ -48,7 +48,7 @@ class ExecutionContext:
         if initial_vars is None:
             initial_vars = {}
 
-        initial_vars.update(__tcp__=default_tcp, **robot_cell._devices)
+        initial_vars.update(__tcp__=default_tcp, **robot_cell.devices)
         self.call_stack = CallStack(DEFAULT_CALL_STACK_SIZE)
         self.call_stack.push(Store(initial_vars))
         self.interceptors: list[Interceptor] = []

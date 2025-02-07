@@ -24,11 +24,10 @@ from wandelscript.types import Frame
 from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.utils import stoppable_run
 from wandelscript.types import as_builtin_type
+from nova.actions import Action, ActionLocation
+from nova.types import Pose
 
 if TYPE_CHECKING:
-    from nova.actions import Action, ActionLocation
-    from nova.types import Pose
-
     from wandelscript.runtime import ExecutionContext
 
 
@@ -39,13 +38,13 @@ def run_action(arg, context: ExecutionContext):
 
 @run_action.register(WriteAction)
 async def _(arg: WriteAction, context: ExecutionContext) -> None:
-    device = context.robot_cell.get(arg.device_id)
+    device = context.robot_cell.devices.get(arg.device_id)
     return await device.write(arg.key, arg.value)
 
 
 @run_action.register(ReadAction)
 async def _(arg: ReadAction, context: ExecutionContext):
-    device = context.robot_cell.get(arg.device_id)
+    device = context.robot_cell.devices.get(arg.device_id)
     return as_builtin_type(await device.read(arg.key))
 
 
@@ -61,7 +60,7 @@ async def _(arg: ReadJointsAction, context: ExecutionContext):
 
 @run_action.register(CallAction)
 async def _(arg: CallAction, context: ExecutionContext) -> None:
-    device = context.robot_cell.get(arg.device_id)
+    device = context.robot_cell.devices.get(arg.device_id)
     return await device(arg.key, *arg.arguments)
 
 
@@ -123,21 +122,22 @@ class ActionQueue:
         """The collected queue gets executed"""
 
         # get current collision setup
-        collision_scene = await self._execution_context.robot_cell.get_current_collision_scene()
+        # collision_scene = await self._execution_context.robot_cell.get_current_collision_scene()
 
         # plan & move
         planned_motions = {}
         for motion_group_id in self._record:  # pylint: disable=consider-using-dict-items
-            motion_trajectory = self._record[motion_group_id]
-            if len(motion_trajectory.motions) > 0:
+            actions = self._record[motion_group_id]
+            if len(actions.motions) > 0:
                 if self._execution_context.debug:
                     # This can raise MotionError
-                    self._update_path_history(motion_trajectory)
+                    self._update_path_history(actions)
 
                 motion_group = self._execution_context.get_robot(motion_group_id)
                 tcp = self._tcp.get(motion_group_id, None) or await motion_group.get_active_tcp_name()
 
-                motion_iter = motion_group.planned_motion(motion_trajectory, tcp=tcp, collision_scene=collision_scene)
+                motion_trajectory = await motion_group.plan(actions.actions, tcp)
+                motion_iter = motion_group.planned_motion(actions, tcp)
                 planned_motions[motion_group_id] = self.trigger_actions(motion_iter, motion_trajectory.actions.copy())
             else:
                 # When the motion trajectory is empty, execute the actions
