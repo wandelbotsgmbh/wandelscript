@@ -1,7 +1,7 @@
-import wandelscript.types as t
 import httpx
-from wandelscript import serializer
 
+import wandelscript.types as t
+from wandelscript import serializer
 from wandelscript.metamodel import register_builtin_func
 
 

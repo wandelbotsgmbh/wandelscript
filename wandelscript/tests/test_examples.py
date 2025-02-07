@@ -1,15 +1,15 @@
 import tempfile
 
-from wandelscript.types import Record
 import numpy as np
 import pytest
 from loguru import logger
-from nova.types import Pose, Vector3d
 from nova.core.robot_cell import RobotCell
-from wandelscript.simulation import SimulatedRobotCell
+from nova.types import Pose, Vector3d
 
 import wandelscript
 from wandelscript.examples import EXAMPLES
+from wandelscript.simulation import SimulatedRobotCell
+from wandelscript.types import Record
 
 
 def _check_record(a: Record, b: Record, keypath=""):

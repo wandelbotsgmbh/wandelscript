@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from loguru import logger
+
 from wandelscript import serializer
 
 _EXAMPLE_DIR = Path(__file__).parent / "examples"

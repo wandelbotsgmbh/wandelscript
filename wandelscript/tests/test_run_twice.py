@@ -2,9 +2,9 @@ import sys
 from datetime import datetime
 
 from icecream import ic
-from wandelscript.simulation import SimulatedRobotCell, get_robot_controller
 
 from wandelscript import ProgramRunState, run
+from wandelscript.simulation import SimulatedRobotCell, get_robot_controller
 from wandelscript.utils import Tee
 
 robot_cell = SimulatedRobotCell(controller=get_robot_controller())

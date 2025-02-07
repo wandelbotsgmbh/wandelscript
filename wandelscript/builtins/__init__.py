@@ -10,8 +10,8 @@ import wandelscript.builtins.fetch
 import wandelscript.builtins.math
 import wandelscript.builtins.string
 import wandelscript.builtins.wait
-from wandelscript.types import Frame
 from wandelscript.metamodel import register_builtin_func
+from wandelscript.types import Frame
 
 
 @register_builtin_func(name="int")

@@ -1,4 +1,4 @@
-from wandelscript import serializer, Store, types
+from wandelscript import Store, serializer, types
 
 
 def test_store():

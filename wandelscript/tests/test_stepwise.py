@@ -1,7 +1,8 @@
 import pytest
 from nova.core.robot_cell import RobotCell
-from wandelscript.simulation import SimulatedRobot
+
 from wandelscript.metamodel import Skill
+from wandelscript.simulation import SimulatedRobot
 
 
 @pytest.mark.skip("broken")

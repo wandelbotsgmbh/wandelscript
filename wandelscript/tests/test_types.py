@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 from nova.types import Pose, Vector3d
-from wandelscript.types import as_builtin_type
 
 from wandelscript.serializer import dumps, loads
+from wandelscript.types import as_builtin_type
 
 
 def test_pose_to_and_from_tuple():

@@ -1,7 +1,8 @@
-from nova.types import Pose
 from nova.core.robot_cell import RobotCell
-from wandelscript.simulation import SimulatedController, SimulatedRobot
+from nova.types import Pose
+
 import wandelscript
+from wandelscript.simulation import SimulatedController, SimulatedRobot
 
 
 def test_two_step_execution():

@@ -6,8 +6,9 @@ from typing import Union
 
 import numpy as np
 import pydantic
-from PIL import Image
 from nova import types as t
+from PIL import Image
+
 from wandelscript import types as ws_types
 
 # from pyjectory import visiontypes
