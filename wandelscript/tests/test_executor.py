@@ -1,15 +1,16 @@
 import asyncio
 
 import pytest
-from pyriphery.robotics import InMemoryDatabase, RobotCell, SimulatedRobot, Timer
 
+from nova.core.robot_cell import RobotCell, Timer
+from wandelscript.simulation import SimulatedRobot
 from wandelscript import Skill
 
 
 @pytest.mark.asyncio
 @pytest.mark.skip("broken")
 async def test_stepwise_execution():
-    robot_cell = RobotCell(timer=Timer(), robot=SimulatedRobot(), database=InMemoryDatabase())
+    robot_cell = RobotCell(timer=Timer(), robot=SimulatedRobot())
     code = """
 print("start")
 a = 3

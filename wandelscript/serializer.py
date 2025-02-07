@@ -96,7 +96,7 @@ def _(obj: t.Pose) -> Pose:
 
 @decode.register
 def _(obj: Pose) -> t.Pose:
-    return t.Pose.from_tuple(obj.pose)
+    return t.Pose(obj.pose)
 
 
 class Vector3d(pydantic.BaseModel):
@@ -121,7 +121,7 @@ def _(obj: t.Vector3d) -> Vector3d:
 
 @decode.register
 def _(obj: Vector3d) -> t.Vector3d:
-    return t.Vector3d(*obj.vector3d)
+    return t.Vector3d.from_tuple(obj.vector3d)
 
 
 class Joints(pydantic.BaseModel):

@@ -6,7 +6,8 @@ from datetime import datetime
 import numpy as np
 import pytest
 from icecream import ic
-from pyriphery.robotics import RobotCell, get_robot_controller
+from nova.core.robot_cell import RobotCell
+from wandelscript.simulation import get_robot_controller
 
 from wandelscript import ProgramRun, ProgramRunner, ProgramRunState, run
 from wandelscript.exception import NameError_, SkillSyntaxError

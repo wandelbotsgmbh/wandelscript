@@ -14,7 +14,7 @@ Vector3d(x=0.0, y=1.0, z=5.0)
 import wandelscript.antlrvisitor  # load Skill.from_code
 import wandelscript.builtins
 import wandelscript.motions  # load all motion connectors
-from wandelscript.action_queue import ActionQueue, Store
+from wandelscript.runtime import ActionQueue, Store
 from wandelscript.metamodel import Skill
 from wandelscript.runner import ProgramRun, ProgramRunner, ProgramRunState, run
 

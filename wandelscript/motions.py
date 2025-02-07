@@ -8,7 +8,7 @@ from wandelscript.metamodel import Connector
 
 
 @dataclass(repr=False)
-class JointPointToPoint(Connector.Impl, func_name="joint_p2p"):
+class JointPointToPoint(Connector.Impl, func_name="joint_ptp"):
     def __call__(
         self, start: Pose | None, end: tuple[float, ...], args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> JointPTP:
@@ -23,7 +23,7 @@ class Line(Connector.Impl, func_name="line"):
         return lin(end.to_tuple(), settings=motion_settings)
 
 
-class PointToPoint(Line, func_name="p2p"):
+class PointToPoint(Line, func_name="ptp"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> PTP:

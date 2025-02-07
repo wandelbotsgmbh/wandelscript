@@ -77,7 +77,7 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
     def __init__(self, configuration: Configuration = Configuration()):
         if not configuration.tools:
             configuration_dict = configuration.model_dump()
-            configuration_dict.update(tools={"flange": Pose((0, 0, 0, 0, 0, 0))})
+            configuration_dict.update(tools={"Flange": Pose((0, 0, 0, 0, 0, 0))})
             configuration = self.Configuration(**configuration_dict)
         super().__init__(configuration=configuration)
         self._stepsize = configuration.stepsize if configuration.stepsize else math.inf
@@ -91,19 +91,10 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
         # this list. Every motion trajectory corresponds to blocs of wandelscript code between sync commands.
         self.record_of_commands: list[CombinedActions] = []
 
-    async def get_tcps(self) -> dict[str, Pose]:
-        return self.configuration.tools
-
-    async def get_tcp_names(self) -> list[str]:
-        return list(self.configuration.tools.keys())
-
-    async def get_active_tcp_name(self) -> str:
-        return next(iter(self.configuration.tools))
-
     async def get_optimizer_setup(self, tcp_name: str) -> api.models.OptimizerSetup:
-        tcp_pos = api.models.Vector3d()
+        tcp_pos = api.models.Vector3d(x=0, y=0, z=0)
         tcp_pos.x, tcp_pos.y, tcp_pos.z = self.configuration.tools[tcp_name].position
-        tcp_ori = api.models.Quaternion()
+        tcp_ori = api.models.Quaternion(w=1, x=0, y=0, z=0)
         tcp_ori.x, tcp_ori.y, tcp_ori.z, tcp_ori.w = Rotation.from_rotvec(
             self.configuration.tools[tcp_name].orientation
         ).as_quat()
@@ -141,7 +132,7 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
         )
 
     async def get_mounting(self) -> Pose:
-        mounting = (await self.get_optimizer_setup((await self.get_tcp_names())[0])).mounting
+        mounting = (await self.get_optimizer_setup((await self.tcp_names())[0])).mounting
 
         return Pose.from_position_and_quaternion(
             [mounting.position.x, mounting.position.y, mounting.position.z],
@@ -295,6 +286,27 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
 
             on_movement(motion_state)
 
+    async def tcps(self) -> list[api.models.RobotTcp]:
+        return [
+            api.models.RobotTcp(
+                id=name,
+                readable_name=name,
+                position=tool_pose.position.model_dump(),
+                rotation=tool_pose.orientation.model_dump(),
+            )
+            for name, tool_pose in self.configuration.tools.items()
+        ]
+
+    async def tcp_names(self) -> list[str]:
+        return list(self.configuration.tools.keys())
+
+    async def active_tcp(self) -> api.models.RobotTcp:
+        tcps = await self.tcps()
+        return next(iter(tcps))
+
+    async def active_tcp_name(self) -> str:
+        return next(iter(self.configuration.tools))
+
     async def get_state(self, tcp: str) -> RobotState:
         if not self._trajectory:
             raise UnknownPose()
@@ -309,7 +321,12 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
         # tcp_pose = Pose.from_position_and_quaternion(*tcp2robot.to_pose())
         return flange2robot.state
 
-    async def get_pose(self, tcp: str | None = None) -> Pose:
+    async def joints(self) -> tuple:
+        if not self._trajectory:
+            raise UnknownPose()
+        return self._trajectory[-1].state.joints
+
+    async def tcp_pose(self, tcp: str | None = None) -> Pose:
         if tcp is None:
             tcp = "flange"
         state = await self.get_state(tcp)
@@ -456,9 +473,7 @@ def get_simulated_robot_configs(
     controller_id: str = "controller", num_robots: SupportsIndex = 2
 ) -> list[SimulatedRobot.Configuration]:
     return [
-        SimulatedRobot.Configuration(
-            identifier=f"{i}@{controller_id}", tools={"flange": {"position": [0, 0, 0], "orientation": [0, 0, 0]}}
-        )
+        SimulatedRobot.Configuration(identifier=f"{i}@{controller_id}", tools={"flange": Pose((0, 0, 0, 0, 0, 0))})
         for i in range(num_robots)
     ]
 

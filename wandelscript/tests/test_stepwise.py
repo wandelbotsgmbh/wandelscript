@@ -1,13 +1,13 @@
 import pytest
-from pyriphery.robotics import InMemoryDatabase, RobotCell, SimulatedRobot
-
+from nova.core.robot_cell import RobotCell
+from wandelscript.simulation import SimulatedRobot
 from wandelscript.metamodel import Skill
 
 
-@pytest.mark.asyncio
 @pytest.mark.skip("broken")
+@pytest.mark.asyncio
 async def test_stepwise():
-    a = RobotCell(robot=SimulatedRobot(), database=InMemoryDatabase())
+    a = RobotCell(robot=SimulatedRobot())
     code = """
 print("That")
 print("is")

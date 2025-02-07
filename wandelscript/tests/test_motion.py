@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 from nova.actions import PTP, JointPTP, Linear
-from pyjectory.datatypes import Pose
-from pyjectory.pathtypes.vector3d import CircularSegment, Line, Point
-from pyriphery.robotics import RobotCell, SimulatedController, SimulatedRobot, SimulatedRobotCell, get_robot_cell
+from nova.types import Pose
+from nova.core.robot_cell import RobotCell
+from wandelscript.simulation import SimulatedController, SimulatedRobot, SimulatedRobotCell, get_robot_cell
 
 import wandelscript
 from wandelscript.exception import SkillRuntimeError
@@ -170,21 +170,6 @@ move via joint_p2p() to joints
     assert isinstance(path[1], JointPTP)
 
 
-@pytest.mark.skip(
-    "Maybe there is a bug in SequentialPosePath.partial and global_to_local_path_parameter in simulated robot"
-)
-@pytest.mark.asyncio
-async def test_collapse_to_point():
-    cell = get_robot_cell()
-    code = """move via PTP() to (0, 0, 0, 0, 0, 0)
-move via line() to (0, 0, 0, 0, pi, 0)"""
-
-    result = await run_skill(code, cell, default_robot="0@controller")
-    trajectory = result.robot_cell.get_robot("0@controller")._trajectory  # pylint: disable=protected-access
-    assert isinstance(trajectory[0].position[-1], Point)
-    assert isinstance(trajectory[1].position[-1], Line)
-
-
 @pytest.mark.asyncio
 async def test_bug_wos_1012():
     cell = get_robot_cell()
@@ -194,6 +179,8 @@ sync
 move via line() to (0, 0, 0, 0, pi, 0)"""
 
     result = await run_skill(code, cell, default_robot="0@controller", default_tcp="flange")
-    trajectory = result.robot_cell.get_robot("0@controller")._trajectory  # pylint: disable=protected-access
-    assert isinstance(trajectory[1].position[-1], CircularSegment)
-    assert isinstance(trajectory[2].position[-1], Line)
+    trajectory = result.robot_cell.get_robot("0@controller")._trajectory
+    print(trajectory)
+    assert False
+    # assert isinstance(trajectory[1].position[-1], CircularSegment)
+    # assert isinstance(trajectory[2].position[-1], Line)

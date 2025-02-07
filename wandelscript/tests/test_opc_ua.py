@@ -6,7 +6,7 @@ import threading
 import pytest
 from asyncua import Server, ua
 from loguru import logger
-from pyriphery.robotics import RobotCell
+from nova.core.robot_cell import RobotCell
 
 from wandelscript import ProgramRunner, ProgramRunState, run
 
