@@ -2,7 +2,6 @@ import time
 from typing import Any
 
 from nova.actions import MotionSettings
-
 import wandelscript.builtins.array
 import wandelscript.builtins.assoc
 import wandelscript.builtins.controller
@@ -91,6 +90,3 @@ def tcp(context, tcp_: str | Frame):
         context.store["__tcp__"] = previous
 
     return on_exit
-
-
-# ### Extended functionality - still considered core, but probably not part of the language---------------------
