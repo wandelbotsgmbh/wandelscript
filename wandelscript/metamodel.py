@@ -9,6 +9,7 @@ from functools import cache, reduce
 from itertools import chain
 from pathlib import Path as FilePath
 from typing import Any, ClassVar, Generic, Literal, TypeVar
+from wandelscript.utils.pose import pose_to_versor, versor_to_pose
 
 import anyio
 from nova.actions import CallAction, MotionSettings, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
@@ -459,9 +460,9 @@ class Motion(Statement):
                 )
             fs = context.store.frame_system.copy()
             fs[(await self.frame_relation.target(context)).name, (await self.frame_relation.source(context)).name] = (
-                end.to_versor()
+                pose_to_versor(end)
             )
-            end = Pose.from_versor(fs.eval(context.store.ROBOT.name, context.store.FLANGE.name))
+            end = versor_to_pose(fs.eval(context.store.ROBOT.name, context.store.FLANGE.name))
             tcp = None  # TODO can we still allow this
         elif self.tcp:
             tcp = await self.tcp(context)
@@ -797,7 +798,7 @@ class ExpressionsList(Atom[t.ElementType]):
 
     async def call(self, context: ExecutionContext, **kwargs) -> Vector3d | Pose:
         if len(self.value) == 3:
-            return Vector3d.from_tuple(*[float(await v(context)) for v in self.value])
+            return Vector3d.from_tuple(tuple([float(await v(context)) for v in self.value]))
         if len(self.value) == 6:
             return Pose(*[float(await v(context)) for v in self.value])
         raise wandelscript.exception.SkillSyntaxError(None, f"Unexpected number of elements: {len(self.value)}")
@@ -1176,13 +1177,13 @@ class FrameRelation(Atom[Pose]):
         if isinstance(target, Frame) and isinstance(source, Frame):
             fs = context.store.frame_system.copy()
             if (current_pose_of_robot := context.action_queue.last_pose(context.active_robot)) is not None:
-                fs[context.store.ROBOT.name, context.store.FLANGE.name] = current_pose_of_robot.to_versor()
-            return Pose.from_versor(fs.eval(target.name, source.name))
+                fs[context.store.ROBOT.name, context.store.FLANGE.name] = pose_to_versor(current_pose_of_robot)
+            return versor_to_pose(fs.eval(target.name, source.name))
         if isinstance(target, Frame) ^ isinstance(source, Frame):
             raise TypeError("Either both or neither of the two arguments must be of type 'Frame'")
         raise TypeError("Both arguments must be of type 'Frame'")
         # See: https://code.wabo.run/ai/wandelbrain/-/blob/main/packages/pyjectory/pyjectory/visiontypes/body.py
-        # return Pose.from_versor(estimate_pose(source, target)[0])
+        # return versor_to_pose(estimate_pose(source, target)[0])
 
 
 @dataclass(frozen=True, eq=False)
@@ -1236,7 +1237,7 @@ class Assignment(Atom[ElementType], Statement):
             assert isinstance(target, Frame), (target, source)
             assert isinstance(source, Frame), (target, source)
 
-            context.store.frame_system[target.name, source.name] = value.to_versor()
+            context.store.frame_system[target.name, source.name] = pose_to_versor(value)
             return value
         context.store[self.name] = value
         return context.store[self.name]
@@ -1412,8 +1413,8 @@ class FunctionCall(Atom[ElementType], Statement):
             if isinstance(func, Pose):
                 if isinstance(arguments[0], Pose):
                     assert len(arguments) == 1
-                    return Pose.from_versor(func.to_versor().apply(arguments[0].to_versor()))
-                return func.to_versor().apply(*arguments)
+                    return versor_to_pose(pose_to_versor(func).apply(pose_to_versor(arguments[0])))
+                return pose_to_versor(func).apply(*arguments)
             return await func(context, *arguments)
         print(self._builtins)
         raise wandelscript.exception.NameError_(

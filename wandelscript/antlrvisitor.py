@@ -11,7 +11,7 @@ from wandelscript.grammar.wandelscriptLexer import wandelscriptLexer
 from wandelscript.grammar.wandelscriptParser import wandelscriptParser
 from wandelscript.grammar.wandelscriptParserVisitor import wandelscriptParserVisitor
 from wandelscript.metamodel import Rule
-from wandelscript.utils import ensure_trailing_newline
+from wandelscript.utils.runtime import ensure_trailing_newline
 
 
 def tracked(func):

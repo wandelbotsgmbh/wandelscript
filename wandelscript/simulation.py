@@ -146,7 +146,9 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
             [mounting.orientation.w, mounting.orientation.x, mounting.orientation.y, mounting.orientation.z],
         )
 
-    async def _plan(self, actions: list[Action], tcp: str) -> api.models.JointTrajectory:
+    async def _plan(
+        self, actions: list[Action], tcp: str, start_joint_position: tuple[float, ...] | None = None
+    ) -> api.models.JointTrajectory:
         """
         A simple example planner that:
           1. Starts from [0, 0, 0, 0, 0, 0].
@@ -156,7 +158,9 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
         """
 
         # We assume 6-DOF for this example
-        current_joints = np.zeros(6, dtype=float)
+        current_joints = (
+            np.zeros(6, dtype=float) if start_joint_position is None else np.array(start_joint_position, dtype=float)
+        )
 
         joint_positions = []
         times = []
@@ -323,7 +327,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
         flange2robot = self._trajectory[-1]
         # TODO: calculate tool offset
         # if tcp:
-        #    tcp2flange = (await self.get_tcps())[tcp].to_versor()
+        #    tcp2flange = pose_to_versor((await self.get_tcps())[tcp])
         #    tcp2robot = flange2robot & tcp2flange
         # else:
         #    tcp2robot = flange2robot

@@ -16,6 +16,14 @@ class JointPointToPoint(Connector.Impl, func_name="joint_ptp"):
 
 
 @dataclass(repr=False)
+class JointPoint2Point(JointPointToPoint, func_name="joint_p2p"):
+    def __call__(
+        self, start: Pose | None, end: tuple[float, ...], args: Connector.Impl.Args, motion_settings: MotionSettings
+    ) -> JointPTP:
+        return jnt(end, settings=motion_settings)
+
+
+@dataclass(repr=False)
 class Line(Connector.Impl, func_name="line"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
@@ -24,6 +32,13 @@ class Line(Connector.Impl, func_name="line"):
 
 
 class PointToPoint(Line, func_name="ptp"):
+    def __call__(
+        self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
+    ) -> PTP:
+        return ptp(end.to_tuple(), settings=motion_settings)
+
+
+class Point2Point(PointToPoint, func_name="p2p"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> PTP:

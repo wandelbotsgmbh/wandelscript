@@ -67,8 +67,18 @@ def make_settings_modifier(name):
     return modifier
 
 
-for setting in MotionSettings.model_fields:
-    register_builtin_func(name=setting, pass_context=True)(make_settings_modifier(setting))
+for field_name in MotionSettings.model_fields:
+    print(field_name)
+    register_builtin_func(name=field_name, pass_context=True)(make_settings_modifier(field_name))
+    match field_name:
+        case "tcp_velocity_limit":
+            register_builtin_func(name="velocity", pass_context=True)(make_settings_modifier(field_name))
+        case "tcp_acceleration_limit":
+            register_builtin_func(name="acceleration", pass_context=True)(make_settings_modifier(field_name))
+        case "position_zone_radius":
+            register_builtin_func(name="blending", pass_context=True)(make_settings_modifier(field_name))
+        case _:
+            pass
 
 
 @register_builtin_func(pass_context=True)

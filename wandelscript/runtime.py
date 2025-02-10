@@ -32,7 +32,7 @@ from wandelscript import serializer
 from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.frames import FrameSystem
 from wandelscript.types import Frame, as_builtin_type
-from wandelscript.utils import stoppable_run
+from wandelscript.utils.runtime import stoppable_run
 
 DEFAULT_CALL_STACK_SIZE = 64
 """Default size of the call stack. Currently arbitrary."""
@@ -394,7 +394,7 @@ class ActionQueue:
                 tcp = self._tcp.get(motion_group_id, None) or await motion_group.active_tcp_name()
 
                 # TODO: not only pass motions, do we need the CombinedActions anymore?
-                joint_trajectory = await motion_group.plan(container.motions, tcp)
+                joint_trajectory = await motion_group.plan(container.motions, tcp, None)
                 motion_iter = motion_group.execute(joint_trajectory, tcp, container.motions)
                 planned_motions[motion_group_id] = self.trigger_actions(motion_iter, container.actions.copy())
             else:

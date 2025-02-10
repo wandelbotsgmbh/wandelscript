@@ -3,6 +3,7 @@
 import operator
 from enum import Enum
 from typing import Any, TypeVar
+from wandelscript.utils.pose import invert
 
 T = TypeVar("T")
 
@@ -125,7 +126,7 @@ class Sign(UnaryOperator):
 def invert(a: T) -> T:
     if isinstance(a, bool):
         return not a  # type: ignore
-    return ~a  # type: ignore
+    return invert(a)
 
 
 class Inverse(UnaryOperator):

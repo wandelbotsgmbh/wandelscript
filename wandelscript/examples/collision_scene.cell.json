@@ -18,17 +18,41 @@
       "default": true,
       "identifier": "robot",
       "initial_pose": {
-        "position": [0, 0, 0],
-        "orientation": [0, 0, 0]
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "orientation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
       },
       "tools": {
         "flange": {
-          "position": [0, 0, 0],
-          "orientation": [0, 0, 0]
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
         },
         "tool": {
-          "position": [0, 0, 2],
-          "orientation": [0, 0, 0]
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 2
+          },
+          "orientation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
         }
       }
     },
@@ -38,8 +62,16 @@
       "static_colliders": {
         "sphere_default": {
           "pose": {
-            "position": [500, 400, 1200],
-            "orientation": [0, 0, 0]
+            "position": {
+              "x": 500,
+              "y": 400,
+              "z": 1200
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
           },
           "shape": {
             "type": "sphere",
@@ -73,8 +105,16 @@
       "static_colliders": {
         "sphere_default": {
           "pose": {
-            "position": [500, 400, 1200],
-            "orientation": [0, 0, 0]
+            "position": {
+              "x": 500,
+              "y": 400,
+              "z": 1200
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
           },
           "shape": {
             "type": "sphere",

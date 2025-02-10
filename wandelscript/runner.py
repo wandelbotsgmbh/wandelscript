@@ -23,7 +23,7 @@ from wandelscript.exception import NotPlannableError
 from wandelscript.metamodel import Skill
 from wandelscript.models import Path
 from wandelscript.runtime import ExecutionContext, PlannableActionQueue, current_execution_context_var
-from wandelscript.utils import Tee, stoppable_run
+from wandelscript.utils.runtime import Tee, stoppable_run
 
 
 class ProgramRunState(Enum):

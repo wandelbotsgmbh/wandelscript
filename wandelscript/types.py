@@ -1,9 +1,11 @@
 """Types and constructs for internal use."""
 
+from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from functools import singledispatch
 from typing import Any, Callable, Generic, Mapping, TypeVar, Union
+from wandelscript.utils.pose import pose_to_versor
 
 import numpy as np
 import pydantic
@@ -17,10 +19,10 @@ class Record(pydantic.BaseModel, Mapping):
 
     model_config = pydantic.ConfigDict(frozen=True)
 
-    data: dict[str, "ElementType"] = {}
+    data: dict[str, ElementType] = field(default_factory=dict)
 
     @staticmethod
-    def from_dict(d: dict[str, "ElementType"]) -> "Record":
+    def from_dict(d: dict[str, ElementType]) -> Record:
         return Record(
             data={key: Record.from_dict(value) if isinstance(value, dict) else value for key, value in d.items()}
         )
@@ -32,11 +34,11 @@ class Record(pydantic.BaseModel, Mapping):
         return self.data.get(key, *args, **kwargs)
 
     # Support bracket notation: r['a']
-    def __getitem__(self, key: str) -> "ElementType":
+    def __getitem__(self, key: str) -> ElementType:
         return self.data[key]
 
     # Support dot notation: r.a
-    def __getattr__(self, key: str) -> "ElementType":
+    def __getattr__(self, key: str) -> ElementType:
         if key in self.data:
             return self.data[key]
         raise AttributeError(f"Record has no attribute '{key}'")
@@ -69,7 +71,7 @@ class Frame:
     def __rmatmul__(self, other: Pose):
         assert isinstance(other, Pose)
         new_frame = Frame(uuid.uuid4().hex, self.system)
-        self.system[self.name, new_frame.name] = other.to_versor()
+        self.system[self.name, new_frame.name] = pose_to_versor(other)
         return new_frame
 
 

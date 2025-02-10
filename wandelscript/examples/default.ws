@@ -15,9 +15,9 @@ sync
 velocity(200)
 
 for i = 0..3:
-    move via p2p() to home
+    move via ptp() to home
     # Move to a pose concatenating the home pose
     move via line() to (50, 20, 30, 0, 0, 0) :: home
     move via line() to (100, 20, 30, 0, 0, 0) :: home
     move via line() to (50, 20, 30, 0, 0, 0) :: home
-    move via p2p() to home
+    move via ptp() to home
