@@ -62,10 +62,10 @@ def naive_joints_to_pose(joints: tuple[float, ...]) -> Pose:
     ry = math.degrees(j5)
     rz = math.degrees(j6)
 
-    return Pose(position=Vector3d(x=x, y=y, z=z), orientation=Vector3d(x=rx, y=ry, z=rz))
+    return Pose((x, y, z, rx, ry, rz))
 
 
-class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
+class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
     """A simulated robot cell without a camera"""
 
     class Configuration(ConfigurablePeriphery.Configuration):
@@ -85,9 +85,7 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
 
     def __init__(self, configuration: Configuration = Configuration()):
         if not configuration.tools:
-            configuration_dict = configuration.model_dump()
-            configuration_dict.update(tools={"Flange": Pose((0, 0, 0, 0, 0, 0))})
-            configuration = self.Configuration(**configuration_dict)
+            configuration = configuration.model_copy(update={"tools": {"Flange": Pose((0, 0, 0, 0, 0, 0))}})
         super().__init__(configuration=configuration)
         self._stepsize = configuration.stepsize if configuration.stepsize else math.inf
         self._param = 1
@@ -243,7 +241,7 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
         joint_trajectory: models.JointTrajectory,
         tcp: str,
         actions: list[Action],
-        on_movement: Callable[[MotionState], None],
+        on_movement: Callable[[MotionState | None], None],
         movement_controller: MovementController | None,
     ):
         """
@@ -294,6 +292,9 @@ class SimulatedRobot(AbstractRobot, ConfigurablePeriphery):
             self._trajectory.append(motion_state)
 
             on_movement(motion_state)
+
+        # Append the last motion state to the trajectory
+        on_movement(None)
 
     async def tcps(self) -> list[api.models.RobotTcp]:
         return [

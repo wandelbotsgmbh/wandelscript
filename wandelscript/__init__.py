@@ -18,14 +18,6 @@ from wandelscript.metamodel import Skill
 from wandelscript.runner import ProgramRun, ProgramRunner, ProgramRunState, run
 from wandelscript.runtime import ActionQueue, Store
 
-# The Wandelscript language version. This is currently updated manually following the Semantic Versioning Specification.
-# See: https://semver.org/
-# Given a version number MAJOR.MINOR.PATCH, increment the:
-# 1. MAJOR version when you make incompatible API changes
-# 2. MINOR version when you add functionality in a backward compatible manner
-# 3. PATCH version when you make backward compatible bug fixes
-__version__ = "1.2.0"
-
 
 def analyze(code: str):
     Skill.from_code(code)
