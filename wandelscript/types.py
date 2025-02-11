@@ -1,17 +1,18 @@
 """Types and constructs for internal use."""
 
 from __future__ import annotations
+
 import uuid
 from dataclasses import dataclass, field
 from functools import singledispatch
 from typing import Any, Callable, Generic, Mapping, TypeVar, Union
-from wandelscript.utils.pose import pose_to_versor
 
 import numpy as np
 import pydantic
 from nova.types import Pose, Vector3d
 
 from wandelscript.frames import FrameSystem
+from wandelscript.utils.pose import pose_to_versor
 
 
 class Record(pydantic.BaseModel, Mapping):

@@ -1,7 +1,8 @@
+import pytest
+from nova.actions import PTP, JointPTP
+
 from wandelscript.simulation import SimulatedRobot, naive_joints_to_pose
 from wandelscript.types import Pose
-import pytest
-from nova.actions import JointPTP, PTP
 
 
 def test_simulated_robot():

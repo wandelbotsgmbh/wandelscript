@@ -1,6 +1,6 @@
-from nova.types import Pose
-from geometricalgebra import cga3d
 import numpy as np
+from geometricalgebra import cga3d
+from nova.types import Pose
 
 
 def pose_to_versor(pose: Pose) -> cga3d.Vector:

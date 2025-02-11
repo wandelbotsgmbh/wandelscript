@@ -3,6 +3,7 @@
 import operator
 from enum import Enum
 from typing import Any, TypeVar
+
 from wandelscript.utils.pose import invert
 
 T = TypeVar("T")

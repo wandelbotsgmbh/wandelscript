@@ -9,7 +9,6 @@ from functools import cache, reduce
 from itertools import chain
 from pathlib import Path as FilePath
 from typing import Any, ClassVar, Generic, Literal, TypeVar
-from wandelscript.utils.pose import pose_to_versor, versor_to_pose
 
 import anyio
 from nova.actions import CallAction, MotionSettings, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
@@ -40,6 +39,7 @@ from wandelscript.operators import (
 from wandelscript.runtime import ExecutionContext, Store
 from wandelscript.simulation import SimulatedRobotCell, UnknownPose
 from wandelscript.types import Closure, Frame
+from wandelscript.utils.pose import pose_to_versor, versor_to_pose
 
 ElementType = TypeVar("ElementType", bound=t.ElementType)
 
