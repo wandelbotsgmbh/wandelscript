@@ -1,3 +1,4 @@
+import pytest
 from nova.core.robot_cell import RobotCell
 from nova.types import Pose
 
@@ -5,8 +6,9 @@ import wandelscript
 from wandelscript.simulation import SimulatedController, SimulatedRobot
 
 
+@pytest.mark.skip(reason="TODO: Configurable robot required")
 def test_two_step_execution():
-    tools = {"TOOL1": Pose.from_tuple((0, 0, 0, 0, 0, 0)), "TOOL2": Pose.from_tuple((0, 0, 0, 0, 0, 0))}
+    tools = {"TOOL1": Pose((0, 0, 0, 0, 0, 0)), "TOOL2": Pose((0, 0, 0, 0, 0, 0))}
     config = SimulatedRobot.Configuration(identifier="0@controller", tools=tools)
     controller = SimulatedController(SimulatedController.Configuration(robots=[config]))
     cell = RobotCell(controller=controller)

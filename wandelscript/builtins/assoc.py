@@ -53,7 +53,7 @@ def _(vec: Vector3d, key: int, val: float) -> Vector3d:
 def _(pose: Pose, key: int, val: float) -> Pose:
     tmp = list(pose.to_tuple())
     tmp[key] = val
-    return Pose.from_tuple(tmp)
+    return Pose(tmp)
 
 
 # TODO: In the future we want to improve record manipulation. For example we could use frozen keyword like:

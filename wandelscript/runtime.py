@@ -11,21 +11,12 @@ from typing import Any
 import anyio
 from aiostream import stream
 from loguru import logger
-from nova.actions import (
-    Action,
-    ActionLocation,
-    CallAction,
-    CombinedActions,
-    Motion,
-    MotionSettings,
-    ReadAction,
-    ReadJointsAction,
-    ReadPoseAction,
-    WriteAction,
-)
+from nova.actions import Action, CombinedActions
+from nova.actions.container import ActionLocation
+from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
+from nova.actions.motions import Motion
 from nova.core.robot_cell import AbstractRobot, Device, RobotCell
-from nova.types import Pose
-from nova.types.state import MotionState
+from nova.types import MotionSettings, MotionState, Pose
 
 from wandelscript import exception as wsexception
 from wandelscript import serializer
@@ -394,8 +385,16 @@ class ActionQueue:
                 tcp = self._tcp.get(motion_group_id, None) or await motion_group.active_tcp_name()
 
                 # TODO: not only pass motions, do we need the CombinedActions anymore?
-                joint_trajectory = await motion_group.plan(container.motions, tcp, None)
-                motion_iter = motion_group.execute(joint_trajectory, tcp, container.motions)
+                joint_trajectory = await motion_group.plan(
+                    actions=container.motions, tcp=tcp, start_joint_position=None, optimizer_setup=None
+                )
+                motion_iter = motion_group.execute(
+                    joint_trajectory=joint_trajectory,
+                    tcp=tcp,
+                    actions=container.motions,
+                    on_movement=None,
+                    movement_controller=None,
+                )
                 planned_motions[motion_group_id] = self.trigger_actions(motion_iter, container.actions.copy())
             else:
                 # When the motion trajectory is empty, execute the actions

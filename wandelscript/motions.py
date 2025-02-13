@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
-from nova.actions import PTP, Circular, JointPTP, Linear, MotionSettings, cir, jnt, lin, ptp
-from nova.types import Pose, Vector3d
+from nova.actions import cir, jnt, lin, ptp
+from nova.actions.motions import PTP, Circular, JointPTP, Linear
+from nova.types import MotionSettings, Pose, Vector3d
 
 from wandelscript.exception import GenericRuntimeError
 from wandelscript.metamodel import Connector

@@ -6,7 +6,8 @@ from typing import Any, Callable, Literal, SupportsIndex
 
 import numpy as np
 from nova import api
-from nova.actions import PTP, Action, Circular, CombinedActions, JointPTP, Linear, MovementController
+from nova.actions import Action, CombinedActions, MovementController
+from nova.actions.motions import PTP, Circular, JointPTP, Linear
 from nova.core.io import ValueType
 from nova.core.robot_cell import (
     AbstractController,
@@ -18,7 +19,7 @@ from nova.core.robot_cell import (
     RobotCell,
     Timer,
 )
-from nova.types import MotionState, Pose, RobotState, Vector3d
+from nova.types import MotionState, Pose, RobotState
 from scipy.spatial.transform import Rotation
 from wandelbots_api_client import models
 
@@ -81,13 +82,13 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
         identifier: str = "0@controller"
         initial_pose: Pose = Pose((0, 0, 0, 0, 0, 0))
         tools: dict[str, Pose] | None = None
-        stepsize: float = 0
+        step_size: float = 0
 
     def __init__(self, configuration: Configuration = Configuration()):
         if not configuration.tools:
             configuration = configuration.model_copy(update={"tools": {"Flange": Pose((0, 0, 0, 0, 0, 0))}})
         super().__init__(configuration=configuration)
-        self._stepsize = configuration.stepsize if configuration.stepsize else math.inf
+        self._step_size = configuration.step_size if configuration.step_size else math.inf
         self._param = 1
         self._trajectory: list[MotionState] = (
             []
@@ -96,7 +97,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
         )
         # Added and used for tests of Wandelscript. In every planned_motion_iter() a motion trajectory is appended to
         # this list. Every motion trajectory corresponds to blocs of wandelscript code between sync commands.
-        self.record_of_commands: list[CombinedActions] = []
+        self.record_of_commands: list[list[Action]] = []
 
     async def get_optimizer_setup(self, tcp_name: str) -> api.models.OptimizerSetup:
         tcp_pos = api.models.Vector3d(x=0, y=0, z=0)
@@ -147,7 +148,11 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
         )
 
     async def _plan(
-        self, actions: list[Action], tcp: str, start_joint_position: tuple[float, ...] | None = None
+        self,
+        actions: list[Action] | Action,
+        tcp: str,
+        start_joint_position: tuple[float, ...] | None = None,
+        optimizer_setup: api.models.OptimizerSetup | None = None,
     ) -> api.models.JointTrajectory:
         """
         A simple example planner that:
@@ -267,6 +272,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
         """
 
         self._trajectory = []
+        self.record_of_commands.append(actions)
 
         # Start time for optional synchronization
         start_time = time.time()

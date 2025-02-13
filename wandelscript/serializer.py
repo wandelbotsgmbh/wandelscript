@@ -6,6 +6,7 @@ from typing import Union
 
 import numpy as np
 import pydantic
+from nova import api
 from nova import types as t
 from PIL import Image
 
@@ -24,7 +25,7 @@ def encode(obj):
     Returns: the pydantic model
 
     Examples:
-    >>> encode(t.Pose(position=(1, 2, 3), orientation=(4, 5, 6)))
+    >>> encode(t.Pose((1, 2, 3, 4, 5, 6)))
     Pose(pose=(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))
     >>> encode(t.Vector3d(x=1, y=2, z=3))
     Vector3d(vector3d=(1.0, 2.0, 3.0))
@@ -47,7 +48,7 @@ def decode(obj):
 
     Examples:
     >>> decode(Pose(pose=(1, 2, 3, 4, 5, 6)))
-    Pose(position=Position(x=1.0, y=2.0, z=3.0), orientation=Orientation(x=4.0, y=5.0, z=6.0))
+    Pose(position=Vector3d(x=1.0, y=2.0, z=3.0), orientation=Vector3d(x=4.0, y=5.0, z=6.0))
     >>> decode(Vector3d(vector3d=(1, 2, 3)))
     Vector3d(x=1.0, y=2.0, z=3.0)
     >>> decode({ "id": "id1", "state": "stopped", "data": { "a": 1, "b": 2 } })
@@ -104,9 +105,9 @@ class Vector3d(pydantic.BaseModel):
     """Position [x, y, z] in 3D space
 
     Examples:
-    >>> Vector3d(position=(1, 2, 3))
-    Position(position=(1.0, 2.0, 3.0))
-    >>> Vector3d(position=(1, 2, 3, 4)) # doctest: +IGNORE_EXCEPTION_DETAIL
+    >>> Vector3d(vector3d=(1, 2, 3))
+    Vector3d(vector3d=(1.0, 2.0, 3.0))
+    >>> Vector3d(vector3d=(1, 2, 3, 4)) # doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
     pydantic.error_wrappers.ValidationError: 1 validation error for Position
@@ -150,12 +151,12 @@ class CollisionScene(pydantic.BaseModel):
     """Collision scene
 
     Examples:
-    >>> CollisionScene(collision_scene=t.CollisionScene())
-    CollisionScene(type='collision_scene', collision_scene=CollisionScene(static_colliders={}, robots={}))
+    >>> CollisionScene(collision_scene=api.models.CollisionScene())
+    CollisionScene(type='collision_scene', collision_scene=CollisionScene(colliders=None, motion_groups=None))
     """
 
     type: str = "collision_scene"
-    collision_scene: t.CollisionScene
+    collision_scene: api.models.CollisionScene
 
 
 @decode.register

@@ -1,7 +1,7 @@
 import time
 from typing import Any
 
-from nova.actions import MotionSettings
+from nova.types import MotionSettings
 
 import wandelscript.builtins.array
 import wandelscript.builtins.assoc
@@ -10,6 +10,8 @@ import wandelscript.builtins.fetch
 import wandelscript.builtins.math
 import wandelscript.builtins.pose
 import wandelscript.builtins.string
+
+# import wandelscript.builtins.fs
 import wandelscript.builtins.wait
 from wandelscript.metamodel import register_builtin_func
 from wandelscript.types import Frame

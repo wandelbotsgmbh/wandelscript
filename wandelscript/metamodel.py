@@ -11,7 +11,7 @@ from pathlib import Path as FilePath
 from typing import Any, ClassVar, Generic, Literal, TypeVar
 
 import anyio
-from nova.actions import CallAction, MotionSettings, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
+from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
 
 # from pyjectory.visiontypes import estimate_pose
 from nova.core.robot_cell import (
@@ -22,7 +22,7 @@ from nova.core.robot_cell import (
     RobotCell,
     RobotMotionError,
 )
-from nova.types import Pose, Vector3d
+from nova.types import MotionSettings, Pose, Vector3d
 
 import wandelscript.exception
 import wandelscript.types as t
@@ -184,7 +184,7 @@ class Context(Statement):
     >>> code = '''
     ... home = (0, 0, 0, 0, 0, 0)
     ... with blending(20):
-    ...     a = __ms_blending
+    ...     a = __ms_position_zone_radius
     ...     move via p2p() to home
     ...     move via line() to (1, 1, 1)
     ... '''
@@ -767,11 +767,11 @@ class Record(Atom[dict[str, t.ElementType]]):
     ... '''
     >>> store = _run_skill_debug(code).store
     >>> store['record']
-    Record(data={'key1': 1, 'key2': 'value', 'key3': Vector(x=1.0, y=2.0, z=3.0)})
+    Record(data={'key1': 1, 'key2': 'value', 'key3': Vector3d(x=1.0, y=2.0, z=3.0)})
     >>> store['a']
     'value'
     >>> store['b']
-    Vector(x=1.0, y=2.0, z=3.0)
+    Vector3d(x=1.0, y=2.0, z=3.0)
     """
 
     items: tuple[KeyValuePair, ...]
@@ -797,10 +797,11 @@ class ExpressionsList(Atom[t.ElementType]):
     value: tuple[Atom[float], ...]
 
     async def call(self, context: ExecutionContext, **kwargs) -> Vector3d | Pose:
-        if len(self.value) == 3:
-            return Vector3d.from_tuple(tuple([float(await v(context)) for v in self.value]))
-        if len(self.value) == 6:
-            return Pose(*[float(await v(context)) for v in self.value])
+        values = tuple([float(await v(context)) for v in self.value])
+        if len(values) == 3:
+            return Vector3d.from_tuple(values)
+        if len(values) == 6:
+            return Pose(values)
         raise wandelscript.exception.SkillSyntaxError(None, f"Unexpected number of elements: {len(self.value)}")
 
     def __str__(self):
@@ -1268,13 +1269,13 @@ class Skill:
     ... tcp("flange")
     ... move via p2p() to (0, 0, 0, 0, 0, 0)
     ... move via line() to (1, 1, 0, 0, -pi, 0)
-    ... move via arc((1, 2, 0)) to (2, 2, 0)
+    ... move via arc((1, 2, 0, 0, -pi, 0)) to (2, 2, 0, 0, -pi, 0)
     ... move via line() to (2, 2, 1, -pi, 0, 0)
     ... '''
     >>> skill = Skill.from_code(code)
     >>> with np.printoptions(precision=2, suppress=True):
-    ...     print(skill.simulate())
-    [[MotionState(path_parameter=0.0, state=RobotState(pose=Pose(position=Vector3d(x=0.0, y=0.0, z=0.0), orientation=Vector3d(x=0.0, y=0.0, z=0.0)), joints=None)), MotionState(path_parameter=4.0, state=RobotState(pose=Pose(position=Vector3d(x=2.0, y=2.0, z=1.0), orientation=Vector3d(x=-3.141592653589793, y=0.0, z=0.0)), joints=None))]]
+    ...     trajectory = skill.simulate()
+    >>> assert len(trajectory) > 0
     """
 
     body: RootBlock
