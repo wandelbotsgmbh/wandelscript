@@ -39,4 +39,4 @@ jobs:
 
       - name: Run tests
         run: |
-          PYTHONPATH=. poetry run pytest -rs -v
+          PYTHONPATH=. poetry run pytest wandelscript/
