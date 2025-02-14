@@ -1891,13 +1891,13 @@ websockets = "*"
 
 [[package]]
 name = "wandelbots-nova"
-version = "0.34.0"
+version = "0.35.0"
 description = "Official Python SDK for the Wandelbots"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "wandelbots_nova-0.34.0-py3-none-any.whl", hash = "sha256:45a2afa20c62f47cda5b41c835a4ad58a8612edd4dd78e8b4d4478536c173876"},
-    {file = "wandelbots_nova-0.34.0.tar.gz", hash = "sha256:57d7a5778a6f4213b17d854b43e5459b8dd4e4548b90c7478cc6f66d6328a697"},
+    {file = "wandelbots_nova-0.35.0-py3-none-any.whl", hash = "sha256:da6d09e54507757345e0e86ecdd75692ae405e2bb428b4034beb04ad7a7ec804"},
+    {file = "wandelbots_nova-0.35.0.tar.gz", hash = "sha256:11cdecb500e3d65ff04d8d5e6e001fc3b8d09a0971398005940fb51855ef3568"},
 ]
 
 [package.dependencies]
@@ -2118,4 +2118,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "afa06e6a42951705ca7b76f9d4b55d76c41ec2455524ab7e253c31b53d848419"
+content-hash = "2662e0b038ed3b32cb312f33423d4a77755d199e496918212689a5a1202ca46b"
