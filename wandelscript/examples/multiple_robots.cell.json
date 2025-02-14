@@ -8,25 +8,65 @@
           "type":"simulated_robot",
           "identifier":"0@controller",
           "initial_pose":{
-            "position":[ 0, 0, 0 ],
-            "orientation":[ 0, 0, 0 ]
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
           },
           "tools":{
             "flange":{
-              "position":[ 0, 0, 0 ],
-              "orientation":[ 0, 0, 0 ]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             },
             "tcp1":{
-              "position":[ 0, 0, 2 ],
-              "orientation":[ 0, 0, 0 ]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 2
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             },
             "tool100":{
-              "position":[ 0, 0, 2 ],
-              "orientation":[ 0, 0, 0 ]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 2
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             },
             "TOOL 0":{
-              "position":[ 0, 0, 2 ],
-              "orientation":[ 0, 0, 0 ]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 2
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             }
           }
         },
@@ -34,25 +74,65 @@
           "type":"simulated_robot",
           "identifier":"1@controller",
           "initial_pose":{
-            "position":[ 0, 0, 0 ],
-            "orientation":[ 0, 0, 0 ]
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
           },
           "tools":{
             "flange":{
-              "position":[ 0, 0, 0 ],
-              "orientation":[ 0, 0, 0 ]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             },
             "tcp2":{
-              "position":[ 0, 0, 2 ],
-              "orientation":[ 0, 0, 0 ]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 2
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             },
             "tool100":{
-              "position":[ 0, 0, 2 ],
-              "orientation":[ 0, 0, 0 ]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 2
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             },
             "TOOL 0":{
-              "position":[ 0, 0, 2 ],
-              "orientation":[ 0, 0, 0 ]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 2
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             }
           }
         }

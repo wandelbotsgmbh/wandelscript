@@ -21,17 +21,41 @@
           "type":"simulated_robot",
           "identifier":"0@controller",
           "initial_pose":{
-            "position":[0, 0, 0],
-            "orientation":[0, 0, 0]
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
           },
           "tools":{
             "flange_renamed":{
-              "position":[0, 0, 0],
-              "orientation":[0, 0, 0]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             },
             "pentip":{
-              "position":[0, 0, 169],
-              "orientation":[0, 0, 0]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 169
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             }
           }
         }

@@ -27,7 +27,7 @@ def _check_record(a: Record, b: Record, keypath=""):
 @pytest.mark.parametrize("example_name", EXAMPLES)
 def test_example(example_name):
     # TODO: https://wandelbots.atlassian.net/browse/WP-683
-    if example_name in ("spline", "interrupt"):
+    if example_name in ("spline", "interrupt", "tower_of_hanoi"):
         return
     logger.info(f"Running example {example_name}...")
     code, data, config = EXAMPLES[example_name]

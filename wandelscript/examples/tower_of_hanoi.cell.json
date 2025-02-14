@@ -5,15 +5,6 @@
       "identifier": "timer"
     },
     {
-      "type": "database",
-      "identifier": "hanoi_state",
-      "initial_vars": {
-        "0": 3,
-        "1": 0,
-        "2": 0
-      }
-    },
-    {
       "type": "simulated_controller",
       "identifier": "controller",
       "robots": [
@@ -21,17 +12,41 @@
           "type": "simulated_robot",
           "identifier": "robot",
           "initial_pose": {
-            "position": [0, 0, 0],
-            "orientation": [0, 0, 0]
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
           },
           "tools": {
             "flange": {
-              "position": [0, 0, 0],
-              "orientation": [0, 0, 0]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             },
             "tool": {
-              "position": [0, 0, 2],
-              "orientation": [0, 0, 0]
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 2
+              },
+              "orientation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
             }
           }
         }
