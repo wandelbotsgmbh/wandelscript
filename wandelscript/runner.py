@@ -235,7 +235,7 @@ class ProgramRunner:
                     stop_event,
                     default_robot=self._default_robot,
                     default_tcp=self._default_tcp,
-                    initial_vars=self._initial_store,
+                    initial_vars=self._initial_store,  # type: ignore
                 )
 
                 if self._use_plannable_context:

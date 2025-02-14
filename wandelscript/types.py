@@ -56,7 +56,7 @@ class Record(pydantic.BaseModel, Mapping):
 
 # All types that can be used within Wandelscript
 ElementType = Union[bool, int, float, Vector3d, Pose, str, Record, tuple, dict]
-BoundedElementType = TypeVar("ElementType", bound=ElementType)
+BoundedElementType = TypeVar("BoundedElementType", bound=ElementType)
 
 
 @dataclass(frozen=True)

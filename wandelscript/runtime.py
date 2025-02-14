@@ -22,7 +22,7 @@ from wandelscript import exception as wsexception
 from wandelscript import serializer
 from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.frames import FrameSystem
-from wandelscript.types import Frame, as_builtin_type
+from wandelscript.types import Frame, as_builtin_type, ElementType
 from wandelscript.utils.runtime import stoppable_run
 
 DEFAULT_CALL_STACK_SIZE = 64
@@ -77,15 +77,15 @@ class Store:
     def update_local(self, other: Mapping[str, Any]):
         self._data.update(other)
 
-    def scope_of_name(self, name: str) -> "Store" | None:
+    def scope_of_name(self, name: str) -> Store | None:
         return next((scope for scope in self.scope_chain() if scope.contains_local(name)), None)
 
-    def scope_chain(self) -> Generator["Store"]:
+    def scope_chain(self) -> Generator[Store]:
         yield self
         if self._parent:
             yield from self._parent.scope_chain()
 
-    def descent(self, init_vars: Mapping[str, Any] | None = None) -> "Store":
+    def descent(self, init_vars: Mapping[str, Any] | None = None) -> Store:
         return Store(init_vars=init_vars, parent=self)
 
     @property
@@ -125,7 +125,7 @@ class ExecutionContext:
         stop_event: anyio.Event,
         default_robot: str | None = None,
         default_tcp: str | None = None,
-        initial_vars: dict[str, serializer.ElementType] | None = None,
+        initial_vars: dict[str, ElementType] | None = None,
         debug: bool = False,
     ):
         self.robot_cell: RobotCell = robot_cell

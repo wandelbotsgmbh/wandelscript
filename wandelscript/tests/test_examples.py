@@ -19,7 +19,7 @@ def _check_record(a: Record, b: Record, keypath=""):
             logger.warning(f"Key {k} not found in b")
             continue
         if isinstance(v, Record):
-            _check_record(v, b[k], f"{keypath}.{k}")
+            _check_record(v, b[k], f"{keypath}.{k}")  # type: ignore
             continue
         assert v == b[k], f"{keypath}.{k}"
 

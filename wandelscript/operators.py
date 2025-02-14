@@ -125,7 +125,7 @@ class Sign(UnaryOperator):
 def invert(a: T) -> T:
     if isinstance(a, bool):
         return not a  # type: ignore
-    return ~a
+    return ~a  # type: ignore
 
 
 class Inverse(UnaryOperator):

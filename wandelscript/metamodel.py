@@ -12,8 +12,6 @@ from typing import Any, ClassVar, Generic, Literal, TypeVar
 
 import anyio
 from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
-
-# from pyjectory.visiontypes import estimate_pose
 from nova.core.robot_cell import (
     AbstractRobot,
     AsyncCallableDevice,
@@ -776,7 +774,7 @@ class Record(Atom[dict[str, t.ElementType]]):
 
     items: tuple[KeyValuePair, ...]
 
-    async def call(self, context: ExecutionContext, **kwargs) -> t.Record:
+    async def call(self, context: ExecutionContext, **kwargs) -> t.Record:  # type: ignore
         return t.Record(data={pair.key: await pair.value(context) for pair in self.items})
 
 
@@ -1409,7 +1407,7 @@ class FunctionCall(Atom[ElementType], Statement):
         if self.name == "frame":
             assert len(arguments) == 1
             assert isinstance(arguments[0], str)
-            return Frame(arguments[0], context.store.frame_system)
+            return Frame(arguments[0], context.store.frame_system)  # type: ignore
         if func := context.store.get(self.name, None):
             if isinstance(func, Pose):
                 if isinstance(arguments[0], Pose):
