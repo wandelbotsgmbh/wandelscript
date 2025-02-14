@@ -22,7 +22,7 @@ from wandelscript import exception as wsexception
 from wandelscript import serializer
 from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.frames import FrameSystem
-from wandelscript.types import Frame, as_builtin_type, ElementType
+from wandelscript.types import ElementType, Frame, as_builtin_type
 from wandelscript.utils.runtime import stoppable_run
 
 DEFAULT_CALL_STACK_SIZE = 64
