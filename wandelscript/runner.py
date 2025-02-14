@@ -1,4 +1,3 @@
-# pylint: disable=too-many-statements, too-many-instance-attributes
 import contextlib
 import io
 import sys
@@ -7,6 +6,7 @@ import time
 import traceback as tb
 import uuid
 from collections.abc import Awaitable, Callable
+from dataclasses import field
 from datetime import datetime
 from enum import Enum
 
@@ -14,19 +14,16 @@ import anyio
 import anyio.abc
 import pydantic
 from exceptiongroup import ExceptionGroup
-from grpclib.client import GRPCError
 from loguru import logger
-from pyjectory import serializer
-from pyriphery.pyrae.clients.motion import MotionException
-from pyriphery.robotics import ConfigurablePeriphery, RobotCell
-from wb_rae_betterproto.wb.rae.v1 import types as rae_types
+from nova.api import models
+from nova.core.robot_cell import ConfigurablePeriphery, RobotCell
 
-from wandelscript.action_queue import PlannableActionQueue
+from wandelscript import serializer
 from wandelscript.exception import NotPlannableError
 from wandelscript.metamodel import Skill
 from wandelscript.models import Path
-from wandelscript.runtime import ExecutionContext, current_execution_context_var
-from wandelscript.utils import Tee, stoppable_run
+from wandelscript.runtime import ExecutionContext, PlannableActionQueue, current_execution_context_var
+from wandelscript.utils.runtime import Tee, stoppable_run
 
 
 class ProgramRunState(Enum):
@@ -73,12 +70,12 @@ class ProgramRun(pydantic.BaseModel):
     state: ProgramRunState
     logs: str = ""
     stdout: str = ""
-    store: dict[str, serializer.ElementType] = {}
+    store: dict[str, serializer.ElementType] = field(default_factory=dict)
     error: str | None = None
     traceback: str | None = None
     start_time: float | None = None
     end_time: float | None = None
-    execution_results: list[ExecutionResult] = []
+    execution_results: list[ExecutionResult] = field(default_factory=list)
 
 
 class ProgramRunner:
@@ -162,11 +159,13 @@ class ProgramRunner:
         message = f"{type(exc)}: {str(exc)}"
         traceback = tb.format_exc()
         logger.error(f"Skill {self.id} failed")
-        if isinstance(exc, MotionException):
-            logger.error("MotionException was raised. Suppressing output since it is too long.")
-        else:
-            logger.error(traceback)
-            logger.error(message)
+        # TODO: whats the equivalent here for the generated API?
+        # from pyriphery.pyrae.clients.motion import MotionException
+        # if isinstance(exc, MotionException):
+        #    logger.error("MotionException was raised. Suppressing output since it is too long.")
+        # else:
+        #    logger.error(traceback)
+        #    logger.error(message)
         self._skill_run.error = message
         self._skill_run.traceback = traceback
         self._skill_run.state = ProgramRunState.FAILED
@@ -180,13 +179,11 @@ class ProgramRunner:
     ):
         assert self.execution_context is not None
 
-        def state_is_estop(state: rae_types.RobotControllerState):
-            acceptable_safety_states = [
-                rae_types.RobotControllerStateSafetyState.SAFETY_STATE_NORMAL,
-                rae_types.RobotControllerStateSafetyState.SAFETY_STATE_REDUCED,
-            ]
+        def state_is_estop(state_: models.RobotControllerState):
+            # See: models.RobotControllerState.safety_state
+            acceptable_safety_states = ["SAFETY_NORMAL", "SAFETY_REDUCED"]
             return (
-                isinstance(state, rae_types.RobotControllerState) and state.safety_state not in acceptable_safety_states
+                isinstance(state_, models.RobotControllerState) and state_.safety_state not in acceptable_safety_states
             )
 
         with monitoring_scope:
@@ -238,7 +235,7 @@ class ProgramRunner:
                     stop_event,
                     default_robot=self._default_robot,
                     default_tcp=self._default_tcp,
-                    initial_vars=self._initial_store,
+                    initial_vars=self._initial_store,  # type: ignore
                 )
 
                 if self._use_plannable_context:
@@ -258,16 +255,20 @@ class ProgramRunner:
                         try:
                             with anyio.CancelScope(shield=True):
                                 await robot_cell.stop()
-                        except ExceptionGroup as eg:
-                            e = eg.exceptions[0]
-                            if (
-                                len(eg.exceptions) == 1
-                                and isinstance(e, GRPCError)
-                                and "is not moving currently" in str(e)
-                            ):
-                                logger.debug(f"Suppressed exception {e!r}; not reraising it")
-                            else:
-                                raise
+                        # TODO: We don't use GRPC anymore, do we need additional handling here?
+                        # except ExceptionGroup as eg:
+                        #    e = eg.exceptions[0]
+                        #    if (
+                        #        len(eg.exceptions) == 1
+                        #        and isinstance(e, GRPCError)
+                        #        and "is not moving currently" in str(e)
+                        #    ):
+                        #        logger.debug(f"Suppressed exception {e!r}; not reraising it")
+                        #    else:
+                        #        raise
+                        except Exception as e:
+                            logger.error(f"Error while stopping robot cell: {e!r}")
+                            raise
 
                         self._skill_run.state = ProgramRunState.STOPPED
                         raise

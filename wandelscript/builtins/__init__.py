@@ -1,17 +1,20 @@
 import time
 from typing import Any
 
-from nova.actions import MotionSettings
+from nova.types import MotionSettings
 
 import wandelscript.builtins.array
 import wandelscript.builtins.assoc
 import wandelscript.builtins.controller
 import wandelscript.builtins.fetch
 import wandelscript.builtins.math
+import wandelscript.builtins.pose
 import wandelscript.builtins.string
+
+# import wandelscript.builtins.fs
 import wandelscript.builtins.wait
-from wandelscript.datatypes import Frame
 from wandelscript.metamodel import register_builtin_func
+from wandelscript.types import Frame
 
 
 @register_builtin_func(name="int")
@@ -68,8 +71,18 @@ def make_settings_modifier(name):
     return modifier
 
 
-for setting in MotionSettings.model_fields:
-    register_builtin_func(name=setting, pass_context=True)(make_settings_modifier(setting))
+for field_name in MotionSettings.model_fields:
+    print(field_name)
+    register_builtin_func(name=field_name, pass_context=True)(make_settings_modifier(field_name))
+    match field_name:
+        case "tcp_velocity_limit":
+            register_builtin_func(name="velocity", pass_context=True)(make_settings_modifier(field_name))
+        case "tcp_acceleration_limit":
+            register_builtin_func(name="acceleration", pass_context=True)(make_settings_modifier(field_name))
+        case "position_zone_radius":
+            register_builtin_func(name="blending", pass_context=True)(make_settings_modifier(field_name))
+        case _:
+            pass
 
 
 @register_builtin_func(pass_context=True)
@@ -91,6 +104,3 @@ def tcp(context, tcp_: str | Frame):
         context.store["__tcp__"] = previous
 
     return on_exit
-
-
-# ### Extended functionality - still considered core, but probably not part of the language---------------------

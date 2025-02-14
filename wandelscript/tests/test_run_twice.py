@@ -2,10 +2,10 @@ import sys
 from datetime import datetime
 
 from icecream import ic
-from pyriphery.robotics import SimulatedRobotCell, get_robot_controller
 
 from wandelscript import ProgramRunState, run
-from wandelscript.utils import Tee
+from wandelscript.simulation import SimulatedRobotCell, get_robot_controller
+from wandelscript.utils.runtime import Tee
 
 robot_cell = SimulatedRobotCell(controller=get_robot_controller())
 

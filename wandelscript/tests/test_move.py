@@ -2,7 +2,8 @@ import asyncio
 
 import numpy as np
 import pytest
-from nova.actions import CombinedActions, MotionSettings, lin, ptp
+from nova.actions import CombinedActions, lin, ptp
+from nova.types import MotionSettings, Pose
 
 from wandelscript.metamodel import run_skill
 
@@ -23,11 +24,11 @@ move tcp via ptp() to (150, -355, 389, 0, pi, 0)
             [
                 CombinedActions(
                     items=(
-                        ptp((150, -355, 389), MotionSettings(velocity=200)),
-                        lin((150, -355, 392), MotionSettings(velocity=10)),
-                        ptp((150, -355, 389), MotionSettings(velocity=200)),
-                        lin((-95, -363, 387), MotionSettings(velocity=250)),
-                        ptp((150, -355, 389), MotionSettings(velocity=200)),
+                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        lin((150, -355, 392), MotionSettings(tcp_velocity_limit=10)),
+                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        lin((-95, -363, 387), MotionSettings(tcp_velocity_limit=250)),
+                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
                     )
                 )
             ],
@@ -44,11 +45,11 @@ move via ptp() to (150, -355, 389, 0, pi, 0)
             [
                 CombinedActions(
                     items=(
-                        ptp((150, -355, 389), MotionSettings(velocity=200)),
-                        lin((150, -355, 392), MotionSettings(velocity=10)),
-                        ptp((150, -355, 389), MotionSettings(velocity=200)),
-                        lin((-95, -363, 387), MotionSettings(velocity=250)),
-                        ptp((150, -355, 389), MotionSettings(velocity=200)),
+                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        lin((150, -355, 392), MotionSettings(tcp_velocity_limit=10)),
+                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        lin((-95, -363, 387), MotionSettings(tcp_velocity_limit=250)),
+                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
                     )
                 )
             ],
@@ -64,11 +65,11 @@ move via ptp() to (150, -355, 389, 0, pi, 0)
             [
                 CombinedActions(
                     items=(
-                        ptp((150, -355, 389), MotionSettings(velocity=None)),
-                        lin((150, -355, 392), MotionSettings(blending=2)),
-                        ptp((150, -355, 389), MotionSettings(velocity=100)),
-                        lin((-95, -363, 387), MotionSettings(blending=4)),
-                        ptp((150, -355, 389), MotionSettings(velocity=None)),
+                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=None)),
+                        lin((150, -355, 392), MotionSettings(position_zone_radius=2)),
+                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=100)),
+                        lin((-95, -363, 387), MotionSettings(position_zone_radius=4)),
+                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=None)),
                     )
                 )
             ],
@@ -83,13 +84,15 @@ def test_move(code, expected):
     for path, expected_path in zip(paths, expected):
         assert len(path.motions) == len(expected_path.motions)
         for motion, expected_motion in zip(path.motions, expected_path.motions):
-            target_np = np.array(motion.target) if isinstance(motion.target, tuple) else motion.target.position
+            target_np = motion.target.position if isinstance(motion.target, Pose) else np.array(motion.target)
             expected_target_np = (
-                np.array(expected_motion.target)
-                if isinstance(expected_motion.target, tuple)
-                else expected_motion.target.position
+                expected_motion.target.position
+                if isinstance(expected_motion.target, Pose)
+                else np.array(expected_motion.target)
             )
 
             assert np.allclose(target_np, expected_target_np)
+            print(motion.settings)
+            print(expected_motion.settings)
             assert motion.settings == expected_motion.settings
             assert motion.type == expected_motion.type

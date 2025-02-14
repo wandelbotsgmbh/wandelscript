@@ -6,11 +6,13 @@ from datetime import datetime
 import numpy as np
 import pytest
 from icecream import ic
-from pyriphery.robotics import RobotCell, get_robot_controller
+from nova.core.robot_cell import RobotCell
 
 from wandelscript import ProgramRun, ProgramRunner, ProgramRunState, run
 from wandelscript.exception import NameError_, SkillSyntaxError
-from wandelscript.utils import Tee
+from wandelscript.serializer import Vector3d
+from wandelscript.simulation import get_robot_controller
+from wandelscript.utils.runtime import Tee
 
 robot_cell = RobotCell(controller=get_robot_controller())
 raising_robot_cell = RobotCell(controller=get_robot_controller(raises_on_open=True))
@@ -105,7 +107,7 @@ move via line() to (0, 100, 300, 0, pi, 0)
         program_runner.start(sync=True)
     # Check path
     last_path = program_runner.skill_run.execution_results[0].paths[2]
-    assert list(last_path.poses[-1].pose.position) == [0, 100, 300]
+    assert last_path.poses[-1].pose.position.to_tuple() == (0, 100, 300)
     # Check store
     store = program_runner.skill_run.store
     assert np.allclose(store["home"].pose, [0, 0, 400, 0, np.pi, 0])

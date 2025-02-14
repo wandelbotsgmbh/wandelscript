@@ -8,9 +8,7 @@ rod_center = interpolate(rod_left, rod_right, 0.5)
 rods = [rod_left, rod_center, rod_center]
 disk_height = (158.0 - 125) / 4
 state = [3, 0, 0]
-write(hanoi_state, "0", 5)
-write(hanoi_state, "1", 0)
-write(hanoi_state, "2", 0)
+hanoi_state = { s0: 5, s1: 0, s2: 0 }
 
 velocity(300)
 
@@ -29,10 +27,10 @@ def action(pose, close):
     velocity(300)
 
 def move_disk(source, target):
-    write(hanoi_state, string(source), read(hanoi_state, string(source)) - 1)
-    action(rods[source] :: (0, 0, - disk_height * read(hanoi_state, string(source)), 0, 0, 0), True)
-    action(rods[target] :: (0, 0, - disk_height * read(hanoi_state, string(target)), 0, 0, 0), False)
-    write(hanoi_state, string(target), read(hanoi_state, string(target)) + 1)
+    hanoi_state["s" + string(source)] = hanoi_state["s" + string(source) - 1)]
+    action(rods[source] :: (0, 0, - disk_height * hanoi_state["s" + string(source)], 0, 0, 0), True)
+    action(rods[target] :: (0, 0, - disk_height * hanoi_state["s" + string(target)], 0, 0, 0), False)
+    write(hanoi_state, string(target), hanoi_state["s" + string(target) + 1])
     sync
 
 def tower_of_hanoi(n , source, destination, auxiliary):
@@ -45,5 +43,5 @@ def tower_of_hanoi(n , source, destination, auxiliary):
 
 move via p2p() to home
 tower_of_hanoi(5, 0, 1, 2)
-state = [read(hanoi_state, "0"), read(hanoi_state, "1"), read(hanoi_state, "2")]
+state = [hanoi_state["s0"], hanoi_state["s1"], hanoi_state["s2"]]
 move via line() to home

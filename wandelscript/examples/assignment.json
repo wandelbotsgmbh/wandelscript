@@ -5,6 +5,6 @@
   "bool_true": true,
   "bool_false": false,
   "pose": {"pose": [100, 0, 0, 0, 3.14, 0]},
-  "vec": {"position": [200, 100, 0]},
+  "vec": {"vector3d": [200, 100, 0]},
   "arr": {"array": [1, 2, 3, 4]}
 }

@@ -1,9 +1,9 @@
 from functools import singledispatch
 from typing import Any, TypeVar
 
-import _types as t
 from nova.types import Pose, Vector3d
 
+import wandelscript.types as t
 from wandelscript.metamodel import register_builtin_func
 
 # TODO naming. updated, updating
@@ -53,7 +53,7 @@ def _(vec: Vector3d, key: int, val: float) -> Vector3d:
 def _(pose: Pose, key: int, val: float) -> Pose:
     tmp = list(pose.to_tuple())
     tmp[key] = val
-    return Pose.from_tuple(tmp)
+    return Pose(tuple(tmp))
 
 
 # TODO: In the future we want to improve record manipulation. For example we could use frozen keyword like:

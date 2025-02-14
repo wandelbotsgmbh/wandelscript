@@ -1,30 +1,23 @@
 import numpy as np
 import pytest
-from nova.actions import PTP, JointPTP, Linear
-from pyjectory.datatypes import Pose
-from pyjectory.pathtypes.vector3d import CircularSegment, Line, Point
-from pyriphery.robotics import (
-    RobotCell,
-    SimulatedController,
-    SimulatedRobot,
-    SimulatedRobotCell,
-    get_robot_cell,
-)
+from nova.actions.motions import PTP, JointPTP, Linear
+from nova.core.robot_cell import RobotCell
+from nova.types import Pose
 
 import wandelscript
 from wandelscript.exception import SkillRuntimeError
 from wandelscript.metamodel import run_skill
+from wandelscript.simulation import SimulatedController, SimulatedRobot, SimulatedRobotCell, get_robot_cell
 
 
 def test_forbidden_tcp_change_in_one_motion_example():
     code = """
-move via PTP() to (0, 0, 0, 0, 0, 0)
+move via ptp() to (0, 0, 0, 0, 0, 0)
 move frame("flange") to (1, 2, 0)
 move frame("tool") to (2, 2, 0)
 """
     robot_configuration = SimulatedRobot.Configuration(
-        identifier="0@controller",
-        tools={"flange": Pose.from_tuple((0, 0, 0, 0, np.pi, 0)), "tool": Pose.from_tuple((2, 0, 0, 0, np.pi, 0))},
+        identifier="0@controller", tools={"flange": Pose((0, 0, 0, 0, np.pi, 0)), "tool": Pose((2, 0, 0, 0, np.pi, 0))}
     )
     controller = SimulatedController(SimulatedController.Configuration(robots=[robot_configuration]))
     with pytest.raises(SkillRuntimeError):
@@ -33,7 +26,7 @@ move frame("tool") to (2, 2, 0)
 
 def test_simple_motion():
     code = """
-move via PTP() to (0, 0, 10, 0, 0, 0)
+move via ptp() to (0, 0, 10, 0, 0, 0)
 move via line() to (0, 10, 10, 0, 0, 0)
 """
     cell = get_robot_cell()
@@ -51,15 +44,15 @@ def test_no_robot():
 
 def test_motion_type_p2p_line():
     code = """
-move via PTP() to (1, 0, 626, 0, 0, 0)
+move via ptp() to (1, 0, 626, 0, 0, 0)
 move via line() to (2, 0, 1111, 0, 0, 0)
-move via PTP() to (3, 0, 626, 0, 0, 0)
+move via ptp() to (3, 0, 626, 0, 0, 0)
 sync
-move via PTP() to (11, 0, 626, 0, 0, 0)
+move via ptp() to (11, 0, 626, 0, 0, 0)
 move via line() to (12, 0, 1111, 0, 0, 0)
 sync
 move via line() to (21, 0, 1111, 0, 0, 0)
-move via PTP() to (23, 0, 626, 0, 0, 0)
+move via ptp() to (23, 0, 626, 0, 0, 0)
 """
     expected_motion_types = [[PTP, Linear, PTP], [PTP, Linear], [Linear, PTP]]
 
@@ -82,7 +75,7 @@ def test_motion_type_joint_p2p():
     code = """
 move via joint_p2p() to [1, 0, 626, 0, 0, 0]
 move via line() to (2, 0, 1111, 0, 0, 0)
-move via PTP() to (3, 0, 626, 0, 0, 0)
+move via ptp() to (3, 0, 626, 0, 0, 0)
 move via joint_p2p() to [4, 0, 626, 0, 0, 0]
 move via joint_p2p() to [5, 0, 626, 0, 0, 0]
 move via joint_p2p() to [6, 0, 626, 0, 0, 0]
@@ -174,32 +167,3 @@ move via joint_p2p() to joints
     path = runner.execution_context.robot_cell.robot.record_of_commands[0]
     assert path[1].callback is not None
     assert isinstance(path[1], JointPTP)
-
-
-@pytest.mark.skip(
-    "Maybe there is a bug in SequentialPosePath.partial and global_to_local_path_parameter in simulated robot"
-)
-@pytest.mark.asyncio
-async def test_collapse_to_point():
-    cell = get_robot_cell()
-    code = """move via PTP() to (0, 0, 0, 0, 0, 0)
-move via line() to (0, 0, 0, 0, pi, 0)"""
-
-    result = await run_skill(code, cell, default_robot="0@controller")
-    trajectory = result.robot_cell.get_robot("0@controller")._trajectory  # pylint: disable=protected-access
-    assert isinstance(trajectory[0].position[-1], Point)
-    assert isinstance(trajectory[1].position[-1], Line)
-
-
-@pytest.mark.asyncio
-async def test_bug_wos_1012():
-    cell = get_robot_cell()
-    code = """move via PTP() to (0, 0, 0, 0, pi, 0)
-move via arc((1, 2, 3)) to  (3, 4, 5, 0, pi, 0)
-sync
-move via line() to (0, 0, 0, 0, pi, 0)"""
-
-    result = await run_skill(code, cell, default_robot="0@controller", default_tcp="flange")
-    trajectory = result.robot_cell.get_robot("0@controller")._trajectory  # pylint: disable=protected-access
-    assert isinstance(trajectory[1].position[-1], CircularSegment)
-    assert isinstance(trajectory[2].position[-1], Line)

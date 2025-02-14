@@ -1,12 +1,12 @@
-import _types as t
 import httpx
-from pyjectory import serializer
 
+from wandelscript import serializer
 from wandelscript.metamodel import register_builtin_func
+from wandelscript.types import Record
 
 
 @register_builtin_func()
-async def fetch(url: str, options: t.Record | None = None) -> t.Record:
+async def fetch(url: str, options: Record | None = None) -> Record:
     """Fetch data from a URL.
 
     Args:
@@ -32,7 +32,7 @@ async def fetch(url: str, options: t.Record | None = None) -> t.Record:
         }
 
     """
-    options = options or t.Record()
+    options = options or Record()
     method = options.get("method", "GET")
     body = options.get("body")
     headers = options.get("headers")
@@ -69,8 +69,8 @@ async def fetch(url: str, options: t.Record | None = None) -> t.Record:
             data = response.content  # Fall back to raw bytes
 
         parsed_data = serializer.decode(data)
-        return t.Record(data={"data": parsed_data, "status_code": response.status_code})
+        return Record(data={"data": parsed_data, "status_code": response.status_code})
 
     except httpx.HTTPStatusError as exc:
         status_code = exc.response.status_code if exc.response else 500
-        return t.Record(data={"error": str(exc), "status_code": status_code})
+        return Record(data={"error": str(exc), "status_code": status_code})
