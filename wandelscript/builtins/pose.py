@@ -1,10 +1,12 @@
-from nova.types import Pose, Vector3d
 import math
-from wandelscript.metamodel import register_builtin_func
-from wandelscript.utils.pose import pose_to_versor, versor_to_pose
+
+import numpy as np
 from geometricalgebra import cga3d
 from geometricalgebra.cga import project_to_flat
-import numpy as np
+from nova.types import Pose, Vector3d
+
+from wandelscript.metamodel import register_builtin_func
+from wandelscript.utils.pose import pose_to_versor, versor_to_pose
 
 
 @register_builtin_func()
