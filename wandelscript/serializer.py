@@ -1,18 +1,12 @@
-import base64
 import json
 from functools import singledispatch
-from io import BytesIO
 from typing import Union
 
-import numpy as np
 import pydantic
 from nova import api
 from nova import types as t
-from PIL import Image
 
 from wandelscript import types as ws_types
-
-# from pyjectory import visiontypes
 
 
 @singledispatch
@@ -225,8 +219,13 @@ class Array(pydantic.BaseModel):
     array: list[Union[FlatElementType, "Array", "Record"]]
 
 
-@encode.register
-def _(obj: tuple | list) -> Array:
+@encode.register(list)
+def _(obj: list) -> Array:
+    return Array(array=tuple(map(encode, obj)))  # type: ignore
+
+
+@encode.register(tuple)
+def _(obj: tuple[ws_types.ElementType]) -> Array:
     return Array(array=tuple(map(encode, obj)))  # type: ignore
 
 
@@ -242,8 +241,13 @@ class Record(pydantic.BaseModel):
     record: dict[str, Union[FlatElementType, Array, "Record"]]
 
 
-@encode.register
-def _(obj: ws_types.Record | dict) -> Record:
+@encode.register(dict)
+def _(obj: dict) -> Record:
+    return Record(record={k: encode(v) for k, v in obj.items()})
+
+
+@encode.register(ws_types.Record)
+def _(obj: ws_types.Record) -> Record:
     return Record(record={k: encode(v) for k, v in obj.items()})
 
 
