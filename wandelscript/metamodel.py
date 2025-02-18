@@ -1019,13 +1019,13 @@ class Connector(Rule):
         await kwargs_packed(**kwargs)  # pylint: disable=missing-kwoa
 
 
-def register_builtin_func(name=None, pass_context=False):
-    """Decorator to make python functions callable from wandelscript.
+def register_builtin_func(name: str | None = None, pass_context: bool = False):
+    """Decorator to make Python functions callable from wandelscript.
 
     Args:
         name: how the function is named inside wandelscript.
         pass_context: if the decorated function should receive the
-            execution context (currently the store) as the first argument
+            execution context (currently the store) as the first argument.
 
     Returns:
         The decorator.
@@ -1377,12 +1377,13 @@ class FunctionCall(Atom[ElementType], Statement):
     _builtins: ClassVar[dict[str, Builtin]] = {}
 
     @classmethod
-    def register_builtin(cls, func: Callable, name: str, pass_context: bool = False):
-        """Registers a python callable as a function callable from wandelscript.
+    def register_builtin(cls, func: Callable, name: str | None, pass_context: bool = False):
+        """Registers a Python callable as a function callable from wandelscript.
 
         Args:
             func: the python callable representing the wandelscript function
-            name: how the function is named inside wandelscript
+            name: how the function is named inside wandelscript. If None or the empty string "" is given,
+            use the function's __name__.
             pass_context: whether func should receive the execution context as the first argument
         """
         script_func_name = name if name else func.__name__
