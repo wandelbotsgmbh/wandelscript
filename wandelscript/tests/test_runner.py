@@ -2,6 +2,7 @@ import sys
 import time
 import uuid
 from datetime import datetime
+from typing import Any
 
 import numpy as np
 import pytest
@@ -10,6 +11,8 @@ from nova.core.robot_cell import RobotCell
 
 from wandelscript import ProgramRun, ProgramRunner, ProgramRunState, run
 from wandelscript.exception import NameError_, ProgramSyntaxError
+from wandelscript.ffi import ForeignFunction
+from wandelscript.runtime import ExecutionContext
 from wandelscript.serializer import Vector3d
 from wandelscript.simulation import get_robot_controller
 from wandelscript.utils.runtime import Tee
@@ -40,20 +43,51 @@ def check_program_state(program_runner: ProgramRunner, expected_state: ProgramRu
     return False
 
 
+def custom_foreign_function(v: Any) -> str:
+    return f"Hello from my foreign function! Arg: {v}"
+
+
+def other_foreign_function(ctx: ExecutionContext, v: int) -> None:
+    robot = list(ctx.robot_cell.get_robots().values())[0]
+    type_ = robot.configuration.type
+    print(f"For context, we've got a robot of type: {type_}")
+
+    print(f"{v * 2} little Jaegermeisters check if another arg does work")
+
+
 def test_run():
     code = """
 a = 4 + 5
 home = (0, 0, 400, 0, pi, 0)
 move via p2p() to home
 print("print something")
+
+foreign_function_result = call_foreign_function("Hola!")
+print(foreign_function_result)
+
+other_foreign_function(5)
+
 wait 100
 move via line() to home :: (0, 100, 0, 0, 0, 0)
 """
-    runner = run(code, robot_cell, default_robot="0@controller", default_tcp="flange")
+
+    foreign_functions = {
+        "call_foreign_function": ForeignFunction(custom_foreign_function),
+        "other_foreign_function": ForeignFunction(other_foreign_function, pass_context=True),
+    }
+
+    runner = run(
+        code, robot_cell, default_robot="0@controller", default_tcp="flange", foreign_functions=foreign_functions
+    )
     assert "home" in runner.execution_context.store
     assert runner.execution_context.store["a"] == 9
     assert runner.program_run.state is ProgramRunState.COMPLETED
-    assert "print something" in runner.program_run.stdout
+
+    stdout = runner.program_run.stdout
+    assert "print something" in stdout
+    assert "Hello from my foreign function! Arg: Hola!" in stdout
+    assert "For context, we've got a robot of type: simulated_robot" in stdout
+    assert "10 little Jaegermeisters check if another arg does work" in stdout
 
     assert not isinstance(sys.stdout, Tee)
 

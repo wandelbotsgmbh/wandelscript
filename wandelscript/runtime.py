@@ -18,9 +18,11 @@ from nova.actions.motions import Motion
 from nova.core.robot_cell import AbstractRobot, Device, RobotCell
 from nova.types import MotionSettings, MotionState, Pose
 
+import wandelscript.metamodel as metamodel
 from wandelscript import exception as wsexception
 from wandelscript import serializer
 from wandelscript.exception import MotionError, NotPlannableError
+from wandelscript.ffi import ForeignFunction
 from wandelscript.frames import FrameSystem
 from wandelscript.types import ElementType, Frame, as_builtin_type
 from wandelscript.utils.runtime import stoppable_run
@@ -126,6 +128,7 @@ class ExecutionContext:
         default_robot: str | None = None,
         default_tcp: str | None = None,
         initial_vars: dict[str, ElementType] | None = None,
+        foreign_functions: dict[str, ForeignFunction] | None = None,
         debug: bool = False,
     ):
         self.robot_cell: RobotCell = robot_cell
@@ -145,6 +148,10 @@ class ExecutionContext:
             initial_vars = {}
 
         initial_vars.update(__tcp__=default_tcp, **robot_cell.devices)
+
+        for name, ff in (foreign_functions or {}).items():
+            metamodel.register_builtin_func(name=name, pass_context=ff.pass_context)(ff.function)
+
         self.call_stack = CallStack(DEFAULT_CALL_STACK_SIZE)
         self.call_stack.push(Store(initial_vars))
         self.interceptors: list[Interceptor] = []
