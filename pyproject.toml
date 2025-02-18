@@ -1,6 +1,5 @@
 [tool.poetry]
 name = "wandelscript"
-readme = "README.md"
 version = '0.1.0'
 description = "Wandelscript definition, parser, type checker & runtime"
 authors = [
@@ -9,6 +8,10 @@ authors = [
     "Dirk Sonnemann <dirk.sonnemann@wandelbots.com>",
     "Andreas Langenhagen <andreas.langenhagen@wandelbots.com>",
     "Mahsum Demir <mahsum.demir@wandelbots.com>"
+]
+readme = "README.md"
+packages = [
+    { include = "wandelscript" }
 ]
 
 [tool.poetry.dependencies]
