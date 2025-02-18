@@ -22,6 +22,7 @@ from nova.types import MotionState, RobotState
 
 from wandelscript import serializer
 from wandelscript.exception import NotPlannableError
+from wandelscript.ffi import ForeignFunction
 from wandelscript.metamodel import Program
 from wandelscript.runtime import ExecutionContext, PlannableActionQueue, current_execution_context_var
 from wandelscript.simulation import SimulatedRobotCell
@@ -106,6 +107,7 @@ class ProgramRunner:
         default_robot: str | None = None,
         default_tcp: str | None = None,
         initial_store: dict[str, serializer.ElementType] | None = None,
+        foreign_functions: dict[str, ForeignFunction] | None = None,
         use_plannable_context: bool = False,
     ):
         self._code: str = code
@@ -115,6 +117,7 @@ class ProgramRunner:
         self._robot_cell_config: list[ConfigurablePeriphery.Configuration] = robot_cell.to_configurations()
         # serialize the initial store dict
         self._initial_store: dict[str, serializer.ElementType] = initial_store or {}
+        self._foreign_functions: dict[str, ForeignFunction] = foreign_functions or {}
         self.execution_context: ExecutionContext | None = None
         self._program_run: ProgramRun = ProgramRun(id=str(uuid.uuid4()), state=ProgramRunState.NOT_STARTED)
         self._thread: threading.Thread | None = None
@@ -254,6 +257,7 @@ class ProgramRunner:
                     default_robot=self._default_robot,
                     default_tcp=self._default_tcp,
                     initial_vars=self._initial_store,  # type: ignore
+                    foreign_functions=self._foreign_functions,
                 )
 
                 if self._use_plannable_context:
@@ -424,6 +428,7 @@ def run(
     default_robot: str | None = None,
     default_tcp: str | None = None,
     initial_state: dict[str, serializer.ElementType] | None = None,
+    foreign_functions: dict[str, ForeignFunction] | None = None,
     use_plannable_context: bool = False,
 ) -> ProgramRunner:
     """Helper function to create a ProgramRunner and start it synchronously
@@ -435,6 +440,8 @@ def run(
         default_tcp (str): The default TCP that is used when no TCP is explicitly selected for a motion
         initial_state (dict[str, Any], optional): Store will be initialized with this dict. Defaults to ().
         use_plannable_context (bool): If True, the program runner will use a plannable context. Defaults to False.
+        foreign_functions (dict[str, ForeignFunction], optional): 3rd party functions that you can
+            register into the wandelscript language. Defaults to {}.
 
     Returns:
         ProgramRunner: A new ProgramRunner object
@@ -446,6 +453,7 @@ def run(
         default_robot=default_robot,
         default_tcp=default_tcp,
         initial_store=initial_state,
+        foreign_functions=foreign_functions,
         use_plannable_context=use_plannable_context,
     )
     runner.start(sync=True)
