@@ -68,7 +68,7 @@ class ExecutionResult(pydantic.BaseModel):
 
 
 class ProgramRun(pydantic.BaseModel):
-    """The ProgramRun object holds the state of a program run.
+    """Holds the state of a program run.
 
     Args:
         id: The unique id of the program run
@@ -97,7 +97,7 @@ class ProgramRun(pydantic.BaseModel):
 
 
 class ProgramRunner:
-    """The program runner provides functionalities to manage a program execution"""
+    """Provides functionalities to manage a single program execution"""
 
     def __init__(  # pylint: disable=too-many-positional-arguments
         self,
@@ -437,7 +437,7 @@ def run(
         use_plannable_context (bool): If True, the program runner will use a plannable context. Defaults to False.
 
     Returns:
-        ProgramRunner: The program runner object
+        ProgramRunner: A new ProgramRunner object
 
     """
     runner = ProgramRunner(
