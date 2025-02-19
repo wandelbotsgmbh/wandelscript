@@ -10,8 +10,8 @@ else:
 
 class wandelscriptParserVisitor(ParseTreeVisitor):
 
-    # Visit a parse tree produced by wandelscriptParser#skill.
-    def visitSkill(self, ctx:wandelscriptParser.SkillContext):
+    # Visit a parse tree produced by wandelscriptParser#program.
+    def visitProgram(self, ctx:wandelscriptParser.ProgramContext):
         return self.visitChildren(ctx)
 
 

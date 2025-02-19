@@ -149,10 +149,10 @@ class ExecutionContext:
         self.call_stack.push(Store(initial_vars))
         self.interceptors: list[Interceptor] = []
         self.stop_event: anyio.Event = stop_event
-        # this will be continuously updated by the metamodel when the skill is executed
+        # this will be continuously updated by the metamodel when the program is executed
         self.location_in_code: wsexception.TextRange | None = None
         self.debug = debug
-        # This holds references to the tasks created by asyncio.create_task() during skill execution.
+        # This holds references to the tasks created by asyncio.create_task() during program execution.
         # This is necessary because of https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task only
         # creating weak references for the in the event loop
         # also it might be sensible to store the data in thread local storage because it is probably
@@ -246,7 +246,7 @@ class ExecutionContext:
 
 
 class CallStack:
-    """The call stack for a wandelscript skill execution
+    """The call stack for a wandelscript program execution
     Attributes:
         max_frames: the maximum call depth.
     """
@@ -313,7 +313,7 @@ async def _(arg: CallAction, context: ExecutionContext) -> None:
 
 
 class ActionQueue:
-    """Collect actions from the skill and processes them
+    """Collect actions from the program and processes them
 
     Implementation detail:
         _record: buffer the motion between the motion pointer and program pointer
@@ -490,7 +490,7 @@ class ActionQueue:
             if len(self._record[motion_group_id]) >= self.MOTION_LIMIT_IN:
                 raise MotionError(
                     location=self._execution_context.location_in_code,
-                    value="Maximum motion queue size exceeded. Won't plan skill.",
+                    value="Maximum motion queue size exceeded. Won't plan program.",
                 )
 
             self._record[motion_group_id].append(motion)
@@ -509,7 +509,7 @@ class ActionQueue:
         if len(self._path_history) > self.MOTION_LIMIT_OUT:
             raise MotionError(
                 location=self._execution_context.location_in_code,
-                value="Maximum motion queue size exceeded. Won't plan skill.",
+                value="Maximum motion queue size exceeded. Won't plan program.",
             )
 
 

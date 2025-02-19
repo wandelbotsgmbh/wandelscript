@@ -29,9 +29,9 @@ def convert_to_int(value: float) -> int:
 
     Example:
     >>> import asyncio
-    >>> from wandelscript.metamodel import Store, Skill, run_skill
+    >>> from wandelscript.metamodel import , run_program
     >>> code = 'a = int(5.63)'
-    >>> store = asyncio.run(run_skill(code)).store
+    >>> store = asyncio.run(run_program(code)).store
     >>> store['a']
     5
     """

@@ -10,7 +10,7 @@ from nova.types.state import MotionState, RobotState
 from wandelscript import exception as wsexception
 from wandelscript import serializer
 from wandelscript.exception import NameError_
-from wandelscript.metamodel import register_debug_func, run_skill
+from wandelscript.metamodel import register_debug_func, run_program
 from wandelscript.runner import run
 from wandelscript.runtime import ActionQueue, ExecutionContext, Store
 from wandelscript.simulation import SimulatedController, SimulatedRobotCell, get_simulated_robot_configs
@@ -20,7 +20,7 @@ from wandelscript.simulation import SimulatedController, SimulatedRobotCell, get
 async def test_runtime_error():
     code = "a = 1\na = b"
     with pytest.raises(NameError_) as error:
-        await run_skill(code)
+        await run_program(code)
     assert error.value.location.start.line == 2
     assert error.value.location.start.column == 4
 

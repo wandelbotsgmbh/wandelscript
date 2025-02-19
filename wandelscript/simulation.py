@@ -6,7 +6,7 @@ from typing import Any, Callable, Literal, SupportsIndex
 
 import numpy as np
 from nova import api
-from nova.actions import Action, CombinedActions, MovementController
+from nova.actions import Action, MovementController
 from nova.actions.motions import PTP, Circular, JointPTP, Linear
 from nova.core.io import ValueType
 from nova.core.robot_cell import (

@@ -82,7 +82,7 @@ class Closure(Generic[BoundedElementType]):
 
     Example:
     >>> import asyncio
-    >>> from wandelscript.metamodel import Store, Skill, run_skill
+    >>> from wandelscript.metamodel import run_program
     >>> code = '''
     ... def foo():
     ...     def bar(u):
@@ -91,7 +91,7 @@ class Closure(Generic[BoundedElementType]):
     ... b = foo()
     ... c = b(4)
     ... '''
-    >>> context = asyncio.run(run_skill(code))
+    >>> context = asyncio.run(run_program(code))
     >>> context.store['c']
     23
     """

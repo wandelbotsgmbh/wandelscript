@@ -3,7 +3,7 @@ import asyncio
 import pytest
 from nova.core.robot_cell import RobotCell, Timer
 
-from wandelscript import Skill
+from wandelscript import Program
 from wandelscript.simulation import SimulatedRobot
 
 
@@ -26,16 +26,16 @@ wait 1000
 print("end2")
 move via p2p() to (0, 0, 0, 1, 1, 1)
 """
-    skill = Skill.from_code(code)
+    program = Program.from_code(code)
 
-    class SkillStop(Exception):
+    class ProgramStop(Exception):
         pass
 
-    store = skill.make_store(robot_cell)
+    store = program.make_store(robot_cell)
 
     async def callback():
         if store.event and store.event.is_set():
-            raise SkillStop()
+            raise ProgramStop()
 
     store.environment.interceptor = callback
 
@@ -45,8 +45,8 @@ move via p2p() to (0, 0, 0, 1, 1, 1)
 
         async def fm():
             try:
-                await skill.body(store=store)
-            except SkillStop:
+                await program.body(store=store)
+            except ProgramStop:
                 pass
 
         # from async_generator import aclosing

@@ -6,7 +6,7 @@ from antlr4.error.ErrorListener import ErrorListener
 from antlr4.error.Errors import ParseCancellationException
 
 from wandelscript import metamodel, operators
-from wandelscript.exception import SkillSyntaxError, TextPosition, TextRange
+from wandelscript.exception import ProgramSyntaxError, TextPosition, TextRange
 from wandelscript.grammar.wandelscriptLexer import wandelscriptLexer
 from wandelscript.grammar.wandelscriptParser import wandelscriptParser
 from wandelscript.grammar.wandelscriptParserVisitor import wandelscriptParserVisitor
@@ -181,7 +181,7 @@ class Visitor(wandelscriptParserVisitor):  # pylint: disable=too-many-public-met
         return metamodel.Block([self.visit(node) for node in ctx.statement()])
 
     @tracked
-    def visitSkill(self, ctx):
+    def visitProgram(self, ctx):
         statements = [self.visit(node) for node in ctx.statement()]
         block = metamodel.Block(statements)
         return metamodel.RootBlock(block)
@@ -421,13 +421,13 @@ def parse_code(code: str):
         parser = wandelscriptParser(stream)
         parser.removeErrorListeners()
         parser.addErrorListener(ThrowingErrorListener(code))
-        tree = parser.skill()
+        tree = parser.program()
         model = Visitor().visit(tree)
-        result = metamodel.Skill(body=model)
+        result = metamodel.Program(body=model)
     except ParseCancellationException as error:
         location = TextRange(TextPosition(error.line, error.column), TextPosition(error.line, error.column + 1))
-        raise SkillSyntaxError(location=location, text=error.message) from error
+        raise ProgramSyntaxError(location=location, text=error.message) from error
     return result
 
 
-metamodel.Skill.from_code = staticmethod(parse_code)  # type: ignore
+metamodel.Program.from_code = staticmethod(parse_code)  # type: ignore

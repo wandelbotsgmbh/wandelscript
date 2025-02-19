@@ -9,12 +9,12 @@ else:
 # This class defines a complete listener for a parse tree produced by wandelscriptParser.
 class wandelscriptParserListener(ParseTreeListener):
 
-    # Enter a parse tree produced by wandelscriptParser#skill.
-    def enterSkill(self, ctx:wandelscriptParser.SkillContext):
+    # Enter a parse tree produced by wandelscriptParser#program.
+    def enterProgram(self, ctx:wandelscriptParser.ProgramContext):
         pass
 
-    # Exit a parse tree produced by wandelscriptParser#skill.
-    def exitSkill(self, ctx:wandelscriptParser.SkillContext):
+    # Exit a parse tree produced by wandelscriptParser#program.
+    def exitProgram(self, ctx:wandelscriptParser.ProgramContext):
         pass
 
 

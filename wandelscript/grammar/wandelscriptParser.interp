@@ -147,7 +147,7 @@ NEWLINE
 SKIP_
 
 rule names:
-skill
+program
 identifier
 suite
 statement
