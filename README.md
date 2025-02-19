@@ -34,7 +34,6 @@ The repository is organized as follows:
   - `metamodel.py`: Facilitates runtime extensions and plugin registration.
 - **Built-ins**: Found under `wandelscript/builtins`, these are pre-defined plugins for:
   - Kinematics (`kinematics.py`)
-  - OPC UA integration (`opcua.py`)
   - Math operations (`math.py`)
   - String manipulation (`string.py`)
   - Robotics control (`controller.py`, `collider.py`)
