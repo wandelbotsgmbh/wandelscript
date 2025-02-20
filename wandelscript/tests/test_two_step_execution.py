@@ -9,7 +9,7 @@ from wandelscript.simulation import SimulatedController, SimulatedRobot
 @pytest.mark.skip(reason="TODO: Configurable robot required")
 def test_two_step_execution():
     tools = {"TOOL1": Pose((0, 0, 0, 0, 0, 0)), "TOOL2": Pose((0, 0, 0, 0, 0, 0))}
-    config = SimulatedRobot.Configuration(identifier="0@controller", tools=tools)
+    config = SimulatedRobot.Configuration(id="0@controller", tools=tools)
     controller = SimulatedController(SimulatedController.Configuration(robots=[config]))
     cell = RobotCell(controller=controller)
     code_step1 = """

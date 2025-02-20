@@ -152,10 +152,10 @@ async def test_run():
     queue = ActionQueue(execution_context)
     motions = [lin((400, 0, 0, 0, 0, 0)), cir((500, 0, 0), (0, 0, 0)), ptp((500, 0, 0))]
     for motion in motions:
-        queue.push(motion, tool="flange", motion_group_id=robot.identifier)
+        queue.push(motion, tool="flange", motion_group_id=robot.id)
 
     await queue._run()
     assert (await robot.get_state("flange")).pose == Pose((500, 0, 0, 0, 0, 0))
-    assert queue.last_pose(robot.identifier) == Pose((500, 0, 0, 0, 0, 0))
-    assert queue._last_motions[robot.identifier] == motions[-1]
+    assert queue.last_pose(robot.id) == Pose((500, 0, 0, 0, 0, 0))
+    assert queue._last_motions[robot.id] == motions[-1]
     assert len(queue._record) == 0

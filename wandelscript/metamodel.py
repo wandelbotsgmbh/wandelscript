@@ -15,6 +15,7 @@ from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAc
 from nova.core.robot_cell import (
     AbstractRobot,
     AsyncCallableDevice,
+    ConfigurablePeriphery,
     InputDevice,
     OutputDevice,
     RobotCell,
@@ -335,7 +336,7 @@ class RobotContext(Statement):
             robot = await robot(context)
             if not isinstance(robot, AbstractRobot):
                 raise GenericRuntimeError(self.location, text=f"The device must be a robot but is a: {type(robot)}")
-            with context.with_robot(robot.identifier):
+            with context.with_robot(robot.id):
                 await body(context)
         await context.sync()
 
@@ -449,8 +450,8 @@ class Motion(Statement):
             target = await self.frame_relation.target(context)
 
             if isinstance(source, AbstractRobot):
-                start = context.action_queue.last_pose(source.identifier)
-                await self.connector(context, start=start, end=end, tool=target.name, robot=source.identifier)
+                start = context.action_queue.last_pose(source.id)
+                await self.connector(context, start=start, end=end, tool=target.name, robot=source.id)
                 return
             if isinstance(end, Vector3d):
                 raise wandelscript.exception.ProgramSyntaxError(
@@ -1551,22 +1552,23 @@ class Read(Atom[ElementType]):
     async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
         key = await self.key(context)
         device = await self.device(context)
+
         if not isinstance(device, (InputDevice, AbstractRobot)):
-            raise GenericRuntimeError(self.location, text=f"{device.identifier} does not support the read operation")
+            raise GenericRuntimeError(self.location, text=f"{device.id} does not support the read operation")
         # classify read action according to user input
         try:
             if isinstance(device, AbstractRobot):
                 if key == "pose":
-                    action = ReadPoseAction(device_id=device.identifier, tcp=None)
+                    action = ReadPoseAction(device_id=device.id, tcp=None)
                 elif key == "joints":
-                    action = ReadJointsAction(device_id=device.identifier)
+                    action = ReadJointsAction(device_id=device.id)
                 else:
                     # read pose from robot with given tcp offset
                     if isinstance(key, Frame):
                         key = key.name
-                    action = ReadPoseAction(device_id=device.identifier, tcp=key)
+                    action = ReadPoseAction(device_id=device.id, tcp=key)
             else:
-                action = ReadAction(device_id=device.identifier, key=key)
+                action = ReadAction(device_id=device.id, key=key)
 
             return await context.action_queue.run_action(action)
         except UnknownPose as e:
@@ -1595,7 +1597,7 @@ class Write(Statement, Generic[ElementType]):
         value = await self.value(context)
         device = await self.device(context)
         if not isinstance(device, OutputDevice):
-            raise GenericRuntimeError(self.location, text=f"{device.identifier} does not support the write operation")
+            raise GenericRuntimeError(self.location, text=f"{device.id} does not support the write operation")
 
         if not isinstance(key, str):
             raise GenericRuntimeError(
@@ -1605,7 +1607,7 @@ class Write(Statement, Generic[ElementType]):
             )
 
         # classify write action according to user input
-        action = WriteAction(device_id=device.identifier, key=key, value=value)
+        action = WriteAction(device_id=device.id, key=key, value=value)
 
         # run write action based on sync context
         if context.action_queue.is_empty():
@@ -1638,9 +1640,9 @@ class Call(Atom[ElementType], Statement):
         arguments = await self.arguments(context)
         device = await self.device(context)
         if not isinstance(device, AsyncCallableDevice):
-            raise GenericRuntimeError(self.location, text=f"{device.identifier} does not support the call operation.")
+            raise GenericRuntimeError(self.location, text=f"{device.id} does not support the call operation.")
         try:
-            action = CallAction(device_id=device.identifier, key=key, arguments=arguments)
+            action = CallAction(device_id=device.id, key=key, arguments=arguments)
             result = await context.action_queue.run_action(action)
         except TypeError as e:
             # accepting the leakage of the Python error message for now

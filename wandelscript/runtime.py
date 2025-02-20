@@ -328,7 +328,7 @@ class ActionQueue:
     def __init__(self, execution_context: ExecutionContext):
         self._execution_context = execution_context
         self._stop_event = execution_context.stop_event
-        # A dictionary of robot identifier with corresponding TCP name
+        # A dictionary of robot id with corresponding TCP name
         self._tcp: dict[str, str] = {}
         # Collected motion trajectory of the corresponding robot names
         self._record: dict[str, CombinedActions] = {}
@@ -388,12 +388,8 @@ class ActionQueue:
                 joint_trajectory = await motion_group.plan(
                     actions=container.motions, tcp=tcp, start_joint_position=None, optimizer_setup=None
                 )
-                motion_iter = motion_group.execute(
-                    joint_trajectory=joint_trajectory,
-                    tcp=tcp,
-                    actions=container.motions,
-                    on_movement=None,
-                    movement_controller=None,
+                motion_iter = motion_group.stream_execute(
+                    joint_trajectory=joint_trajectory, tcp=tcp, actions=container.motions
                 )
                 planned_motions[motion_group_id] = self.trigger_actions(motion_iter, container.actions.copy())
             else:

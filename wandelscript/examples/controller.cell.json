@@ -2,27 +2,27 @@
   "default": [
     {
       "type": "simulated_timer",
-      "identifier": "timer"
+      "id": "timer"
     },
     {
       "type": "simulated_controller",
-      "identifier": "controller"
+      "id": "controller"
     },
     {
       "type": "simulated_controller",
-      "identifier": "controller2"
+      "id": "controller2"
     }
   ],
   "wandelengine": [
     {
       "type": "controller",
-      "identifier": "controller",
+      "id": "controller",
       "controller_model_name": "UniversalRobots::Controller",
       "host": "controller"
     },
     {
       "type": "controller",
-      "identifier": "controller2",
+      "id": "controller2",
       "controller_model_name": "Yaskawa::YRC1000",
       "host": "controller2"
     }

@@ -16,7 +16,7 @@ move frame("flange") to (1, 2, 0)
 move frame("tool") to (2, 2, 0)
 """
     robot_configuration = SimulatedRobot.Configuration(
-        identifier="0@controller", tools={"flange": Pose((0, 0, 0, 0, np.pi, 0)), "tool": Pose((2, 0, 0, 0, np.pi, 0))}
+        id="0@controller", tools={"flange": Pose((0, 0, 0, 0, np.pi, 0)), "tool": Pose((2, 0, 0, 0, np.pi, 0))}
     )
     controller = SimulatedController(SimulatedController.Configuration(robots=[robot_configuration]))
     with pytest.raises(ProgramRuntimeError):

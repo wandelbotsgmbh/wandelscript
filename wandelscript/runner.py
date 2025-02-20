@@ -18,13 +18,13 @@ from exceptiongroup import ExceptionGroup
 from loguru import logger
 from nova.api import models
 from nova.core.robot_cell import ConfigurablePeriphery, RobotCell
-from nova.types import RobotState, MotionState
+from nova.types import MotionState, RobotState
 
-from wandelscript.simulation import SimulatedRobotCell
 from wandelscript import serializer
 from wandelscript.exception import NotPlannableError
 from wandelscript.metamodel import Program
 from wandelscript.runtime import ExecutionContext, PlannableActionQueue, current_execution_context_var
+from wandelscript.simulation import SimulatedRobotCell
 from wandelscript.utils.runtime import Tee, stoppable_run
 
 
@@ -56,7 +56,7 @@ class ExecutionResult(pydantic.BaseModel):
     """The ExecutionResult object contains the execution results of a robot.
 
     Arguments:
-        motion_group_id: The unique identifier of the motion group
+        motion_group_id: The unique id of the motion group
         motion_duration: The total execution duration of the motion group
         paths: The paths of the motion group as list of Path objects
 
@@ -71,7 +71,7 @@ class ProgramRun(pydantic.BaseModel):
     """The ProgramRun object holds the state of a program run.
 
     Args:
-        id: The unique identifier of the program run
+        id: The unique id of the program run
         state: The state of the program run
         logs: The logs of the program run
         stdout: The stdout of the program run
@@ -452,19 +452,12 @@ def run(
     return runner
 
 
-def run_file(
-    file_path: Path | str,
-    cell: RobotCell | None,
-    default_robot: str | None,
-    default_tcp: str | None,
-    initial_vars: dict[str, serializer.ElementType] | None,
-):
+def run_file(file_path: Path | str, cell: RobotCell | None, default_robot: str | None, default_tcp: str | None):
     path = Path(file_path)
     with open(path) as f:
-        program_code = f.read()
-        print(program_code)
+        program = f.read()
+        print(program)
 
-    program = Program.from_code(program_code)
     if cell is None:
         cell = SimulatedRobotCell()
-    run(program, cell=cell, default_robot=default_robot, default_tcp=default_tcp, initial_vars=initial_vars)
+    run(program, robot_cell=cell, default_robot=default_robot, default_tcp=default_tcp, initial_state=None)
