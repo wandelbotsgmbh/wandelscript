@@ -1,7 +1,7 @@
 import pytest
 from nova.core.robot_cell import RobotCell
 
-from wandelscript.metamodel import Skill
+from wandelscript.metamodel import Program
 from wandelscript.simulation import SimulatedRobot
 
 
@@ -15,9 +15,9 @@ print("is")
 print("a")
 print("test")
 """
-    skill = Skill.from_code(code)
+    program = Program.from_code(code)
     steps = 0
-    async for _ in skill.stepwise(a):
+    async for _ in program.stepwise(a):
         steps += 1
 
     assert steps > 30

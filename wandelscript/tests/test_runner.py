@@ -9,7 +9,7 @@ from icecream import ic
 from nova.core.robot_cell import RobotCell
 
 from wandelscript import ProgramRun, ProgramRunner, ProgramRunState, run
-from wandelscript.exception import NameError_, SkillSyntaxError
+from wandelscript.exception import NameError_, ProgramSyntaxError
 from wandelscript.serializer import Vector3d
 from wandelscript.simulation import get_robot_controller
 from wandelscript.utils.runtime import Tee
@@ -20,11 +20,11 @@ raising_robot_cell = RobotCell(controller=get_robot_controller(raises_on_open=Tr
 ic.configureOutput(prefix=lambda: f"{datetime.now().time()} | ", includeContext=True)
 
 
-def check_skill_state(program_runner: ProgramRunner, expected_state: ProgramRunState, timeout: int) -> bool:
-    """Checks a specific skill state after a certain period of time
+def check_program_state(program_runner: ProgramRunner, expected_state: ProgramRunState, timeout: int) -> bool:
+    """Checks a specific program state after a certain period of time
 
     Args:
-        program_runner: the skill runner
+        program_runner: the program runner
         expected_state: the expected state, if it is reached the function returns
         timeout: timeout in seconds
 
@@ -33,7 +33,7 @@ def check_skill_state(program_runner: ProgramRunner, expected_state: ProgramRunS
 
     """
     for i in range(timeout):
-        ic("CHECKING skill state", program_runner.state, expected_state)
+        ic("CHECKING program state", program_runner.state, expected_state)
         if program_runner.state is expected_state:
             return True
         time.sleep(1)
@@ -52,8 +52,8 @@ move via line() to home :: (0, 100, 0, 0, 0, 0)
     runner = run(code, robot_cell, default_robot="0@controller", default_tcp="flange")
     assert "home" in runner.execution_context.store
     assert runner.execution_context.store["a"] == 9
-    assert runner.skill_run.state is ProgramRunState.COMPLETED
-    assert "print something" in runner.skill_run.logs
+    assert runner.program_run.state is ProgramRunState.COMPLETED
+    assert "print something" in runner.program_run.logs
     assert not isinstance(sys.stdout, Tee)
 
 
@@ -87,32 +87,32 @@ move via line() to (0, 100, 300, 0, pi, 0)
     assert not program_runner.is_running()
     assert program_runner.start_time is None
     assert program_runner.execution_time is None
-    assert isinstance(program_runner.skill_run, ProgramRun)
-    ic(program_runner.skill_run)
+    assert isinstance(program_runner.program_run, ProgramRun)
+    ic(program_runner.program_run)
     program_runner.start()
-    ic(program_runner.skill_run)
+    ic(program_runner.program_run)
 
-    assert check_skill_state(program_runner, ProgramRunState.RUNNING, 4)
+    assert check_program_state(program_runner, ProgramRunState.RUNNING, 4)
     assert program_runner.is_running()
     # It should not be possible to start the runner when it is already running
     with pytest.raises(RuntimeError):
         program_runner.start()
-    ic(program_runner.skill_run)
+    ic(program_runner.program_run)
 
-    assert check_skill_state(program_runner, ProgramRunState.COMPLETED, 10)
+    assert check_program_state(program_runner, ProgramRunState.COMPLETED, 10)
     assert isinstance(program_runner.start_time, datetime)
     assert program_runner.execution_time > 0
     # It should not be possible to start the runner after the runner was completed
     with pytest.raises(RuntimeError):
         program_runner.start(sync=True)
     # Check path
-    last_path = program_runner.skill_run.execution_results[0].paths[2]
+    last_path = program_runner.program_run.execution_results[0].paths[2]
     assert last_path.poses[-1].pose.position.to_tuple() == (0, 100, 300)
     # Check store
-    store = program_runner.skill_run.store
+    store = program_runner.program_run.store
     assert np.allclose(store["home"].pose, [0, 0, 400, 0, np.pi, 0])
     # Check stdout
-    # stdout = program_runner.skill_run.stdout
+    # stdout = program_runner.program_run.stdout
     # assert "before wait" in stdout
     # assert "after wait" in stdout
     # assert "(0.0, 100.0, 400.0, 0.0, 3.142, 0.0)" in stdout
@@ -141,11 +141,11 @@ def test_program_runner_stop(code):
     program_runner = ProgramRunner(code, robot_cell)
     assert not program_runner.is_running()
     program_runner.start()
-    assert check_skill_state(program_runner, ProgramRunState.RUNNING, 4)
+    assert check_program_state(program_runner, ProgramRunState.RUNNING, 4)
     assert program_runner.is_running()
     program_runner.stop(sync=True)
-    assert check_skill_state(program_runner, ProgramRunState.STOPPED, 10)
-    assert program_runner.skill_run.state is ProgramRunState.STOPPED
+    assert check_program_state(program_runner, ProgramRunState.STOPPED, 10)
+    assert program_runner.program_run.state is ProgramRunState.STOPPED
     assert not program_runner.is_running()
     assert not isinstance(sys.stdout, Tee)
 
@@ -164,17 +164,17 @@ move via p2p() to mispelled_var
     home = (0, 0, 400, 0, pi, 0)
     move via p2p() to home
 """,
-            SkillSyntaxError,
+            ProgramSyntaxError,
         ),
-        ("wai 4000", SkillSyntaxError),
+        ("wai 4000", ProgramSyntaxError),
     ],
 )
 def test_program_runner_failed(code, exception):
     with pytest.raises(exception):
         runner = run(code, robot_cell)
-        assert runner.skill_run.state is ProgramRunState.FAILED
-        assert runner.skill_run.error is not None
-        assert runner.skill_run.traceback is not None
+        assert runner.program_run.state is ProgramRunState.FAILED
+        assert runner.program_run.error is not None
+        assert runner.program_run.traceback is not None
         assert not runner.is_running()
         assert not isinstance(sys.stdout, Tee)
 
@@ -188,4 +188,4 @@ move via p2p() to home :: (0, 0, 100)
 """
     with pytest.raises(Exception):
         runner = run(code, raising_robot_cell)
-        assert runner.skill_run.state is ProgramRunState.FAILED
+        assert runner.program_run.state is ProgramRunState.FAILED

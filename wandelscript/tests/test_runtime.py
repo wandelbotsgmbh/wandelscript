@@ -10,7 +10,7 @@ from nova.types.state import MotionState, RobotState
 from wandelscript import exception as wsexception
 from wandelscript import serializer
 from wandelscript.exception import NameError_
-from wandelscript.metamodel import register_debug_func, run_skill
+from wandelscript.metamodel import register_debug_func, run_program
 from wandelscript.runner import run
 from wandelscript.runtime import ActionQueue, ExecutionContext, Store
 from wandelscript.simulation import SimulatedController, SimulatedRobotCell, get_simulated_robot_configs
@@ -20,7 +20,7 @@ from wandelscript.simulation import SimulatedController, SimulatedRobotCell, get
 async def test_runtime_error():
     code = "a = 1\na = b"
     with pytest.raises(NameError_) as error:
-        await run_skill(code)
+        await run_program(code)
     assert error.value.location.start.line == 2
     assert error.value.location.start.column == 4
 
@@ -152,10 +152,10 @@ async def test_run():
     queue = ActionQueue(execution_context)
     motions = [lin((400, 0, 0, 0, 0, 0)), cir((500, 0, 0), (0, 0, 0)), ptp((500, 0, 0))]
     for motion in motions:
-        queue.push(motion, tool="flange", motion_group_id=robot.identifier)
+        queue.push(motion, tool="flange", motion_group_id=robot.id)
 
     await queue._run()
     assert (await robot.get_state("flange")).pose == Pose((500, 0, 0, 0, 0, 0))
-    assert queue.last_pose(robot.identifier) == Pose((500, 0, 0, 0, 0, 0))
-    assert queue._last_motions[robot.identifier] == motions[-1]
+    assert queue.last_pose(robot.id) == Pose((500, 0, 0, 0, 0, 0))
+    assert queue._last_motions[robot.id] == motions[-1]
     assert len(queue._record) == 0

@@ -149,10 +149,10 @@ class ExecutionContext:
         self.call_stack.push(Store(initial_vars))
         self.interceptors: list[Interceptor] = []
         self.stop_event: anyio.Event = stop_event
-        # this will be continuously updated by the metamodel when the skill is executed
+        # this will be continuously updated by the metamodel when the program is executed
         self.location_in_code: wsexception.TextRange | None = None
         self.debug = debug
-        # This holds references to the tasks created by asyncio.create_task() during skill execution.
+        # This holds references to the tasks created by asyncio.create_task() during program execution.
         # This is necessary because of https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task only
         # creating weak references for the in the event loop
         # also it might be sensible to store the data in thread local storage because it is probably
@@ -246,7 +246,7 @@ class ExecutionContext:
 
 
 class CallStack:
-    """The call stack for a wandelscript skill execution
+    """The call stack for a wandelscript program execution
     Attributes:
         max_frames: the maximum call depth.
     """
@@ -313,7 +313,7 @@ async def _(arg: CallAction, context: ExecutionContext) -> None:
 
 
 class ActionQueue:
-    """Collect actions from the skill and processes them
+    """Collect actions from the program and processes them
 
     Implementation detail:
         _record: buffer the motion between the motion pointer and program pointer
@@ -328,7 +328,7 @@ class ActionQueue:
     def __init__(self, execution_context: ExecutionContext):
         self._execution_context = execution_context
         self._stop_event = execution_context.stop_event
-        # A dictionary of robot identifier with corresponding TCP name
+        # A dictionary of robot id with corresponding TCP name
         self._tcp: dict[str, str] = {}
         # Collected motion trajectory of the corresponding robot names
         self._record: dict[str, CombinedActions] = {}
@@ -388,12 +388,8 @@ class ActionQueue:
                 joint_trajectory = await motion_group.plan(
                     actions=container.motions, tcp=tcp, start_joint_position=None, optimizer_setup=None
                 )
-                motion_iter = motion_group.execute(
-                    joint_trajectory=joint_trajectory,
-                    tcp=tcp,
-                    actions=container.motions,
-                    on_movement=None,
-                    movement_controller=None,
+                motion_iter = motion_group.stream_execute(
+                    joint_trajectory=joint_trajectory, tcp=tcp, actions=container.motions
                 )
                 planned_motions[motion_group_id] = self.trigger_actions(motion_iter, container.actions.copy())
             else:
@@ -490,7 +486,7 @@ class ActionQueue:
             if len(self._record[motion_group_id]) >= self.MOTION_LIMIT_IN:
                 raise MotionError(
                     location=self._execution_context.location_in_code,
-                    value="Maximum motion queue size exceeded. Won't plan skill.",
+                    value="Maximum motion queue size exceeded. Won't plan program.",
                 )
 
             self._record[motion_group_id].append(motion)
@@ -509,7 +505,7 @@ class ActionQueue:
         if len(self._path_history) > self.MOTION_LIMIT_OUT:
             raise MotionError(
                 location=self._execution_context.location_in_code,
-                value="Maximum motion queue size exceeded. Won't plan skill.",
+                value="Maximum motion queue size exceeded. Won't plan program.",
             )
 
 

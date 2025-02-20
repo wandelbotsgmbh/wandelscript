@@ -8,7 +8,7 @@ options {
     tokenVocab = wandelscriptLexer;
 }
 
-skill
+program
   : (NEWLINE | statement)* EOF
   ;
 

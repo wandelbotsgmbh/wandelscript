@@ -9,6 +9,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import field
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 
 import anyio
 import anyio.abc
@@ -17,12 +18,13 @@ from exceptiongroup import ExceptionGroup
 from loguru import logger
 from nova.api import models
 from nova.core.robot_cell import ConfigurablePeriphery, RobotCell
+from nova.types import MotionState, RobotState
 
 from wandelscript import serializer
 from wandelscript.exception import NotPlannableError
-from wandelscript.metamodel import Skill
-from wandelscript.models import Path
+from wandelscript.metamodel import Program
 from wandelscript.runtime import ExecutionContext, PlannableActionQueue, current_execution_context_var
+from wandelscript.simulation import SimulatedRobotCell
 from wandelscript.utils.runtime import Tee, stoppable_run
 
 
@@ -34,11 +36,27 @@ class ProgramRunState(Enum):
     STOPPED = "stopped"
 
 
+class PosePath(pydantic.BaseModel):
+    poses: list[RobotState] = field(default=list)
+
+    @classmethod
+    def from_motion_states(cls, motion_states: list[MotionState]):
+        return cls(
+            poses=[
+                RobotState(
+                    pose=motion_state.state.pose,
+                    joints=motion_state.state.joints if motion_state.state.joints is not None else None,
+                )
+                for motion_state in motion_states
+            ]
+        )
+
+
 class ExecutionResult(pydantic.BaseModel):
     """The ExecutionResult object contains the execution results of a robot.
 
     Arguments:
-        motion_group_id: The unique identifier of the motion group
+        motion_group_id: The unique id of the motion group
         motion_duration: The total execution duration of the motion group
         paths: The paths of the motion group as list of Path objects
 
@@ -46,14 +64,14 @@ class ExecutionResult(pydantic.BaseModel):
 
     motion_group_id: str
     motion_duration: float
-    paths: list[Path]
+    paths: list[PosePath]
 
 
 class ProgramRun(pydantic.BaseModel):
     """The ProgramRun object holds the state of a program run.
 
     Args:
-        id: The unique identifier of the program run
+        id: The unique id of the program run
         state: The state of the program run
         logs: The logs of the program run
         stdout: The stdout of the program run
@@ -79,7 +97,7 @@ class ProgramRun(pydantic.BaseModel):
 
 
 class ProgramRunner:
-    """The skill runner provides functionalities to manage a program execution"""
+    """The program runner provides functionalities to manage a program execution"""
 
     def __init__(  # pylint: disable=too-many-positional-arguments
         self,
@@ -98,23 +116,23 @@ class ProgramRunner:
         # serialize the initial store dict
         self._initial_store: dict[str, serializer.ElementType] = initial_store or {}
         self.execution_context: ExecutionContext | None = None
-        self._skill_run: ProgramRun = ProgramRun(id=str(uuid.uuid4()), state=ProgramRunState.NOT_STARTED)
+        self._program_run: ProgramRun = ProgramRun(id=str(uuid.uuid4()), state=ProgramRunState.NOT_STARTED)
         self._thread: threading.Thread | None = None
         self._stop_event: threading.Event | None = None
         self._exc: Exception | None = None
         self._use_plannable_context = use_plannable_context
 
     @property
-    def skill_run(self) -> ProgramRun:
-        return self._skill_run
+    def program_run(self) -> ProgramRun:
+        return self._program_run
 
     @property
     def id(self) -> str:
-        return self.skill_run.id
+        return self.program_run.id
 
     @property
     def state(self) -> ProgramRunState:
-        return self.skill_run.state
+        return self.program_run.state
 
     @property
     def stopped(self):
@@ -128,9 +146,9 @@ class ProgramRunner:
             Optional[datetime]: datetime object
 
         """
-        if self.skill_run.start_time is None:
+        if self.program_run.start_time is None:
             return None
-        return datetime.fromtimestamp(self.skill_run.start_time)
+        return datetime.fromtimestamp(self.program_run.start_time)
 
     @property
     def execution_time(self) -> float | None:
@@ -140,25 +158,25 @@ class ProgramRunner:
             Optional[float]: execution time in seconds
 
         """
-        return self.skill_run.end_time
+        return self.program_run.end_time
 
-    async def _run_skill(self, execution_context: ExecutionContext):
-        # Try parsing the skill and handle parsing error
-        logger.info(f"Parse skill {self.id}...")
+    async def _run_program(self, execution_context: ExecutionContext):
+        # Try parsing the program and handle parsing error
+        logger.info(f"Parse program {self.id}...")
         logger.debug(self._code)
         # TODO(async) if this is a bottleneck make it awaitable (to_thread)
-        skill = Skill.from_code(self._code)
+        program = Program.from_code(self._code)
         # Execute Wandelscript
-        logger.info(f"Run skill {self.id}...")
-        self._skill_run.state = ProgramRunState.RUNNING
-        self._skill_run.start_time = time.time()
-        await skill(execution_context)
+        logger.info(f"Run program {self.id}...")
+        self._program_run.state = ProgramRunState.RUNNING
+        self._program_run.start_time = time.time()
+        await program(execution_context)
 
     def _handle_general_exception(self, exc: Exception):
         # Handle any exceptions raised during task execution
         message = f"{type(exc)}: {str(exc)}"
         traceback = tb.format_exc()
-        logger.error(f"Skill {self.id} failed")
+        logger.error(f"Program {self.id} failed")
         # TODO: whats the equivalent here for the generated API?
         # from pyriphery.pyrae.clients.motion import MotionException
         # if isinstance(exc, MotionException):
@@ -166,9 +184,9 @@ class ProgramRunner:
         # else:
         #    logger.error(traceback)
         #    logger.error(message)
-        self._skill_run.error = message
-        self._skill_run.traceback = traceback
-        self._skill_run.state = ProgramRunState.FAILED
+        self._program_run.error = message
+        self._program_run.traceback = traceback
+        self._program_run.state = ProgramRunState.FAILED
         self._exc = exc
 
     async def estop_handler(
@@ -202,22 +220,22 @@ class ProgramRunner:
         on_state_change: Callable[[], Awaitable[None]],
     ):
         """This function is executed in another thread when the start method is called
-        The parameters that are needed for the skill execution are loaded into
-        the new thread and provided to the skill execution
+        The parameters that are needed for the program execution are loaded into
+        the new thread and provided to the program execution
 
         Args:
             robot_cell_config: the serialized RobotCell configuration as dict
-            stop_event: event that is set when the skill execution should be stopped
-            on_state_change: callback function that is called when the state of the skill runner changes
+            stop_event: event that is set when the program execution should be stopped
+            on_state_change: callback function that is called when the state of the program runner changes
 
         Raises:
-            CancelledError: when the skill execution is cancelled  # noqa: DAR402
+            CancelledError: when the program execution is cancelled  # noqa: DAR402
 
         # noqa: DAR401
         """
 
-        # Create a new logger sink to capture the output of the skill execution
-        # TODO potential memory leak if the the skill is running for a long time
+        # Create a new logger sink to capture the output of the program execution
+        # TODO potential memory leak if the the program is running for a long time
         log_capture = io.StringIO()
         sink_id = logger.add(log_capture)
 
@@ -248,7 +266,7 @@ class ProgramRunner:
                     await tg.start(self.estop_handler, monitoring_scope)
 
                     try:
-                        await self._run_skill(execution_context)
+                        await self._run_program(execution_context)
                     except anyio.get_cancelled_exc_class() as exc:  # noqa: F841
                         # Program was stopped
                         logger.info(f"Program {self.id} cancelled")
@@ -270,7 +288,7 @@ class ProgramRunner:
                             logger.error(f"Error while stopping robot cell: {e!r}")
                             raise
 
-                        self._skill_run.state = ProgramRunState.STOPPED
+                        self._program_run.state = ProgramRunState.STOPPED
                         raise
 
                     except NotPlannableError as exc:
@@ -282,20 +300,20 @@ class ProgramRunner:
                         if self.stopped:
                             # Program was stopped
                             logger.info(f"Program {self.id} stopped successfully")
-                            self._skill_run.state = ProgramRunState.STOPPED
-                        elif self._skill_run.state is ProgramRunState.RUNNING:
+                            self._program_run.state = ProgramRunState.STOPPED
+                        elif self._program_run.state is ProgramRunState.RUNNING:
                             # Program was completed
-                            self._skill_run.state = ProgramRunState.COMPLETED
+                            self._program_run.state = ProgramRunState.COMPLETED
                             logger.info(f"Program {self.id} completed successfully")
                     finally:
                         # write path to output
                         robot_cell = execution_context.robot_cell
-                        self._skill_run.execution_results = [
+                        self._program_run.execution_results = [
                             ExecutionResult(
                                 motion_group_id=result.motion_group_id,
                                 motion_duration=result.motion_duration,
                                 paths=[
-                                    Path.from_motion_states(recorded_trajectory)
+                                    PosePath.from_motion_states(recorded_trajectory)
                                     for recorded_trajectory in result.recorded_trajectories
                                 ],
                             )
@@ -303,12 +321,12 @@ class ProgramRunner:
                         ]
 
                         # write store to output
-                        self._skill_run.store = execution_context.store.data_dict
+                        self._program_run.store = execution_context.store.data_dict
                         logger.info(f"Program {self.id} finished. Run teardown routine...")
-                        self._skill_run.end_time = time.time()
+                        self._program_run.end_time = time.time()
 
                         logger.remove(sink_id)
-                        self._skill_run.logs = log_capture.getvalue()
+                        self._program_run.logs = log_capture.getvalue()
                         monitoring_scope.cancel()
                         await on_state_change()
         except anyio.get_cancelled_exc_class():
@@ -318,23 +336,23 @@ class ProgramRunner:
             self._handle_general_exception(exc)
 
     def start(self, sync=False, on_state_change: Callable[[ProgramRun], Awaitable[None]] | None = None):
-        """Create another thread and starts the skill execution. If the skill was executed already, is currently
-        running, failed or was stopped a new skill runner needs to be created.
+        """Create another thread and starts the program execution. If the program was executed already, is currently
+        running, failed or was stopped a new program runner needs to be created.
 
         Args:
             sync: if True the execution is synchronous and the method blocks until the execution is finished
-            on_state_change: callback function that is called when the state of the skill runner changes
+            on_state_change: callback function that is called when the state of the program runner changes
 
         Raises:
             RuntimeError: when the runner is not in IDLE state
         """
-        # Check if another skill execution is already in progress
+        # Check if another program execution is already in progress
         if self.state is not ProgramRunState.NOT_STARTED:
             raise RuntimeError("The runner is not in the NOT_STARTED state. Create a new runner to execute again.")
 
         async def _on_state_change():
             if on_state_change is not None:
-                await on_state_change(self._skill_run)
+                await on_state_change(self._program_run)
 
         def stopper(sync_stop_event, async_stop_event):
             while not sync_stop_event.wait(0.2):
@@ -345,7 +363,7 @@ class ProgramRunner:
             self._stop_event = threading.Event()
             async_stop_event = anyio.Event()
 
-            # TODO potential memory leak if the the skill is running for a long time
+            # TODO potential memory leak if the the program is running for a long time
             with contextlib.redirect_stdout(Tee(sys.stdout)) as stdout:
                 try:
                     await stoppable_run(
@@ -354,7 +372,7 @@ class ProgramRunner:
                     )
                 except ExceptionGroup as eg:
                     raise eg.exceptions[0]
-                self._skill_run.stdout = stdout.getvalue()
+                self._program_run.stdout = stdout.getvalue()
 
         # Create new thread and runs _run
         # start a new thread
@@ -365,7 +383,7 @@ class ProgramRunner:
             self.join()
 
     def join(self):
-        """Wait for the skill execution to finish
+        """Wait for the program execution to finish
 
         Raises:
             _exc: Exception: when the runner is not in IDLE state
@@ -375,26 +393,26 @@ class ProgramRunner:
             raise self._exc
 
     def stop(self, sync=False):
-        """Stop the skill execution
+        """Stop the program execution
 
         Args:
-            sync: if True the call is blocking until the skill execution is stopped
+            sync: if True the call is blocking until the program execution is stopped
 
         Raises:
             RuntimeError: when the runner is not in IDLE state
 
         """
         if not self.is_running():
-            raise RuntimeError("Skill is not running")
+            raise RuntimeError("Program is not running")
         self._stop_event.set()
         if sync:
             self.join()
 
     def is_running(self) -> bool:
-        """Check if a skill is currently running
+        """Check if a program is currently running
 
         Returns:
-            bool: True if a skill is running
+            bool: True if a program is running
 
         """
         return self._thread is not None and self.state is ProgramRunState.RUNNING
@@ -416,10 +434,10 @@ def run(
         default_robot (str): The default robot that is used when no robot is active
         default_tcp (str): The default TCP that is used when no TCP is explicitly selected for a motion
         initial_state (dict[str, Any], optional): Store will be initialized with this dict. Defaults to ().
-        use_plannable_context (bool): If True, the skill runner will use a plannable context. Defaults to False.
+        use_plannable_context (bool): If True, the program runner will use a plannable context. Defaults to False.
 
     Returns:
-        ProgramRunner: The skill runner object
+        ProgramRunner: The program runner object
 
     """
     runner = ProgramRunner(
@@ -432,3 +450,14 @@ def run(
     )
     runner.start(sync=True)
     return runner
+
+
+def run_file(file_path: Path | str, cell: RobotCell | None, default_robot: str | None, default_tcp: str | None):
+    path = Path(file_path)
+    with open(path) as f:
+        program = f.read()
+        print(program)
+
+    if cell is None:
+        cell = SimulatedRobotCell()
+    run(program, robot_cell=cell, default_robot=default_robot, default_tcp=default_tcp, initial_state=None)

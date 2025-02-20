@@ -1,8 +1,8 @@
-"""Test the execution of sample skills"""
+"""Test the execution of sample programs"""
 
 import pytest
 
-from wandelscript.metamodel import run_skill
+from wandelscript.metamodel import run_program
 
 CODE_FUNC_DEF = """
 move via p2p() to (home=(0, 0.1, 0, 0, 0, 0))
@@ -27,4 +27,4 @@ CODE_SAMPLES = {
 @pytest.mark.parametrize("sample_code_key", CODE_SAMPLES)
 async def test_execution(sample_code_key):
     sample_code = CODE_SAMPLES[sample_code_key]
-    await run_skill(sample_code, default_robot="0@controller", default_tcp="flange")
+    await run_program(sample_code, default_robot="0@controller", default_tcp="flange")

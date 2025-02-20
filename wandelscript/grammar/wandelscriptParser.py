@@ -257,7 +257,7 @@ class wandelscriptParser ( Parser ):
                       "PRINT", "READ", "WRITE", "CALL", "TRUE", "FALSE", 
                       "INT", "FLOAT", "STRING", "NAME", "NEWLINE", "SKIP_" ]
 
-    RULE_skill = 0
+    RULE_program = 0
     RULE_identifier = 1
     RULE_suite = 2
     RULE_statement = 3
@@ -318,7 +318,7 @@ class wandelscriptParser ( Parser ):
     RULE_comparisonOperator = 58
     RULE_logicalOperator = 59
 
-    ruleNames =  [ "skill", "identifier", "suite", "statement", "simpleStatement", 
+    ruleNames =  [ "program", "identifier", "suite", "statement", "simpleStatement", 
                    "break_", "return_", "stop", "pass_", "motion", "switchInterrupt", 
                    "wait", "raiseException", "complexStatement", "whileLoop", 
                    "functionDefinition", "moveDefinition", "forLoop", "range_", 
@@ -415,7 +415,7 @@ class wandelscriptParser ( Parser ):
 
 
 
-    class SkillContext(ParserRuleContext):
+    class ProgramContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -439,29 +439,29 @@ class wandelscriptParser ( Parser ):
 
 
         def getRuleIndex(self):
-            return wandelscriptParser.RULE_skill
+            return wandelscriptParser.RULE_program
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterSkill" ):
-                listener.enterSkill(self)
+            if hasattr( listener, "enterProgram" ):
+                listener.enterProgram(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitSkill" ):
-                listener.exitSkill(self)
+            if hasattr( listener, "exitProgram" ):
+                listener.exitProgram(self)
 
         def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSkill" ):
-                return visitor.visitSkill(self)
+            if hasattr( visitor, "visitProgram" ):
+                return visitor.visitProgram(self)
             else:
                 return visitor.visitChildren(self)
 
 
 
 
-    def skill(self):
+    def program(self):
 
-        localctx = wandelscriptParser.SkillContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 0, self.RULE_skill)
+        localctx = wandelscriptParser.ProgramContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 0, self.RULE_program)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)

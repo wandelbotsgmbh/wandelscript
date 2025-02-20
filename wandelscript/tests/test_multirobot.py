@@ -1,7 +1,7 @@
 import pytest
 
 from wandelscript.exception import NestedSyncError, WrongRobotError
-from wandelscript.metamodel import run_skill
+from wandelscript.metamodel import run_program
 from wandelscript.simulation import SimulatedRobotCell
 
 
@@ -15,7 +15,7 @@ do with controller[0]:
     sync
 """
     with pytest.raises(NestedSyncError):
-        await run_skill(code, cell)
+        await run_program(code, cell)
 
 
 @pytest.mark.asyncio
@@ -38,4 +38,4 @@ and do with controller[1]:
 result = "value_bar"
 """
     with pytest.raises(WrongRobotError):
-        await run_skill(code, cell)
+        await run_program(code, cell)

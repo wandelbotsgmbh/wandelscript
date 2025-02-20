@@ -15,6 +15,7 @@ from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAc
 from nova.core.robot_cell import (
     AbstractRobot,
     AsyncCallableDevice,
+    ConfigurablePeriphery,
     InputDevice,
     OutputDevice,
     RobotCell,
@@ -186,7 +187,7 @@ class Context(Statement):
     ...     move via p2p() to home
     ...     move via line() to (1, 1, 1)
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     20
     """
@@ -234,7 +235,7 @@ class ForLoop(Statement):
     ...     if i == 3:
     ...         break
     ... '''
-    >>> store = asyncio.run(run_skill(code)).store
+    >>> store = asyncio.run(run_program(code)).store
     >>> store['a']
     12
     >>> store['b']
@@ -266,7 +267,7 @@ class RepeatLoop(Statement):
     ... repeat 5:
     ...     a = a + 2
     ... '''
-    >>> store = asyncio.run(run_skill(code)).store
+    >>> store = asyncio.run(run_program(code)).store
     >>> store['a']
     10
     """
@@ -320,7 +321,7 @@ class RobotContext(Statement):
     ... a = read(controller[0], 'flange')
     ... b = read(controller[1], 'flange')
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     Pose(position=Vector3d(x=0.0, y=0.0, z=7.0), orientation=Vector3d(x=0.0, y=0.0, z=0.0))
     >>> store['b']
@@ -335,7 +336,7 @@ class RobotContext(Statement):
             robot = await robot(context)
             if not isinstance(robot, AbstractRobot):
                 raise GenericRuntimeError(self.location, text=f"The device must be a robot but is a: {type(robot)}")
-            with context.with_robot(robot.identifier):
+            with context.with_robot(robot.id):
                 await body(context)
         await context.sync()
 
@@ -354,14 +355,14 @@ class SyncContext(Statement):
     ... sync:
     ...     a = read(controller[0], 'pose')
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     Pose(position=Vector3d(x=1.0, y=2.0, z=3.0), orientation=Vector3d(x=0.0, y=0.0, z=0.0))
 
     >>> code = '''
     ... sync
     ... '''
-    >>> _ = _run_skill_debug(code)
+    >>> _ = _run_program_debug(code)
     """
 
     do_body: Suite | None
@@ -395,7 +396,7 @@ class Switch(Statement):
     ... case 0*10: a = -1
     ... default: a= 2
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     -1
     """
@@ -423,7 +424,7 @@ class Motion(Statement):
     ... home = (0, 0, 0, 0, 0, 0)
     ... move via p2p() to home with blending(10)
     ... '''
-    >>> _ = _run_skill_debug(code)
+    >>> _ = _run_program_debug(code)
     """
 
     connector: Connector
@@ -449,11 +450,11 @@ class Motion(Statement):
             target = await self.frame_relation.target(context)
 
             if isinstance(source, AbstractRobot):
-                start = context.action_queue.last_pose(source.identifier)
-                await self.connector(context, start=start, end=end, tool=target.name, robot=source.identifier)
+                start = context.action_queue.last_pose(source.id)
+                await self.connector(context, start=start, end=end, tool=target.name, robot=source.id)
                 return
             if isinstance(end, Vector3d):
-                raise wandelscript.exception.SkillSyntaxError(
+                raise wandelscript.exception.ProgramSyntaxError(
                     location=self.location, text="No position is supported when here"
                 )
             fs = context.store.frame_system.copy()
@@ -501,7 +502,7 @@ class Pass(Statement):
 
     Example:
     >>> code = 'pass'
-    >>> _ = _run_skill_debug(code)
+    >>> _ = _run_program_debug(code)
     """
 
     async def call(self, context: ExecutionContext, **kwargs):
@@ -514,7 +515,7 @@ class RaiseException(Statement):
 
     Example:
     >>> code = 'raise "Tool not working"'
-    >>> _run_skill_debug(code)
+    >>> _run_program_debug(code)
     Traceback (most recent call last):
      ...
     wandelscript.exception.UserError: User defined error: 'Tool not working'
@@ -557,7 +558,7 @@ class Atom(Rule, Generic[ElementType], ABC):
     ... b = (1, 2, 3, 0, 0, 0)
     ... c = a :: b
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['c']
     Pose(position=Vector3d(x=1.0, y=2.0, z=8.0), orientation=Vector3d(x=0.0, y=0.0, z=0.0))
     """
@@ -666,7 +667,7 @@ class Constant(Atom[ElementType]):
     ... b = 3
     ... c = 4.5
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     Vector3d(x=1.0, y=2.0, z=3.0)
     >>> store['b']
@@ -693,7 +694,7 @@ class ConstantFloat(Constant[float]):
     ... a = 1.3
     ... b = pi
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     1.3
     >>> store['b']
@@ -733,7 +734,7 @@ class Array(Atom[tuple[t.ElementType, ...]]):
     >>> code = '''
     ... a = [1, 2, 3]
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     (1, 2, 3)
     """
@@ -763,7 +764,7 @@ class Record(Atom[dict[str, t.ElementType]]):
     ... a = record['key2']
     ... b = record.key3
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['record']
     Record(data={'key1': 1, 'key2': 'value', 'key3': Vector3d(x=1.0, y=2.0, z=3.0)})
     >>> store['a']
@@ -800,7 +801,7 @@ class ExpressionsList(Atom[t.ElementType]):
             return Vector3d.from_tuple(values)
         if len(values) == 6:
             return Pose(values)
-        raise wandelscript.exception.SkillSyntaxError(None, f"Unexpected number of elements: {len(self.value)}")
+        raise wandelscript.exception.ProgramSyntaxError(None, f"Unexpected number of elements: {len(self.value)}")
 
     def __str__(self):
         return "[" + ",".join(map(str, self.value)) + "]"
@@ -817,7 +818,7 @@ class Break(Statement):
     ...     break
     ...     a = 5
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store["a"]
     10
     """
@@ -837,7 +838,7 @@ class Expression(Atom[ElementType]):
     ... c = (a < b)
     ... d = (a >= b)
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['c']
     True
     >>> store['d']
@@ -872,7 +873,7 @@ class Unary(Atom[ElementType]):
     >>> code = '''
     ... a = ~(1.0, 2.0, 3.0, 0, 0, 0)
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     Pose(position=Vector3d(x=-1.0, y=-2.0, z=-3.0), orientation=Vector3d(x=0.0, y=0.0, z=0.0))
     """
@@ -902,7 +903,7 @@ class Conditional(Statement):
     ... else:
     ...     a = 1
     ... '''
-    >>> store = asyncio.run(run_skill(code)).store
+    >>> store = asyncio.run(run_program(code)).store
     >>> store['a']
     10
     """
@@ -931,7 +932,7 @@ class Print(Statement):
     >>> code = '''
     ... print("Hello Wandelscript")
     ... '''
-    >>> _ = _run_skill_debug(code)
+    >>> _ = _run_program_debug(code)
     Hello Wandelscript
     """
 
@@ -952,7 +953,7 @@ class WhileLoop(Statement):
     ... while i < 100:
     ...     i = i + 13
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['i']
     104
     """
@@ -1055,7 +1056,7 @@ class Addition(Atom[ElementType]):
     ... e = + a
     ... f = -a
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['c']
     8
     >>> store['d']
@@ -1132,7 +1133,7 @@ class Reference(Atom[ElementType]):
     ... a = 3
     ... b = a * 2
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store["b"]
     6
     """
@@ -1162,7 +1163,7 @@ class FrameRelation(Atom[Pose]):
     ... [b | c] = (0, 10, 10, 0, 0, 0)
     ... pose = [a | c]
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store["pose"]
     Pose(position=Vector3d(x=0.0, y=10.0, z=20.0), orientation=Vector3d(x=0.0, y=0.0, z=0.0))
     """
@@ -1196,7 +1197,7 @@ class Assignment(Atom[ElementType], Statement):
     ... c = (d = 2) + 4
     ... e = [1, 2, 3]
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store["a"]
     4
     >>> store["b"]
@@ -1258,7 +1259,7 @@ class RootBlock(Rule):
 
 
 @dataclass(frozen=True)
-class Skill:
+class Program:
     r"""The root of the meta-model
 
     Example:
@@ -1270,9 +1271,9 @@ class Skill:
     ... move via arc((1, 2, 0, 0, -pi, 0)) to (2, 2, 0, 0, -pi, 0)
     ... move via line() to (2, 2, 1, -pi, 0, 0)
     ... '''
-    >>> skill = Skill.from_code(code)
+    >>> program = Program.from_code(code)
     >>> with np.printoptions(precision=2, suppress=True):
-    ...     trajectory = skill.simulate()
+    ...     trajectory = program.simulate()
     >>> assert len(trajectory) > 0
     """
 
@@ -1284,15 +1285,15 @@ class Skill:
         await self.body(context)
 
     @classmethod
-    def from_file(cls, filename: str) -> "Skill":
+    def from_file(cls, filename: str) -> Program:
         return cls.from_code(open(filename, encoding="utf-8").read())
 
     def simulate(self, initial_vars: dict[str, t.ElementType] | None = None):
-        context = asyncio.run(run_skill(self, initial_vars, default_robot="0@controller"))
+        context = asyncio.run(run_program(self, initial_vars, default_robot="0@controller"))
         return context.robot_cell.get_robot("0@controller").recorded_trajectories()
 
     @staticmethod
-    def from_code(code: str) -> "Skill":
+    def from_code(code: str) -> Program:
         raise NotImplementedError()
 
 
@@ -1306,7 +1307,7 @@ class Parameters(Rule):
     ...     return param1 + param2
     ... a = func(3, 4)
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store["a"]
     7
     """
@@ -1323,7 +1324,7 @@ class Arguments(Rule):
 
     Example:
     >>> code = "a = [1, 2, 3, 4, [5, 6]]\n"
-    >>> context = _run_skill_debug(code)
+    >>> context = _run_program_debug(code)
     >>> context.store["a"]
     (1, 2, 3, 4, (5, 6))
     """
@@ -1350,7 +1351,7 @@ class FunctionCall(Atom[ElementType], Statement):
     ... a = power2(3, 4)
     ... b = power(3, 4)
     ... '''
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     81
     >>> store['b']
@@ -1452,7 +1453,7 @@ class Interrupt(Statement):
     ... move via p2p() to home
     ... deactivate inter1
     ... '''
-    >>> _ = _run_skill_debug(code)
+    >>> _ = _run_program_debug(code)
     """
 
     name: str
@@ -1539,7 +1540,7 @@ class Read(Atom[ElementType]):
 
     Example:
     >>> code = 'a = read(controller, "a")'
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     Get default_value from 'a'
     >>> store['a']
     'default_value'
@@ -1551,22 +1552,23 @@ class Read(Atom[ElementType]):
     async def call(self, context: ExecutionContext, **kwargs) -> ElementType:
         key = await self.key(context)
         device = await self.device(context)
+
         if not isinstance(device, (InputDevice, AbstractRobot)):
-            raise GenericRuntimeError(self.location, text=f"{device.identifier} does not support the read operation")
+            raise GenericRuntimeError(self.location, text=f"{device.id} does not support the read operation")
         # classify read action according to user input
         try:
             if isinstance(device, AbstractRobot):
                 if key == "pose":
-                    action = ReadPoseAction(device_id=device.identifier, tcp=None)
+                    action = ReadPoseAction(device_id=device.id, tcp=None)
                 elif key == "joints":
-                    action = ReadJointsAction(device_id=device.identifier)
+                    action = ReadJointsAction(device_id=device.id)
                 else:
                     # read pose from robot with given tcp offset
                     if isinstance(key, Frame):
                         key = key.name
-                    action = ReadPoseAction(device_id=device.identifier, tcp=key)
+                    action = ReadPoseAction(device_id=device.id, tcp=key)
             else:
-                action = ReadAction(device_id=device.identifier, key=key)
+                action = ReadAction(device_id=device.id, key=key)
 
             return await context.action_queue.run_action(action)
         except UnknownPose as e:
@@ -1579,7 +1581,7 @@ class Write(Statement, Generic[ElementType]):
 
     Example:
     >>> code = 'write(controller, "a", 12 * 2)'
-    >>> context = _run_skill_debug(code)
+    >>> context = _run_program_debug(code)
     Set 'a' to 24
     >>> asyncio.run(context.robot_cell['controller'].read('a'))
     Get 24 from 'a'
@@ -1595,7 +1597,7 @@ class Write(Statement, Generic[ElementType]):
         value = await self.value(context)
         device = await self.device(context)
         if not isinstance(device, OutputDevice):
-            raise GenericRuntimeError(self.location, text=f"{device.identifier} does not support the write operation")
+            raise GenericRuntimeError(self.location, text=f"{device.id} does not support the write operation")
 
         if not isinstance(key, str):
             raise GenericRuntimeError(
@@ -1605,7 +1607,7 @@ class Write(Statement, Generic[ElementType]):
             )
 
         # classify write action according to user input
-        action = WriteAction(device_id=device.identifier, key=key, value=value)
+        action = WriteAction(device_id=device.id, key=key, value=value)
 
         # run write action based on sync context
         if context.action_queue.is_empty():
@@ -1621,7 +1623,7 @@ class Call(Atom[ElementType], Statement):
 
     Example:
     >>> code = 'a = call(sensor, "key", 12 * 2, 3)'
-    >>> store = _run_skill_debug(code).store
+    >>> store = _run_program_debug(code).store
     >>> store['a']
     ('key', (24, 3))
     """
@@ -1638,9 +1640,9 @@ class Call(Atom[ElementType], Statement):
         arguments = await self.arguments(context)
         device = await self.device(context)
         if not isinstance(device, AsyncCallableDevice):
-            raise GenericRuntimeError(self.location, text=f"{device.identifier} does not support the call operation.")
+            raise GenericRuntimeError(self.location, text=f"{device.id} does not support the call operation.")
         try:
-            action = CallAction(device_id=device.identifier, key=key, arguments=arguments)
+            action = CallAction(device_id=device.id, key=key, arguments=arguments)
             result = await context.action_queue.run_action(action)
         except TypeError as e:
             # accepting the leakage of the Python error message for now
@@ -1653,7 +1655,7 @@ class Wait(Statement):
     """Wait for a given time in ms
 
     >>> code = "wait 3 + 4"
-    >>> _ = _run_skill_debug(code)
+    >>> _ = _run_program_debug(code)
     Wait for 7 ms
     """
 
@@ -1666,19 +1668,19 @@ class Wait(Statement):
 
 @cache
 def plugins() -> Block:
-    return Skill.from_code(PLUGINS).body.body
+    return Program.from_code(PLUGINS).body.body
 
 
-async def run_skill(
-    skill: Skill | str,
+async def run_program(
+    program: Program | str,
     cell: RobotCell | None = None,
     default_robot: str | None = None,
     default_tcp: str | None = None,
     initial_vars: dict[str, t.ElementType] | None = None,
     debug: bool = True,
 ) -> ExecutionContext:
-    if isinstance(skill, str):
-        skill = Skill.from_code(skill)
+    if isinstance(program, str):
+        program = Program.from_code(program)
     if cell is None:
         cell = SimulatedRobotCell()
     stop_event = anyio.Event()
@@ -1686,12 +1688,12 @@ async def run_skill(
         cell, stop_event, default_robot=default_robot, default_tcp=default_tcp, initial_vars=initial_vars, debug=debug
     )
     async with cell:
-        await skill(context)
+        await program(context)
     return context
 
 
-def _run_skill_debug(skill: Skill | str, default_robot: str | None = "0@controller") -> ExecutionContext:
-    return asyncio.run(run_skill(skill, default_robot=default_robot, default_tcp="flange", debug=True))
+def _run_program_debug(program: Program | str, default_robot: str | None = "0@controller") -> ExecutionContext:
+    return asyncio.run(run_program(program, default_robot=default_robot, default_tcp="flange", debug=True))
 
 
 async def run_rule(rule: Rule, **kwargs):

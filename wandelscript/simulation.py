@@ -2,11 +2,11 @@ import asyncio
 import math
 import time
 from collections import defaultdict
-from typing import Any, Callable, Literal, SupportsIndex
+from typing import Any, Callable, Literal, SupportsIndex, AsyncIterable
 
 import numpy as np
 from nova import api
-from nova.actions import Action, CombinedActions, MovementController
+from nova.actions import Action, MovementController
 from nova.actions.motions import PTP, Circular, JointPTP, Linear
 from nova.core.io import ValueType
 from nova.core.robot_cell import (
@@ -19,7 +19,7 @@ from nova.core.robot_cell import (
     RobotCell,
     Timer,
 )
-from nova.types import MotionState, Pose, RobotState
+from nova.types import MotionState, Pose, RobotState, MovementResponse
 from scipy.spatial.transform import Rotation
 from wandelbots_api_client import models
 
@@ -79,7 +79,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
         """
 
         type: Literal["simulated_robot"] = "simulated_robot"
-        identifier: str = "0@controller"
+        id: str = "0@controller"
         initial_pose: Pose = Pose((0, 0, 0, 0, 0, 0))
         tools: dict[str, Pose] | None = None
         step_size: float = 0
@@ -87,7 +87,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
     def __init__(self, configuration: Configuration = Configuration()):
         if not configuration.tools:
             configuration = configuration.model_copy(update={"tools": {"Flange": Pose((0, 0, 0, 0, 0, 0))}})
-        super().__init__(configuration=configuration)
+        super().__init__(id=configuration.id, configuration=configuration)
         self._step_size = configuration.step_size if configuration.step_size else math.inf
         self._param = 1
         self._trajectory: list[MotionState] = (
@@ -250,9 +250,8 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
         joint_trajectory: models.JointTrajectory,
         tcp: str,
         actions: list[Action],
-        on_movement: Callable[[MotionState | None], None],
         movement_controller: MovementController | None,
-    ):
+    ) -> AsyncIterable[MovementResponse]:
         """
         Executes the given joint_trajectory by simulating the robot's motion.
 
@@ -301,10 +300,8 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
             # Append this Pose to self._trajectory while moving
             self._trajectory.append(motion_state)
 
-            on_movement(motion_state)
-
-        # Append the last motion state to the trajectory
-        on_movement(None)
+            # TODO: yield MovementResponse
+            yield MotionState
 
     async def tcps(self) -> list[api.models.RobotTcp]:
         return [
@@ -377,9 +374,9 @@ class SimulatedIO(ConfigurablePeriphery, Device, IODevice):
 
     class Configuration(ConfigurablePeriphery.Configuration):
         type: Literal["simulated_io"] = "simulated_io"
-        identifier: str = "io"
+        id: str = "io"
 
-    def __init__(self, configuration: Configuration = Configuration(identifier="io"), silent=False):
+    def __init__(self, configuration: Configuration = Configuration(id="io"), silent=False):
         super().__init__(configuration=configuration)
         self._silent = silent
         self._io: dict[str, Any] = defaultdict(default_value)
@@ -404,18 +401,18 @@ class SimulatedController(ConfigurablePeriphery, AbstractController):
 
     class Configuration(ConfigurablePeriphery.Configuration):
         type: Literal["simulated_controller"] = "simulated_controller"
-        identifier: str = "controller"
+        id: str = "controller"
         robots: list[SimulatedRobot.Configuration] | None = None
         raises_on_open: bool = False
 
-    def __init__(self, configuration: Configuration = Configuration(identifier="controller")):
+    def __init__(self, configuration: Configuration = Configuration(id="controller")):
         super().__init__(configuration=configuration)
         if configuration.robots is None:
-            robot_configurations = get_simulated_robot_configs(configuration.identifier, 2)
+            robot_configurations = get_simulated_robot_configs(configuration.id, 2)
         else:
             robot_configurations = configuration.robots
         self._robots: dict[str, AbstractRobot] = {
-            robot.identifier: robot for robot in map(SimulatedRobot, robot_configurations)
+            robot.id: robot for robot in map(SimulatedRobot, robot_configurations)
         }
         self._simulated_io = SimulatedIO()
 
@@ -423,7 +420,7 @@ class SimulatedController(ConfigurablePeriphery, AbstractController):
         return self._robots
 
     def __getitem__(self, item):
-        return self._robots[f"{item}@{self.identifier}"]
+        return self._robots[f"{item}@{self.id}"]
 
     async def read(self, key: str) -> ValueType:
         return await self._simulated_io.read(key)
@@ -444,7 +441,7 @@ class SimulatedTimer(Timer):
 
     class Configuration(Timer.Configuration):
         type: Literal["simulated_timer"] = "simulated_timer"
-        identifier: str = "timer"
+        id: str = "timer"
 
     def __init__(self, configuration: Configuration = Configuration()):
         super().__init__(configuration=configuration)
@@ -468,10 +465,10 @@ class SimulatedAsyncCallable(ConfigurablePeriphery, AsyncCallableDevice):
 
     class Configuration(ConfigurablePeriphery.Configuration):
         type: Literal["simulated_callable"] = "simulated_callable"
-        identifier: str = "callable"
+        id: str = "callable"
 
-    # TODO the identifier is only "sensor" to make it work for the current RobotCell
-    def __init__(self, configuration: Configuration = Configuration(identifier="sensor")):
+    # TODO the id is only "sensor" to make it work for the current RobotCell
+    def __init__(self, configuration: Configuration = Configuration(id="sensor")):
         super().__init__(configuration=configuration)
 
     async def _call(self, key, *args):
@@ -493,7 +490,7 @@ def get_simulated_robot_configs(
     controller_id: str = "controller", num_robots: SupportsIndex = 2
 ) -> list[SimulatedRobot.Configuration]:
     return [
-        SimulatedRobot.Configuration(identifier=f"{i}@{controller_id}", tools={"flange": Pose((0, 0, 0, 0, 0, 0))})
+        SimulatedRobot.Configuration(id=f"{i}@{controller_id}", tools={"flange": Pose((0, 0, 0, 0, 0, 0))})
         for i in range(num_robots)
     ]
 
@@ -502,7 +499,7 @@ def get_robot_controller(controller_id="controller", num_robots=1, raises_on_ope
     """Get a simulated controller"""
     return SimulatedController(
         SimulatedController.Configuration(
-            identifier=controller_id,
+            id=controller_id,
             robots=get_simulated_robot_configs(controller_id=controller_id, num_robots=num_robots),
             raises_on_open=raises_on_open,
         )

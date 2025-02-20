@@ -5,7 +5,7 @@ import pytest
 from nova.actions import CombinedActions, lin, ptp
 from nova.types import MotionSettings, Pose
 
-from wandelscript.metamodel import run_skill
+from wandelscript.metamodel import run_program
 
 
 @pytest.mark.parametrize(
@@ -78,7 +78,7 @@ move via ptp() to (150, -355, 389, 0, pi, 0)
     ids=["with_tcp", "with_velocity", "with_blending"],
 )
 def test_move(code, expected):
-    context = asyncio.run(run_skill(code, default_robot="0@controller", default_tcp="flange"))
+    context = asyncio.run(run_program(code, default_robot="0@controller", default_tcp="flange"))
     paths = context.action_queue._path_history  # pylint: disable=protected-access
 
     for path, expected_path in zip(paths, expected):

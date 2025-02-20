@@ -36,12 +36,12 @@ class ReturnSignal(Signal):
 
 
 class TerminationSignal(Signal):
-    """This exception is used to indicate that the skill needs is terminating"""
+    """This exception is used to indicate that the program needs is terminating"""
 
 
 @dataclass
-class SkillError(Exception):
-    """Generic error when checking, parsing, executing, or debugging the skills"""
+class ProgramError(Exception):
+    """Generic error when checking, parsing, executing, or debugging the programs"""
 
     location: TextRange | None
 
@@ -66,14 +66,14 @@ class SkillError(Exception):
             super().__init__(self.message())
 
 
-class SkillRuntimeError(SkillError):
+class ProgramRuntimeError(ProgramError):
     """Any runtime constraint is not fulfilled"""
 
     def message(self):
         return "Runtime error"
 
 
-class ConfigurationError(SkillRuntimeError):
+class ConfigurationError(ProgramRuntimeError):
     """Robot cell is not sufficiently configured
 
     E.g., robot pose not initialized or hardware not available
@@ -81,7 +81,7 @@ class ConfigurationError(SkillRuntimeError):
 
 
 @dataclass
-class GenericRuntimeError(SkillError):
+class GenericRuntimeError(ProgramError):
     """Raised when an error is detected during wandelscript execution that
     cannot be described by a different exception."""
 
@@ -92,7 +92,7 @@ class GenericRuntimeError(SkillError):
 
 
 @dataclass
-class NameError_(SkillRuntimeError):
+class NameError_(ProgramRuntimeError):
     """Any runtime constraint is not fulfilled"""
 
     name: str
@@ -102,7 +102,7 @@ class NameError_(SkillRuntimeError):
 
 
 @dataclass
-class UserError(SkillRuntimeError):
+class UserError(ProgramRuntimeError):
     """Any runtime constraint is not fulfilled"""
 
     value: str
@@ -112,7 +112,7 @@ class UserError(SkillRuntimeError):
 
 
 @dataclass
-class MotionError(SkillRuntimeError):
+class MotionError(ProgramRuntimeError):
     """Any runtime constraint is not fulfilled"""
 
     value: str
@@ -122,7 +122,7 @@ class MotionError(SkillRuntimeError):
 
 
 @dataclass
-class NotPlannableError(SkillRuntimeError):
+class NotPlannableError(ProgramRuntimeError):
     """Any runtime constraint is not fulfilled"""
 
     value: str
@@ -132,7 +132,7 @@ class NotPlannableError(SkillRuntimeError):
 
 
 @dataclass
-class SkillSyntaxError(SkillError):
+class ProgramSyntaxError(ProgramError):
     """A Wandelscript syntax error"""
 
     text: str | None = None
@@ -142,7 +142,7 @@ class SkillSyntaxError(SkillError):
 
 
 @dataclass
-class NestedSyncError(SkillSyntaxError):
+class NestedSyncError(ProgramSyntaxError):
     """A Wandelscript syntax error"""
 
     def message(self):
