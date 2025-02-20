@@ -53,7 +53,8 @@ move via line() to home :: (0, 100, 0, 0, 0, 0)
     assert "home" in runner.execution_context.store
     assert runner.execution_context.store["a"] == 9
     assert runner.program_run.state is ProgramRunState.COMPLETED
-    assert "print something" in runner.program_run.logs
+    assert "print something" in runner.program_run.stdout
+
     assert not isinstance(sys.stdout, Tee)
 
 
