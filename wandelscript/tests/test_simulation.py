@@ -1,5 +1,6 @@
 import pytest
 from nova.actions.motions import PTP, JointPTP
+from nova.types import MotionState, RobotState
 
 from wandelscript.simulation import SimulatedRobot, naive_joints_to_pose
 from wandelscript.types import Pose
@@ -38,17 +39,14 @@ async def test_simulated_robot_execution():
     #    We'll collect each MotionState from on_movement to verify final position.
     recorded_motion_states = []
 
-    def on_movement(motion_state):
+    motion_iter = robot.stream_execute(
+        joint_trajectory=trajectory, tcp="Flange", actions=actions, movement_controller=None
+    )
+    async for motion_state in motion_iter:
         recorded_motion_states.append(motion_state)
 
-    motion_iter = robot.execute(
-        joint_trajectory=trajectory, tcp="Flange", actions=actions, on_movement=on_movement, movement_controller=None
-    )
-    async for _ in motion_iter:
-        pass
-
     # 5. Check that we actually moved through all steps
-    assert len(recorded_motion_states) - 1 == len(trajectory.joint_positions), (
+    assert len(recorded_motion_states) == len(trajectory.joint_positions), (
         f"Expected {len(trajectory.joint_positions)} motion states, " f"got {len(recorded_motion_states)}."
     )
 

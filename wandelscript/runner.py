@@ -37,7 +37,7 @@ class ProgramRunState(Enum):
 
 
 class PosePath(pydantic.BaseModel):
-    poses: list[RobotState] = field(default=list)
+    poses: list[RobotState] = []
 
     @classmethod
     def from_motion_states(cls, motion_states: list[MotionState]):

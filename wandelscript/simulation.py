@@ -2,7 +2,8 @@ import asyncio
 import math
 import time
 from collections import defaultdict
-from typing import Any, Callable, Literal, SupportsIndex, AsyncIterable
+from datetime import datetime
+from typing import Any, AsyncIterable, Literal, SupportsIndex
 
 import numpy as np
 from nova import api
@@ -19,7 +20,7 @@ from nova.core.robot_cell import (
     RobotCell,
     Timer,
 )
-from nova.types import MotionState, Pose, RobotState, MovementResponse
+from nova.types import MotionState, MovementResponse, Pose, RobotState
 from scipy.spatial.transform import Rotation
 from wandelbots_api_client import models
 
@@ -300,8 +301,36 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
             # Append this Pose to self._trajectory while moving
             self._trajectory.append(motion_state)
 
-            # TODO: yield MovementResponse
-            yield MotionState
+            yield api.models.ExecuteTrajectoryResponse(
+                api.models.Movement(
+                    movement=api.models.MovementMovement(
+                        current_location=0,
+                        state=api.models.RobotControllerState(
+                            controller="Simulated",
+                            operation_mode="OPERATION_MODE_AUTO",
+                            safety_state="SAFETY_STATE_NORMAL",
+                            timestamp=datetime.now(),
+                            motion_groups=[
+                                api.models.MotionGroupState(
+                                    motion_group="0",
+                                    controller="Simulated",
+                                    tcp_pose=api.models.TcpPose(
+                                        tcp="Flange",
+                                        position=motion_state.state.pose.position.model_dump(),
+                                        orientation=motion_state.state.pose.orientation.model_dump(),
+                                    ),
+                                    joint_velocity=api.models.Joints(joints=[0.0] * 6),
+                                    velocity=api.models.MotionVector(linear=api.models.Vector3d(x=0, y=0, z=0)),
+                                    joint_limit_reached=api.models.MotionGroupStateJointLimitReached(
+                                        limit_reached=[False]
+                                    ),
+                                    joint_position=api.models.Joints(joints=list(motion_state.state.joints)),
+                                )
+                            ],
+                        ),
+                    )
+                )
+            )
 
     async def tcps(self) -> list[api.models.RobotTcp]:
         return [
