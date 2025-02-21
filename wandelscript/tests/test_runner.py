@@ -13,7 +13,6 @@ from wandelscript import ProgramRun, ProgramRunner, ProgramRunState, run
 from wandelscript.exception import NameError_, ProgramSyntaxError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.runtime import ExecutionContext
-from wandelscript.serializer import Vector3d
 from wandelscript.simulation import get_robot_controller
 from wandelscript.utils.runtime import Tee
 
