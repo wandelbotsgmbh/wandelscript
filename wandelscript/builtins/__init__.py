@@ -72,7 +72,6 @@ def make_settings_modifier(name):
 
 
 for field_name in MotionSettings.model_fields:
-    print(field_name)
     register_builtin_func(name=field_name, pass_context=True)(make_settings_modifier(field_name))
     match field_name:
         case "tcp_velocity_limit":
