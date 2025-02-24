@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import time
 import uuid
@@ -11,7 +12,7 @@ from nova.core.robot_cell import RobotCell
 
 from wandelscript import ProgramRun, ProgramRunner, ProgramRunState, run
 from wandelscript.exception import NameError_, ProgramSyntaxError
-from wandelscript.ffi import ForeignFunction
+from wandelscript.ffi import ForeignFunction, ff
 from wandelscript.runtime import ExecutionContext
 from wandelscript.simulation import get_robot_controller
 from wandelscript.utils.runtime import Tee
@@ -89,6 +90,29 @@ move via line() to home :: (0, 100, 0, 0, 0, 0)
     assert "10 little Jaegermeisters check if another arg does work" in stdout
 
     assert not isinstance(sys.stdout, Tee)
+
+
+async def custom_async_function() -> int:
+    await asyncio.sleep(0.1)
+    return 42
+
+
+def test_run_with_foreign_async_function():
+    """Showcase that Wandelscript supports also async foreign functions."""
+    code = """
+a = custom_async_function()
+print(a)
+"""
+
+    runner = run(
+        code,
+        robot_cell,
+        default_robot="0@controller",
+        default_tcp="flange",
+        foreign_functions={"custom_async_function": ff(custom_async_function)},
+    )
+    stdout = runner.program_run.stdout
+    assert "42\n" == stdout
 
 
 def test_program_runner():
