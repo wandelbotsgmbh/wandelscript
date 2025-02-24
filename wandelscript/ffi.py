@@ -13,7 +13,7 @@ class ForeignFunction:
     """References a function that can be used inside a Wandelscript.
 
     Args:
-        function: Handle to an arbitrary function.
+        function: Handle to an arbitrary function, even an async function.
         pass_context (bool): Whether or not the function takes the current wandelscript context
             as the first parameter. Defaults to False.
     """
@@ -27,10 +27,10 @@ class ForeignFunction:
 
 
 def ff(fn: Callable, pass_context: bool = False) -> ForeignFunction:
-    """Shortcut method to create a foreign function.
+    """Shortcut method to create a ForeignFunction.
 
     Args:
-        function: Handle to an arbitrary function.
+        function: Handle to an arbitrary function, even an async function.
         pass_context (bool): Whether or not the function takes the current wandelscript context
             as the first parameter. Defaults to False.
     """
