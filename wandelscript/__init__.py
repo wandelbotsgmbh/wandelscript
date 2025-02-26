@@ -17,10 +17,13 @@ import wandelscript.motions  # load all motion connectors
 from wandelscript.metamodel import Program
 from wandelscript.runner import ProgramRun, ProgramRunner, ProgramRunState, run, run_file
 from wandelscript.runtime import ActionQueue, Store
+from wandelscript.version import version
+
+__version__ = version
 
 
 def analyze(code: str):
     Program.from_code(code)
 
 
-__all__ = ["run", "run_file", "Program", "ProgramRun", "ProgramRunner", "ProgramRunState", "Store"]
+__all__ = ["run", "run_file", "Program", "ProgramRun", "ProgramRunner", "ProgramRunState", "Store", "__version__"]
