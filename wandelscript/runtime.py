@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import contextvars
-from collections.abc import AsyncGenerator, Callable, Coroutine, Generator, Iterator, Mapping
+from collections.abc import AsyncIterable, Callable, Coroutine, Generator, Iterator, Mapping
 from contextlib import contextmanager
 from functools import singledispatch
 from math import inf, isinf
@@ -120,6 +120,10 @@ class ExecutionContext:
     _default_robot: str | None
     _active_robot: str | None = None
     _robot_ids: list[str]
+    # Maps the motion group id to the list of recorded motion lists
+    # Each motion list is a path the was planned separately
+    # TODO: maybe we should make it public and helper methods to access the data
+    motion_group_recordings: dict[str, list[list[MotionState]]] = {}
 
     def __init__(  # pylint: disable=too-many-positional-arguments
         self,
@@ -353,8 +357,8 @@ class ActionQueue:
         return not any(self._record.values())
 
     async def trigger_actions(
-        self, motion_iter: AsyncGenerator[MotionState], actions: list[ActionLocation]
-    ) -> AsyncGenerator[MotionState]:
+        self, motion_iter: AsyncIterable[MotionState], actions: list[ActionLocation]
+    ) -> AsyncIterable[MotionState]:
         actions = sorted(actions, key=lambda action: action.path_parameter)
         async for motion_state in motion_iter:
             logger.debug(motion_state)
@@ -399,7 +403,6 @@ class ActionQueue:
                     joint_trajectory=joint_trajectory, tcp=tcp, actions=container.motions
                 )
                 planned_motions[motion_group_id] = self.trigger_actions(motion_iter, container.actions.copy())
-            else:
                 # When the motion trajectory is empty, execute the actions
                 for action_container in container.actions:
                     await self.run_action(action_container.action)
@@ -407,8 +410,14 @@ class ActionQueue:
         if planned_motions:
             combine = stream.merge(*planned_motions.values())
             async with combine.stream() as streamer:
-                async for _ in streamer:
+                async for motion_state in streamer:
+                    if motion_state.motion_group_id not in self._execution_context.motion_group_recordings:
+                        self._execution_context.motion_group_recordings[motion_state.motion_group_id] = [[]]
+                    self._execution_context.motion_group_recordings[motion_state.motion_group_id][-1].append(
+                        motion_state
+                    )
                     pass
+        print(self._execution_context.motion_group_recordings)
 
         self._record.clear()
         self._tcp.clear()

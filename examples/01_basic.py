@@ -1,6 +1,7 @@
 import asyncio
 from pathlib import Path
 
+from loguru import logger
 from nova import Nova
 from nova.api import models
 
@@ -24,9 +25,10 @@ async def main():
             print(state)
 
         robot_cell = await cell.get_robot_cell()
-        wandelscript.run_file(
+        run = wandelscript.run_file(
             Path(__file__).parent / "01_basic.ws", cell=robot_cell, default_tcp=None, default_robot=None
         )
+        # logger.error(run.program_run)
 
         # await cell.delete_robot_controller(controller.controller_id)
 

@@ -94,7 +94,13 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
         self._trajectory: list[MotionState] = (
             []
             if configuration.initial_pose is None
-            else [MotionState(path_parameter=0, state=RobotState(pose=configuration.initial_pose, joints=None))]
+            else [
+                MotionState(
+                    motion_group_id=self.configuration.id,
+                    path_parameter=0,
+                    state=RobotState(pose=configuration.initial_pose, joints=None),
+                )
+            ]
         )
         # Added and used for tests of Wandelscript. In every planned_motion_iter() a motion trajectory is appended to
         # this list. Every motion trajectory corresponds to blocs of wandelscript code between sync commands.
@@ -295,7 +301,9 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
             # Compute the current Pose from these joint values
             current_pose = naive_joints_to_pose(tuple(joints.joints))
             motion_state = MotionState(
-                path_parameter=float(location), state=RobotState(pose=current_pose, joints=tuple(joints.joints))
+                motion_group_id=self.id,
+                path_parameter=float(location),
+                state=RobotState(pose=current_pose, joints=tuple(joints.joints)),
             )
 
             # Append this Pose to self._trajectory while moving
