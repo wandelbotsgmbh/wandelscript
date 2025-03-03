@@ -1,13 +1,25 @@
-{
-  "default":[
-    {
-      "type":"simulated_controller",
-      "id":"controller",
-      "robots":[
-        {
-          "type":"simulated_robot",
-          "id":"0@controller",
-          "initial_pose":{
+[
+  {
+    "type":"simulated_controller",
+    "id":"controller",
+    "robots":[
+      {
+        "type":"simulated_robot",
+        "id":"0@controller",
+        "initial_pose":{
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "tools":{
+          "flange":{
             "position": {
               "x": 0,
               "y": 0,
@@ -19,34 +31,20 @@
               "z": 0
             }
           },
-          "tools":{
-            "flange":{
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
+          "tool":{
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 2
             },
-            "tool":{
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 2
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
             }
           }
         }
-      ]
-    }
-  ]
-}
+      }
+    ]
+  }
+]

@@ -361,7 +361,6 @@ class ActionQueue:
     ) -> AsyncIterable[MotionState]:
         actions = sorted(actions, key=lambda action: action.path_parameter)
         async for motion_state in motion_iter:
-            logger.debug(motion_state)
             if self._stop_event.is_set():
                 logger.info("Stop event set. Stopping motions...")
                 break
@@ -417,7 +416,6 @@ class ActionQueue:
                         motion_state
                     )
                     pass
-        print(self._execution_context.motion_group_recordings)
 
         self._record.clear()
         self._tcp.clear()

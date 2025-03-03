@@ -322,8 +322,6 @@ class ProgramRunner:
                             for motion_group_id, motion_state_list in execution_context.motion_group_recordings.items()
                         ]
 
-                        print(self._program_run.execution_results)
-
                         # write store to output
                         self._program_run.store = execution_context.store.data_dict
                         logger.info(f"Program {self.id} finished. Run teardown routine...")

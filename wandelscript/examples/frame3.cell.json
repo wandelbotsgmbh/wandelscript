@@ -1,55 +1,25 @@
-{
-  "default": [
-    {
-      "type": "simulated_controller",
-      "id": "controller",
-      "robots": [
-        {
-          "type": "simulated_robot",
-          "id": "0@controller",
-          "initial_pose": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "orientation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            }
+[
+  {
+    "type": "simulated_controller",
+    "id": "controller",
+    "robots": [
+      {
+        "type": "simulated_robot",
+        "id": "0@controller",
+        "initial_pose": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
           },
-          "tools": {
-            "flange": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
-            },
-            "tcp1": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 2
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
-            }
+          "orientation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
           }
         },
-        {
-          "type": "simulated_robot",
-          "id": "1@controller",
-          "initial_pose": {
+        "tools": {
+          "flange": {
             "position": {
               "x": 0,
               "y": 0,
@@ -61,42 +31,62 @@
               "z": 0
             }
           },
-          "tools": {
-            "flange": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
+          "tcp1": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 2
             },
-            "tcp2": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 2
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
             }
           }
         }
-      ]
-    }
-  ],
-  "wandelengine": [
-    {
-      "type": "controller",
-      "id": "controller",
-      "controller_model_name": "UniversalRobots::Controller",
-      "host": "controller"
-    }
-  ]
-}
+      },
+      {
+        "type": "simulated_robot",
+        "id": "1@controller",
+        "initial_pose": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "tools": {
+          "flange": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "tcp2": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 2
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          }
+        }
+      }
+    ]
+  }
+]
