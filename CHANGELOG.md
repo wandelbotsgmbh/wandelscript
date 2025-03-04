@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.2.0 (2025-03-04)
+
+### Features
+
+- **RPS-1230**: Propagate motion recordings
+  ([#9](https://github.com/wandelbotsgmbh/wandelscript/pull/9),
+  [`ab9879f`](https://github.com/wandelbotsgmbh/wandelscript/commit/ab9879fd485319ce4709df256cad009636d19496))
+
+Co-authored-by: cbiering <christoph.biering@wandelbots.com>
+
+
 ## v0.1.0 (2025-02-26)
 
 ### Bug Fixes
