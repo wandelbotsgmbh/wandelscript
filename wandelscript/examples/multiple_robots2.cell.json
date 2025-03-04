@@ -19,7 +19,7 @@
           }
         },
         "tools":{
-          "flange":{
+          "Flange":{
             "position": {
               "x": 0,
               "y": 0,
@@ -61,7 +61,7 @@
           }
         },
         "tools":{
-          "flange":{
+          "Flange":{
             "position": {
               "x": 0,
               "y": 0,

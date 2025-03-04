@@ -61,7 +61,7 @@ def test_example(example_name):
     logger.info(f"Running example {example_name}...")
     code, data, config = EXAMPLES[example_name]
     robot_cell = _robot_cell_from_configuration(config)
-    runner = wandelscript.run(code, robot_cell, default_tcp="flange")
+    runner = wandelscript.run(code, robot_cell, default_tcp="Flange")
     store = runner.execution_context.store
     for key, expected in data.items():
         if isinstance(expected, list):

@@ -14,7 +14,7 @@ from wandelscript.metamodel import run_program
         (
             """
 velocity(200)
-tcp = frame("flange")
+tcp = frame("Flange")
 move tcp via ptp() to (150, -355, 389, 0, pi, 0)
 move tcp via line() to (150, -355, 392, 0, pi, 0) with velocity(10)
 move tcp via ptp() to (150, -355, 389, 0, pi, 0)
@@ -79,7 +79,7 @@ move via ptp() to (150, -355, 389, 0, pi, 0)
 )
 # TODO: rebuild this method to check context.motion_group_recordings and remove action_queue._path_history
 def test_move(code, expected):
-    context = asyncio.run(run_program(code, default_robot="0@controller", default_tcp="flange"))
+    context = asyncio.run(run_program(code, default_robot="0@controller", default_tcp="Flange"))
     paths = context.action_queue._path_history  # pylint: disable=protected-access
 
     for path, expected_path in zip(paths, expected):

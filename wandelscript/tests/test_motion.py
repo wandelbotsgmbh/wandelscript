@@ -12,11 +12,11 @@ from wandelscript.simulation import SimulatedController, SimulatedRobot, Simulat
 def test_forbidden_tcp_change_in_one_motion_example():
     code = """
 move via ptp() to (0, 0, 0, 0, 0, 0)
-move frame("flange") to (1, 2, 0)
+move frame("Flange") to (1, 2, 0)
 move frame("tool") to (2, 2, 0)
 """
     robot_configuration = SimulatedRobot.Configuration(
-        id="0@controller", tools={"flange": Pose((0, 0, 0, 0, np.pi, 0)), "tool": Pose((2, 0, 0, 0, np.pi, 0))}
+        id="0@controller", tools={"Flange": Pose((0, 0, 0, 0, np.pi, 0)), "tool": Pose((2, 0, 0, 0, np.pi, 0))}
     )
     controller = SimulatedController(SimulatedController.Configuration(robots=[robot_configuration]))
     with pytest.raises(ProgramRuntimeError):
@@ -29,7 +29,7 @@ move via ptp() to (0, 0, 10, 0, 0, 0)
 move via line() to (0, 10, 10, 0, 0, 0)
 """
     cell = get_robot_cell()
-    runner = wandelscript.run(code, cell, default_robot="0@controller", default_tcp="flange")
+    runner = wandelscript.run(code, cell, default_robot="0@controller", default_tcp="Flange")
     path = runner.program_run.execution_results[0].paths[0]
     # The first position will be at the origin because the simulated robot assumes it as the default initial position
     assert np.allclose(path.poses[0].pose.position, [0, 0, 0])
@@ -56,7 +56,7 @@ move via ptp() to (23, 0, 626, 0, 0, 0)
     expected_motion_types = [[PTP, Linear, PTP], [PTP, Linear], [Linear, PTP]]
 
     cell = get_robot_cell()
-    runner = wandelscript.run(code, cell, default_tcp="flange")
+    runner = wandelscript.run(code, cell, default_tcp="Flange")
 
     record_of_commands = runner.execution_context.robot_cell.get_robot("0@controller").record_of_commands
 

@@ -41,7 +41,7 @@ class Store:
         self._parent: Store | None = parent
         self._data: dict[str, Any] = {}
         # self._data.update(**self.environment.robot_cell)
-        self.FLANGE = Frame("flange", self.frame_system)
+        self.FLANGE = Frame("Flange", self.frame_system)
         self.ROBOT = Frame("robot_", self.frame_system)
 
         if init_vars:
