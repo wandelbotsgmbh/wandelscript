@@ -318,8 +318,8 @@ class RobotContext(Statement):
     ... and do with controller[1]:
     ...     move to (0, 0, 0, 0, 0, 0)
     ...     move to (0, 0, 11, 0, 0, 0)
-    ... a = read(controller[0], 'flange')
-    ... b = read(controller[1], 'flange')
+    ... a = read(controller[0], 'Flange')
+    ... b = read(controller[1], 'Flange')
     ... '''
     >>> store = _run_program_debug(code).store
     >>> store['a']
@@ -1265,7 +1265,7 @@ class Program:
     Example:
     >>> import numpy as np
     >>> code = '''
-    ... tcp("flange")
+    ... tcp("Flange")
     ... move via p2p() to (0, 0, 0, 0, 0, 0)
     ... move via line() to (1, 1, 0, 0, -pi, 0)
     ... move via arc((1, 2, 0, 0, -pi, 0)) to (2, 2, 0, 0, -pi, 0)
@@ -1694,7 +1694,7 @@ async def run_program(
 
 
 def _run_program_debug(program: Program | str, default_robot: str | None = "0@controller") -> ExecutionContext:
-    return asyncio.run(run_program(program, default_robot=default_robot, default_tcp="flange", debug=True))
+    return asyncio.run(run_program(program, default_robot=default_robot, default_tcp="Flange", debug=True))
 
 
 async def run_rule(rule: Rule, **kwargs):

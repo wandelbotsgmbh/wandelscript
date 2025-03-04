@@ -9,9 +9,9 @@ from wandelscript.simulation import SimulatedRobotCell
 async def test_raise_using_sync_in_robotcontext():
     cell = SimulatedRobotCell()
     code = """
-flange = frame("flange")
+Flange = frame("Flange")
 do with controller[0]:
-    move flange via p2p() to (100, 200, 300, 0.1, 0.2, 0.3)
+    move Flange via p2p() to (100, 200, 300, 0.1, 0.2, 0.3)
     sync
 """
     with pytest.raises(NestedSyncError):

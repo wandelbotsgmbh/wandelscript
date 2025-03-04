@@ -77,7 +77,7 @@ move via line() to home :: (0, 100, 0, 0, 0, 0)
     }
 
     runner = run(
-        code, robot_cell, default_robot="0@controller", default_tcp="flange", foreign_functions=foreign_functions
+        code, robot_cell, default_robot="0@controller", default_tcp="Flange", foreign_functions=foreign_functions
     )
     assert "home" in runner.execution_context.store
     assert runner.execution_context.store["a"] == 9
@@ -108,7 +108,7 @@ print(a)
         code,
         robot_cell,
         default_robot="0@controller",
-        default_tcp="flange",
+        default_tcp="Flange",
         foreign_functions={"custom_async_function": ff(custom_async_function)},
     )
     stdout = runner.program_run.stdout
@@ -141,7 +141,7 @@ sync
 print(read(controller[0], "pose"))
 move via line() to (0, 100, 300, 0, pi, 0)
 """
-    program_runner = ProgramRunner(code, robot_cell, default_tcp="flange")
+    program_runner = ProgramRunner(code, robot_cell, default_tcp="Flange")
     assert not program_runner.is_running()
     assert program_runner.start_time is None
     assert program_runner.execution_time is None
@@ -184,7 +184,7 @@ move via line() to (0, 100, 300, 0, pi, 0)
 wait 4000
 """,
         """
-tcp("flange")
+tcp("Flange")
 home = (-189, -600, 260, 0, -pi, 0)
 move via p2p() to home
 wait 4000

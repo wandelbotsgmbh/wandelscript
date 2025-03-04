@@ -382,7 +382,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
 
     async def tcp_pose(self, tcp: str | None = None) -> Pose:
         if tcp is None:
-            tcp = "flange"
+            tcp = "Flange"
         state = await self.get_state(tcp)
         return state.pose
 
@@ -527,7 +527,7 @@ def get_simulated_robot_configs(
     controller_id: str = "controller", num_robots: SupportsIndex = 2
 ) -> list[SimulatedRobot.Configuration]:
     return [
-        SimulatedRobot.Configuration(id=f"{i}@{controller_id}", tools={"flange": Pose((0, 0, 0, 0, 0, 0))})
+        SimulatedRobot.Configuration(id=f"{i}@{controller_id}", tools={"Flange": Pose((0, 0, 0, 0, 0, 0))})
         for i in range(num_robots)
     ]
 

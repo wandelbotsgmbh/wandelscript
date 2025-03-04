@@ -44,7 +44,7 @@ debug()
 """
 
     robot_cell = SimulatedRobotCell()
-    run(code, robot_cell, default_robot="0@controller", default_tcp="flange")
+    run(code, robot_cell, default_robot="0@controller", default_tcp="Flange")
     assert test_a == 1
 
 
@@ -94,9 +94,9 @@ def test_robot_code_execution(code, num_robots, expected_exception):
     )
     if expected_exception:
         with pytest.raises(expected_exception):
-            run(code, robot_cell, default_tcp="flange")
+            run(code, robot_cell, default_tcp="Flange")
     else:
-        result = run(code, robot_cell, default_tcp="flange")
+        result = run(code, robot_cell, default_tcp="Flange")
         assert result is not None
 
 
@@ -152,10 +152,10 @@ async def test_run():
     queue = ActionQueue(execution_context)
     motions = [lin((400, 0, 0, 0, 0, 0)), cir((500, 0, 0), (0, 0, 0)), ptp((500, 0, 0))]
     for motion in motions:
-        queue.push(motion, tool="flange", motion_group_id=robot.id)
+        queue.push(motion, tool="Flange", motion_group_id=robot.id)
 
     await queue._run()
-    assert (await robot.get_state("flange")).pose == Pose((500, 0, 0, 0, 0, 0))
+    assert (await robot.get_state("Flange")).pose == Pose((500, 0, 0, 0, 0, 0))
     assert queue.last_pose(robot.id) == Pose((500, 0, 0, 0, 0, 0))
     assert queue._last_motions[robot.id] == motions[-1]
     assert len(queue._record) == 0
