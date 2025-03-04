@@ -311,17 +311,15 @@ class ProgramRunner:
                             logger.info(f"Program {self.id} completed successfully")
                     finally:
                         # write path to output
-                        robot_cell = execution_context.robot_cell
                         self._program_run.execution_results = [
                             ExecutionResult(
-                                motion_group_id=result.motion_group_id,
-                                motion_duration=result.motion_duration,
+                                motion_group_id=motion_group_id,
+                                motion_duration=0,
                                 paths=[
-                                    PosePath.from_motion_states(recorded_trajectory)
-                                    for recorded_trajectory in result.recorded_trajectories
+                                    PosePath.from_motion_states(motion_states) for motion_states in motion_state_list
                                 ],
                             )
-                            for result in robot_cell.get_execution_results()
+                            for motion_group_id, motion_state_list in execution_context.motion_group_recordings.items()
                         ]
 
                         # write store to output
@@ -460,12 +458,13 @@ def run(
     return runner
 
 
-def run_file(file_path: Path | str, cell: RobotCell | None, default_robot: str | None, default_tcp: str | None):
+def run_file(
+    file_path: Path | str, cell: RobotCell | None, default_robot: str | None, default_tcp: str | None
+) -> ProgramRunner:
     path = Path(file_path)
     with open(path) as f:
         program = f.read()
-        print(program)
 
     if cell is None:
         cell = SimulatedRobotCell()
-    run(program, robot_cell=cell, default_robot=default_robot, default_tcp=default_tcp, initial_state=None)
+    return run(program, robot_cell=cell, default_robot=default_robot, default_tcp=default_tcp, initial_state=None)

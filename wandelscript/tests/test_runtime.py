@@ -117,12 +117,12 @@ def test_store_data_dict():
 @pytest.mark.asyncio
 async def test_trigger_actions():
     async def motion_iterator():
-        yield MotionState(path_parameter=0, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
-        yield MotionState(path_parameter=1, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
-        yield MotionState(path_parameter=2, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
-        yield MotionState(path_parameter=3, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
-        yield MotionState(path_parameter=4, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
-        yield MotionState(path_parameter=5, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
+        yield MotionState(motion_group_id="0", path_parameter=0, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
+        yield MotionState(motion_group_id="0", path_parameter=1, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
+        yield MotionState(motion_group_id="0", path_parameter=2, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
+        yield MotionState(motion_group_id="0", path_parameter=3, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
+        yield MotionState(motion_group_id="0", path_parameter=4, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
+        yield MotionState(motion_group_id="0", path_parameter=5, state=RobotState(pose=Pose((0, 0, 0, 0, 0, 0))))
 
     actions = [
         ActionLocation(path_parameter=0, action=io_write(device_id="controller", key="some_io", value=0.5)),

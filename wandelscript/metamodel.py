@@ -1290,7 +1290,7 @@ class Program:
 
     def simulate(self, initial_vars: dict[str, t.ElementType] | None = None):
         context = asyncio.run(run_program(self, initial_vars, default_robot="0@controller"))
-        return context.robot_cell.get_robot("0@controller").recorded_trajectories()
+        return context.motion_group_recordings
 
     @staticmethod
     def from_code(code: str) -> Program:

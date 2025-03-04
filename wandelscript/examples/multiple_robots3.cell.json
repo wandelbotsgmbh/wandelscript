@@ -1,59 +1,29 @@
-{
-  "default": [
-    {
-      "type": "simulated_io",
-      "id": "controller"
-    },
-    {
-      "type": "simulated_controller",
-      "id": "controller",
-      "robots": [
-        {
-          "type": "simulated_robot",
-          "id": "0@controller",
-          "initial_pose": {
-            "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
-          },
-          "tools": {
-            "flange": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
+[
+  {
+    "type": "simulated_io",
+    "id": "controller"
+  },
+  {
+    "type": "simulated_controller",
+    "id": "controller",
+    "robots": [
+      {
+        "type": "simulated_robot",
+        "id": "0@controller",
+        "initial_pose": {
+          "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
             },
-            "tool100": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 2
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
             }
-          }
         },
-        {
-          "type": "simulated_robot",
-          "id": "1@controller",
-          "initial_pose": {
+        "tools": {
+          "flange": {
             "position": {
               "x": 0,
               "y": 0,
@@ -65,48 +35,62 @@
               "z": 0
             }
           },
-          "tools": {
-            "flange": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
+          "tool100": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 2
             },
-            "TOOL 0": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 2
-              },
-              "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
             }
           }
         }
-      ]
-    }
-  ],
-  "wandelengine": [
-    {
-      "type": "controller",
-      "id": "controller",
-      "controller_model_name": "UniversalRobots::Controller",
-      "host": "controller"
-    },
-    {
-      "type": "controller",
-      "id": "controller2",
-      "controller_model_name": "Yaskawa::YRC1000",
-      "host": "controller2"
-    }
-  ]
-}
+      },
+      {
+        "type": "simulated_robot",
+        "id": "1@controller",
+        "initial_pose": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "tools": {
+          "flange": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "TOOL 0": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 2
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          }
+        }
+      }
+    ]
+  }
+]

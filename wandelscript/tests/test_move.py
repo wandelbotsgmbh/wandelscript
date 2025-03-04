@@ -77,6 +77,7 @@ move via ptp() to (150, -355, 389, 0, pi, 0)
     ],
     ids=["with_tcp", "with_velocity", "with_blending"],
 )
+# TODO: rebuild this method to check context.motion_group_recordings and remove action_queue._path_history
 def test_move(code, expected):
     context = asyncio.run(run_program(code, default_robot="0@controller", default_tcp="flange"))
     paths = context.action_queue._path_history  # pylint: disable=protected-access

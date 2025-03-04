@@ -1,8 +1,7 @@
 import asyncio
 from pathlib import Path
 
-from nova import Nova
-from nova.api import models
+from nova import Nova, api
 
 import wandelscript
 
@@ -11,7 +10,7 @@ async def main():
     async with Nova() as nova:
         cell = nova.cell()
         controller = await cell.ensure_virtual_robot_controller(
-            "ur", models.VirtualControllerTypes.UNIVERSALROBOTS_MINUS_UR10E, models.Manufacturer.UNIVERSALROBOTS
+            "ur", api.models.VirtualControllerTypes.UNIVERSALROBOTS_MINUS_UR10E, api.models.Manufacturer.UNIVERSALROBOTS
         )
 
         async with controller[0] as motion_group:
@@ -24,9 +23,10 @@ async def main():
             print(state)
 
         robot_cell = await cell.get_robot_cell()
-        wandelscript.run_file(
+        run = wandelscript.run_file(
             Path(__file__).parent / "01_basic.ws", cell=robot_cell, default_tcp=None, default_robot=None
         )
+        print(run.program_run.execution_results)
 
         # await cell.delete_robot_controller(controller.controller_id)
 

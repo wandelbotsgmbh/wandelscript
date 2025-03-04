@@ -1,5 +1,5 @@
 ---
-name: 'Validate PR Title'
+name: "Validate PR Title"
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ jobs:
   validate-title:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Validate PR Title'
+      - name: "Validate PR Title"
         shell: bash
         run: |
           PR_TITLE="${{ github.event.pull_request.title }}"
