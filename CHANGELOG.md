@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.2.1 (2025-03-04)
+
+### Chores
+
+- Renamed flange to Flange to make it work in Wandelengine
+  ([#10](https://github.com/wandelbotsgmbh/wandelscript/pull/10),
+  [`479c911`](https://github.com/wandelbotsgmbh/wandelscript/commit/479c91113766f8a5f0cd2a4678020535daf2f8cd))
+
+Co-authored-by: cbiering <christoph.biering@wandelbots.com>
+
+
 ## v0.2.0 (2025-03-04)
 
 ### Features
