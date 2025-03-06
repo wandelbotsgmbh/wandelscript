@@ -415,7 +415,6 @@ class ActionQueue:
                     self._execution_context.motion_group_recordings[motion_state.motion_group_id][-1].append(
                         motion_state
                     )
-                    pass
 
         self._record.clear()
         self._tcp.clear()
