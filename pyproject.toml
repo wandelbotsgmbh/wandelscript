@@ -14,6 +14,11 @@ packages = [
     { include = "wandelscript" }
 ]
 
+[tool.poetry.scripts]
+wandelscript = "wandelscript.cli:app"
+ws = "wandelscript.cli:app"
+
+
 [tool.poetry.dependencies]
 python = "^3.10"
 aiostream = "^0.6.1"
@@ -29,6 +34,7 @@ pillow = "^11.1.0"
 # TODO: move to wandelbots-nova
 asyncua = "^1.1.5"
 python-dotenv = "^1.0.1"
+typer = {extras = ["all"], version = "^0.15.2"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"

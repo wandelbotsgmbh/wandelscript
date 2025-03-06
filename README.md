@@ -53,9 +53,23 @@ Key dependencies:
 
 ## Usage
 
-1. **Run Scripts**: Use the `runtime.py` module to execute Wandelscript programs.
+1. **CLI Tool**: Use the `wandelscript` CLI tool
 2. **Extend Functionality**: Add new plugins or built-ins to customize the scripting environment.
 3. **Examples**: Refer to the `/examples` folder for sample Wandelscript files.
+
+### CLI Tool
+
+There is a CLI tool `wandelscript`, as well as its shortcut pendant `ws` that gets installed into
+the Python environment when calling `poetry install`.
+
+Example uses of the `wandelscript` CLI tool:
+```bash
+poetry run wandelscript --help
+poetry run wandelscript my_script.cli
+poetry run ws my_script.cli  # shortcut alternative to `poetry run wandelscript`
+```
+
+See `poetry run wandelscript --help` for information about available CLI arguments.
 
 ## Contributing
 
