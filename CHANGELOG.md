@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.2.2 (2025-03-07)
+
+### Chores
+
+- Update sdk version ([#12](https://github.com/wandelbotsgmbh/wandelscript/pull/12),
+  [`d2f92bf`](https://github.com/wandelbotsgmbh/wandelscript/commit/d2f92bf2ffa39ce323196307e3c52c46b56ea198))
+
+
 ## v0.2.1 (2025-03-04)
 
 ### Chores
