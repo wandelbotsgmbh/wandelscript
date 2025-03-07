@@ -1,6 +1,57 @@
 # CHANGELOG
 
 
+## v0.3.0 (2025-03-07)
+
+### Chores
+
+- Groom README.md
+  ([`c20a504`](https://github.com/wandelbotsgmbh/wandelscript/commit/c20a50492f017c43984507266386e4c6a8d4f3fb))
+
+- Remove a superfluous `pass`
+  ([`c28ca44`](https://github.com/wandelbotsgmbh/wandelscript/commit/c28ca44d9a44d556955d7b2e0e3bd7de38905587))
+
+- Remove an outdated TODO in `pyproject.toml`
+  ([`94d0eec`](https://github.com/wandelbotsgmbh/wandelscript/commit/94d0eec4b87138a0c01eefc147883fe5299eadbd))
+
+### Features
+
+- **RPS-1286**: Add Wandelscript CLI executable
+  ([`476cc10`](https://github.com/wandelbotsgmbh/wandelscript/commit/476cc107ee6867bb3caf45046e113b85a25bd52e))
+
+Just a small one.
+
+At the moment, only accesses a cell, everything else has to be defined inside the wandelscript.
+  E.g., code like the following is supposed to work, assuming the cell and TCPs are set up prior:
+
+tcp("flange") robot = get_controller("controller")[0] home = read(robot, "pose") sync
+
+# Set the velocity of the robot to 200 mm/s velocity(200)
+
+do with robot: for i = 0..3: move via ptp() to home move via line() to (0, 0, 0, 0, 0, 0) :: home
+  move via line() to (200, 0, 0, 0, 0, 0) :: home move via ptp() to home
+
+I see that in future we can specify cell, robot, TCPs and more via command line. However, baby
+  steps. Thus adding this now hereby. I believe we can grow this over time and according to our
+  usage patterns.
+
+Install the CLI tool by calling:
+
+poetry install
+
+This installs the executable into your virtual environment.
+
+You can then use the CLI via:
+
+poetry run wandelscript --help poetry run wandelscript examples/my_script.cli poetry run ws
+  examples/my_script.cli # shortcut alternative
+
+I used `typer` for its apparent popularity within the team.
+
+Note that importing wandelscript takes a horrendous amount of time, thus the CLI loads precariously
+  slow.
+
+
 ## v0.2.2 (2025-03-07)
 
 ### Chores
