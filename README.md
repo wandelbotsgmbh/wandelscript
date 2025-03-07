@@ -2,7 +2,9 @@
 
 ## Introduction
 
-Wandelscript is a robust framework designed for defining, parsing, type checking, and executing advanced scripting capabilities for robot automation. It integrates grammar-based parsing, runtime execution, and plugin extensibility, making it suitable for complex robot programming scenarios.
+Wandelscript is a robust framework designed for defining, parsing, type checking, and executing
+advanced scripting capabilities for robot automation. It integrates grammar-based parsing, runtime
+execution, and plugin extensibility, making it suitable for complex robot programming scenarios.
 
 ## Features
 
@@ -15,8 +17,8 @@ Wandelscript is a robust framework designed for defining, parsing, type checking
 
 ## Grammar
 
-The Wandelscript grammar is defined under `/wandelscript/grammar`. To generate the parser, use the following command:
-
+The Wandelscript grammar is defined under `wandelscript/grammar/`. To generate the parser, use the
+following command:
 ```bash
 cd wandelscript/grammar && poetry run antlr4 -Dlanguage=Python3 -visitor *.g4
 ```
@@ -27,33 +29,27 @@ The repository is organized as follows:
 
 - **Core Modules**:
   - `runtime.py`: Implements the execution context for Wandelscript.
-  - `action_queue.py`: Manages motion and action queues for robots.
   - `exception.py`: Defines custom exceptions for Wandelscript.
-  - `datatypes.py`: Includes type definitions and helper functions.
   - `models.py`: Contains data models for serialization and execution.
   - `metamodel.py`: Facilitates runtime extensions and plugin registration.
 - **Built-ins**: Found under `wandelscript/builtins`, these are pre-defined plugins for:
-  - Kinematics (`kinematics.py`)
   - Math operations (`math.py`)
   - String manipulation (`string.py`)
-  - Robotics control (`controller.py`, `collider.py`)
-- **Plugins**: Add custom features like image processing or complex robot motions, defined in `plugins_addons.py`.
+  - Robotics control (`controller.py`)
 - **Examples**: Demonstrates Wandelscript's capabilities with real-world use cases in `wandelscript/examples/`.
 
 ## Dependencies
 
 The project uses the Poetry dependency manager. Install the dependencies using:
-
 ```bash
 poetry install
 ```
 
 Key dependencies:
 - Python 3.10+
-- ANTLR4 for grammar processing
-- wandelbots-nova for data types and interaction with robot
-- Pydantic for data validation
-- Additional libraries for AI streaming, OPC UA, and geometric algebra.
+- [ANTLR4](https://www.antlr.org/) for grammar processing
+- [wandelbots-nova](https://pypi.org/project/wandelbots-nova/) for data types and interaction with robots
+- [Pydantic](https://docs.pydantic.dev/) for data validation
 
 ## Usage
 
