@@ -28,7 +28,6 @@ geometricalgebra = "^0.1.3"
 pillow = "^11.1.0"
 # TODO: move to wandelbots-nova
 asyncua = "^1.1.5"
-# TODO: needs to be removed from nova
 python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
