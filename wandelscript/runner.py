@@ -17,6 +17,7 @@ import pydantic
 from exceptiongroup import ExceptionGroup
 from loguru import logger
 from nova.api import models
+from nova.core.exceptions import PlanTrajectoryFailed
 from nova.core.robot_cell import ConfigurablePeriphery, RobotCell
 from nova.types import MotionState, RobotState
 
@@ -175,22 +176,21 @@ class ProgramRunner:
         self._program_run.start_time = time.time()
         await program(execution_context)
 
-    def _handle_general_exception(self, exc: Exception):
+    def _handle_general_exception(self, exc: Exception) -> None:
         # Handle any exceptions raised during task execution
-        message = f"{type(exc)}: {str(exc)}"
         traceback = tb.format_exc()
         logger.error(f"Program {self.id} failed")
-        # TODO: whats the equivalent here for the generated API?
-        # from pyriphery.pyrae.clients.motion import MotionException
-        # if isinstance(exc, MotionException):
-        #    logger.error("MotionException was raised. Suppressing output since it is too long.")
-        # else:
-        #    logger.error(traceback)
-        #    logger.error(message)
+
+        if isinstance(exc, PlanTrajectoryFailed):
+            message = f"{type(exc)}: {exc.to_pretty_string()}"
+        else:
+            message = f"{type(exc)}: {str(exc)}"
+            logger.error(traceback)
+            self._exc = exc
+        logger.error(message)
         self._program_run.error = message
         self._program_run.traceback = traceback
         self._program_run.state = ProgramRunState.FAILED
-        self._exc = exc
 
     async def estop_handler(
         self,
