@@ -25,13 +25,13 @@ def _validate_url(url: str) -> bool:
 
 
 async def main(code: str):
-    """Main program logic"""
+    """Main program logic."""
     async with Nova() as nova:
         cell = nova.cell()
         robot_cell = await cell.get_robot_cell()
         runner = wandelscript.run(code, robot_cell=robot_cell, default_tcp=None, default_robot=None)
 
-    echo(runner.program_run.execution_results)
+    echo(f"Execution results:\n{runner.program_run.execution_results}")
 
 
 @app.command()
