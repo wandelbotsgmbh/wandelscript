@@ -1,9 +1,9 @@
-# Lets first define a position 'a'. The position is given by three coordiantes x, y, z in a frame of reference.
-# Lets provide the cooridinates in the world frame of reference.
+# Lets first define a position 'a'. The position is given by three coordinates x, y, z in a frame of reference.
+# Lets provide the coordinates in the world frame of reference.
 
 position_of_a_in_world = (1, 2, 3)
 
-# The robot (base) is mounted at a specific pose in the world frame of reference. Lets call this pose
+# The robot (base) is mounted at a specific pose in the world frame of reference. Lets call this pose.
 
 pose_of_robot_in_world = (30, 20, 10, 0, 0, 0)
 
