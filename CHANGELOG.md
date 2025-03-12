@@ -1,6 +1,47 @@
 # CHANGELOG
 
 
+## v0.3.1 (2025-03-12)
+
+### Bug Fixes
+
+- Allow for special characters in PR titles
+  ([`2a8c8c2`](https://github.com/wandelbotsgmbh/wandelscript/commit/2a8c8c28154ec29991afeb52c9bf9f38a8d8b12b))
+
+The prior way made backticks evaluate as bash or sh subshells commands.
+
+E.g., I got following error:
+
+Run PR_TITLE="feat(RPS-1311): Add pretty string repr for `PlanTrajectoryFailed` errors"
+  /home/runner/work/_temp/7006b9fd-09b9-48b8-b2de-64f7a17ea6e7.sh: line 1: PlanTrajectoryFailed:
+  command not found Error: Process completed with exit code 127.
+
+Hereby forbid arbitrary code execution via PR Titles, as funny as that may be, and allow special
+  characters such as backticks.
+
+- Fix typos in `poses2.ws` example
+  ([`d29e88e`](https://github.com/wandelbotsgmbh/wandelscript/commit/d29e88eecdc1c9014427b5fc0f3774131b4a1e02))
+
+- **RPS-1311**: Improve error messages for `PlanTrajectoryErrors`
+  ([`b4af166`](https://github.com/wandelbotsgmbh/wandelscript/commit/b4af166a6fd2d3e90b85abfe4406e824cde35b45))
+
+In the case of PlanTrajectoryErrors, omit the very long output error lines in favor of a concise
+  info about the error description.
+
+This ALSO touches on the traceback, since it goes haywire in the CLI. Simple solution is to not set
+  the ProgramRunner._exc variable. The output is so hyuge, thousands of lines of floating point
+  numbers, nobody in their right mind would inspect them and hope to see something meaningful.
+
+A somewhat technical but much lighter message is still conveyed to both robot pad and stdout.
+
+Also require nova 0.47.0 in order to get access to the new pretty string method.
+
+### Chores
+
+- Improve output formatting in `cli.py`
+  ([`af99e8e`](https://github.com/wandelbotsgmbh/wandelscript/commit/af99e8eee2f60c0fbad331f3ea7ba8a130bcfd16))
+
+
 ## v0.3.0 (2025-03-07)
 
 ### Chores
