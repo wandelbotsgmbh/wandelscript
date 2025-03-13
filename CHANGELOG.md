@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.3.2 (2025-03-13)
+
+### Bug Fixes
+
+- **RPS-1309**: Read(robot, "pose") now considers the default_tcp
+  ([#14](https://github.com/wandelbotsgmbh/wandelscript/pull/14),
+  [`22445d2`](https://github.com/wandelbotsgmbh/wandelscript/commit/22445d2304fd94f7c0fab26efb92ce1cb06d5526))
+
+Co-authored-by: Dirk Sonnemann <dirk.sonnemann@wandelbots.com>
+
+
 ## v0.3.1 (2025-03-12)
 
 ### Bug Fixes
