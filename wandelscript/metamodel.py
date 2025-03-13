@@ -480,9 +480,7 @@ class Motion(Statement):
                 )
             tcp = tcp.name  # TODO messy
         else:
-            tcp = context.store.get(
-                "__tcp__", None
-            )  # TODO how can the __tcp__ naming be connected to the corresponding builtin function (tcp)
+            tcp = context.default_tcp
             if tcp is None:
                 msg = "No tool is defined. Please define one using the 'tcp' function!"
                 raise wandelscript.exception.UserError(location=self.location, value=msg)
@@ -1560,7 +1558,7 @@ class Read(Atom[ElementType]):
         try:
             if isinstance(device, AbstractRobot):
                 if key == "pose":
-                    action = ReadPoseAction(device_id=device.id, tcp=None)
+                    action = ReadPoseAction(device_id=device.id, tcp=context.default_tcp)
                 elif key == "joints":
                     action = ReadJointsAction(device_id=device.id)
                 else:

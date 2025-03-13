@@ -180,6 +180,11 @@ class ExecutionContext:
         return self._default_robot
 
     @property
+    def default_tcp(self) -> str | None:
+        # TODO how can the __tcp__ naming be connected to the corresponding builtin function (tcp)
+        return self.store.get("__tcp__", None)
+
+    @property
     def active_robot(self) -> str:
         """Return the robot that should be used for execution.
 
@@ -247,8 +252,8 @@ class ExecutionContext:
 
     async def read_pose(self, robot_name: str, tcp: str | None = None) -> Pose:
         tcp = tcp or await self.get_robot(robot_name).active_tcp_name()
-        tcp_pose = await self.get_robot(robot_name).get_state(tcp)
-        return tcp_pose.pose
+        robot_state = await self.get_robot(robot_name).get_state(tcp)
+        return robot_state.pose
 
     async def read_joints(self, robot_name: str) -> tuple:
         tcp = await self.get_robot(robot_name).active_tcp_name()
