@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from nova.actions.motions import PTP, JointPTP, Linear
+from nova.actions.motions import CartesianPTP, JointPTP, Linear
 from nova.core.robot_cell import RobotCell
 from nova.types import Pose
 
@@ -53,7 +53,7 @@ sync
 move via line() to (21, 0, 1111, 0, 0, 0)
 move via ptp() to (23, 0, 626, 0, 0, 0)
 """
-    expected_motion_types = [[PTP, Linear, PTP], [PTP, Linear], [Linear, PTP]]
+    expected_motion_types = [[CartesianPTP, Linear, CartesianPTP], [CartesianPTP, Linear], [Linear, CartesianPTP]]
 
     cell = get_robot_cell()
     runner = wandelscript.run(code, cell, default_tcp="Flange")
@@ -90,40 +90,40 @@ move via joint_p2p() to [31, 0, 626, 0, 0, 0]
     expected_joint_values = [
         [(1, 0, 626, 0, 0, 0), None, None, (4, 0, 626, 0, 0, 0), (5, 0, 626, 0, 0, 0), (6, 0, 626, 0, 0, 0)],
         [
-            # After a sync there will always first be a PTP motion added (this point has joints of a previous point)
+            # After a sync there will always first be a CartesianPTP motion added (this point has joints of a previous point)
             (6, 0, 626, 0, 0, 0),
             (11, 0, 626, 0, 0, 0),
             None,
         ],
         [
-            # After a sync there will always first be a PTP motion added
+            # After a sync there will always first be a CartesianPTP motion added
             None,
             None,
             (23, 0, 626, 0, 0, 0),
         ],
         [
-            # After a sync there will always first be a PTP motion added
+            # After a sync there will always first be a CartesianPTP motion added
             (23, 0, 626, 0, 0, 0),
             (31, 0, 626, 0, 0, 0),
         ],
     ]
 
     expected_motion_types = [
-        [JointPTP, Linear, PTP, JointPTP, JointPTP, JointPTP],
+        [JointPTP, Linear, CartesianPTP, JointPTP, JointPTP, JointPTP],
         [
-            # After a sync there will always first be a PTP motion added
+            # After a sync there will always first be a CartesianPTP motion added
             JointPTP,
             JointPTP,
             Linear,
         ],
         [
-            # After a sync there will always first be a PTP motion added
+            # After a sync there will always first be a CartesianPTP motion added
             Linear,
             Linear,
             JointPTP,
         ],
         [
-            # After a sync there will always first be a PTP motion added
+            # After a sync there will always first be a CartesianPTP motion added
             JointPTP,
             JointPTP,
         ],

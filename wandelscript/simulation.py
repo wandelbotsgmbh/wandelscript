@@ -8,7 +8,7 @@ from typing import Any, AsyncIterable, Literal, SupportsIndex
 import numpy as np
 from nova import api
 from nova.actions import Action, MovementController
-from nova.actions.motions import PTP, Circular, JointPTP, Linear
+from nova.actions.motions import CartesianPTP, Circular, JointPTP, Linear
 from nova.core.io import ValueType
 from nova.core.robot_cell import (
     AbstractController,
@@ -218,11 +218,11 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
                 # Directly use the target as the final joints
                 final_joints = np.array(action.target, dtype=float)
 
-            elif isinstance(action, (Linear, PTP, Circular)):
+            elif isinstance(action, (Linear, CartesianPTP, Circular)):
                 # Very naive approach: do a "fake IK" from the pose
                 if not isinstance(action.target, Pose):
                     # If user gave a vector or something else, you'd need to convert
-                    # but from your code, PTP/Linear typically store Pose internally
+                    # but from your code, CartesianPTP/Linear typically store Pose internally
                     raise ValueError(f"Expected Pose as target, got {type(action.target)}")
 
                 final_joints = naive_cartesian_to_joints(action.target)
