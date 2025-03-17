@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.3.3 (2025-03-17)
+
+### Chores
+
+- **RPS-1310**: Replace `PTP` with `CartesianPTP`
+  ([`3a49b91`](https://github.com/wandelbotsgmbh/wandelscript/commit/3a49b91f4b5df15e6809631e8fa280108e01a4d4))
+
+Also require the newer version of nova that brings this change about.
+
+- **RPS-1310**: Replace shortcut actions with verbose names
+  ([`5974b5d`](https://github.com/wandelbotsgmbh/wandelscript/commit/5974b5deb8f4ef69f9a8cfe013ff7fb50ab5be24))
+
+
 ## v0.3.2 (2025-03-13)
 
 ### Bug Fixes
