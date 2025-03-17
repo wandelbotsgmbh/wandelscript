@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from nova.actions import cir, jnt, lin, ptp
-from nova.actions.motions import PTP, Circular, JointPTP, Linear
+from nova.actions.motions import CartesianPTP, Circular, JointPTP, Linear
 from nova.types import MotionSettings, Pose, Vector3d
 
 from wandelscript.exception import GenericRuntimeError
@@ -35,14 +35,14 @@ class Line(Connector.Impl, func_name="line"):
 class PointToPoint(Line, func_name="ptp"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
-    ) -> PTP:
+    ) -> CartesianPTP:
         return ptp(end.to_tuple(), settings=motion_settings)
 
 
 class Point2Point(PointToPoint, func_name="p2p"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
-    ) -> PTP:
+    ) -> CartesianPTP:
         return ptp(end.to_tuple(), settings=motion_settings)
 
 

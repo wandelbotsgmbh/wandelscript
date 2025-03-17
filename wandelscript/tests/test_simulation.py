@@ -1,5 +1,5 @@
 import pytest
-from nova.actions.motions import PTP, JointPTP
+from nova.actions.motions import CartesianPTP, JointPTP
 from nova.types import MotionState, RobotState
 
 from wandelscript.simulation import SimulatedRobot, naive_joints_to_pose
@@ -22,11 +22,11 @@ async def test_simulated_robot_execution():
 
     # 2. Define some actions for the robot to plan:
     #    a) Move joints directly to [0, 1, 2, 0, 0, 0] with JointPTP
-    #    b) Then move to a cartesian Pose using naive IK with PTP
+    #    b) Then move to a cartesian Pose using naive IK with CartesianPTP
     joint_target = (0, 1, 2, 0, 0, 0)
     cartesian_target = Pose((100, 200, 300, 10, 20, 30))  # x=100mm, y=200mm, z=300mm, rx=10°, ry=20°, rz=30°
 
-    actions = [JointPTP(target=joint_target), PTP(target=cartesian_target)]
+    actions = [JointPTP(target=joint_target), CartesianPTP(target=cartesian_target)]
 
     # 3. Plan the trajectory
     trajectory = await robot._plan(actions, tcp="Flange")
@@ -54,7 +54,7 @@ async def test_simulated_robot_execution():
     final_state = await robot.get_state("Flange")
     final_joints = final_state.joints
 
-    # The last action was PTP to cartesian_target. Because of naive "IK",
+    # The last action was CartesianPTP to cartesian_target. Because of naive "IK",
     # let's see if the final_joints produce a Pose close to cartesian_target.
     # We'll just do a simple check that naive_joints_to_pose is near the cartesian target.
     final_pose = naive_joints_to_pose(final_joints)
