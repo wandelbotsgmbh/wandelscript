@@ -1,7 +1,7 @@
 import asyncio
 
 import pytest
-from nova.actions import cir, io_write, lin, ptp
+from nova.actions import cartesian_ptp, circular, io_write, linear
 from nova.actions.container import ActionLocation
 from nova.core.robot_cell import RobotCell
 from nova.types import Pose
@@ -150,7 +150,7 @@ async def test_run():
     cell = RobotCell(controller=controller)
     execution_context = ExecutionContext(cell, asyncio.Event())
     queue = ActionQueue(execution_context)
-    motions = [lin((400, 0, 0, 0, 0, 0)), cir((500, 0, 0), (0, 0, 0)), ptp((500, 0, 0))]
+    motions = [linear((400, 0, 0, 0, 0, 0)), circular((500, 0, 0), (0, 0, 0)), cartesian_ptp((500, 0, 0))]
     for motion in motions:
         queue.push(motion, tool="Flange", motion_group_id=robot.id)
 
