@@ -47,7 +47,7 @@ async def test_simulated_robot_execution():
 
     # 5. Check that we actually moved through all steps
     assert len(recorded_motion_states) == len(trajectory.joint_positions), (
-        f"Expected {len(trajectory.joint_positions)} motion states, " f"got {len(recorded_motion_states)}."
+        f"Expected {len(trajectory.joint_positions)} motion states, got {len(recorded_motion_states)}."
     )
 
     # 6. Check the final state matches the last step of the trajectory
