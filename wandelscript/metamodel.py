@@ -154,7 +154,7 @@ class SwitchInterrupt(Statement):
         elif self.action == "deactivate":
             del context.action_queue._on_motion_callbacks[self.interrupt]  # pylint: disable=protected-access
         else:
-            raise TypeError()
+            raise TypeError
 
 
 @dataclass(frozen=True)
@@ -1217,7 +1217,7 @@ class Assignment(Atom[ElementType], Statement):
             if isinstance(value, (list, tuple)):
                 context.store.update_local(zip(self.name, value))
             else:
-                raise TypeError()
+                raise TypeError
             return tuple(value)  # type: ignore
         if isinstance(self.name, FrameRelation):
             if not isinstance(value, Pose):
@@ -1292,7 +1292,7 @@ class Program:
 
     @staticmethod
     def from_code(code: str) -> Program:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 @dataclass(frozen=True)
