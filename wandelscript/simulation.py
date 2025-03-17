@@ -363,7 +363,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
 
     async def get_state(self, tcp: str) -> RobotState:
         if not self._trajectory:
-            raise UnknownPose()
+            raise UnknownPose
         flange2robot = self._trajectory[-1]
         # TODO: calculate tool offset
         # if tcp:
@@ -377,7 +377,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
 
     async def joints(self) -> tuple:
         if not self._trajectory:
-            raise UnknownPose()
+            raise UnknownPose
         return self._trajectory[-1].state.joints
 
     async def tcp_pose(self, tcp: str | None = None) -> Pose:
