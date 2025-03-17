@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from nova.actions import cir, jnt, lin, ptp
+from nova.actions import cartesian_ptp, circular, joint_ptp, linear
 from nova.actions.motions import CartesianPTP, Circular, JointPTP, Linear
 from nova.types import MotionSettings, Pose, Vector3d
 
@@ -13,7 +13,7 @@ class JointPointToPoint(Connector.Impl, func_name="joint_ptp"):
     def __call__(
         self, start: Pose | None, end: tuple[float, ...], args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> JointPTP:
-        return jnt(end, settings=motion_settings)
+        return joint_ptp(end, settings=motion_settings)
 
 
 @dataclass(repr=False)
@@ -21,7 +21,7 @@ class JointPoint2Point(JointPointToPoint, func_name="joint_p2p"):
     def __call__(
         self, start: Pose | None, end: tuple[float, ...], args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> JointPTP:
-        return jnt(end, settings=motion_settings)
+        return joint_ptp(end, settings=motion_settings)
 
 
 @dataclass(repr=False)
@@ -29,21 +29,21 @@ class Line(Connector.Impl, func_name="line"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> Linear:
-        return lin(end.to_tuple(), settings=motion_settings)
+        return linear(end.to_tuple(), settings=motion_settings)
 
 
 class PointToPoint(Line, func_name="ptp"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> CartesianPTP:
-        return ptp(end.to_tuple(), settings=motion_settings)
+        return cartesian_ptp(end.to_tuple(), settings=motion_settings)
 
 
 class Point2Point(PointToPoint, func_name="p2p"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> CartesianPTP:
-        return ptp(end.to_tuple(), settings=motion_settings)
+        return cartesian_ptp(end.to_tuple(), settings=motion_settings)
 
 
 @dataclass(repr=False)
@@ -57,4 +57,4 @@ class Arc(Connector.Impl, func_name="arc"):
             intermediate = args.intermediate
         else:
             raise GenericRuntimeError(location=None, text="Intermediate must be a pose")
-        return cir(end.to_tuple(), intermediate.to_tuple(), settings=motion_settings)
+        return circular(end.to_tuple(), intermediate.to_tuple(), settings=motion_settings)

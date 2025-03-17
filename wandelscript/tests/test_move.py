@@ -2,7 +2,7 @@ import asyncio
 
 import numpy as np
 import pytest
-from nova.actions import CombinedActions, lin, ptp
+from nova.actions import CombinedActions, cartesian_ptp, linear
 from nova.types import MotionSettings, Pose
 
 from wandelscript.metamodel import run_program
@@ -24,11 +24,11 @@ move tcp via ptp() to (150, -355, 389, 0, pi, 0)
             [
                 CombinedActions(
                     items=(
-                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
-                        lin((150, -355, 392), MotionSettings(tcp_velocity_limit=10)),
-                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
-                        lin((-95, -363, 387), MotionSettings(tcp_velocity_limit=250)),
-                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        linear((150, -355, 392), MotionSettings(tcp_velocity_limit=10)),
+                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        linear((-95, -363, 387), MotionSettings(tcp_velocity_limit=250)),
+                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
                     )
                 )
             ],
@@ -45,11 +45,11 @@ move via ptp() to (150, -355, 389, 0, pi, 0)
             [
                 CombinedActions(
                     items=(
-                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
-                        lin((150, -355, 392), MotionSettings(tcp_velocity_limit=10)),
-                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
-                        lin((-95, -363, 387), MotionSettings(tcp_velocity_limit=250)),
-                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        linear((150, -355, 392), MotionSettings(tcp_velocity_limit=10)),
+                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
+                        linear((-95, -363, 387), MotionSettings(tcp_velocity_limit=250)),
+                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=200)),
                     )
                 )
             ],
@@ -65,11 +65,11 @@ move via ptp() to (150, -355, 389, 0, pi, 0)
             [
                 CombinedActions(
                     items=(
-                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=None)),
-                        lin((150, -355, 392), MotionSettings(position_zone_radius=2)),
-                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=100)),
-                        lin((-95, -363, 387), MotionSettings(position_zone_radius=4)),
-                        ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=None)),
+                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=None)),
+                        linear((150, -355, 392), MotionSettings(position_zone_radius=2)),
+                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=100)),
+                        linear((-95, -363, 387), MotionSettings(position_zone_radius=4)),
+                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=None)),
                     )
                 )
             ],
