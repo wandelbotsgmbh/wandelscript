@@ -35,7 +35,7 @@ move via p2p() to (0, 0, 0, 1, 1, 1)
 
     async def callback():
         if store.event and store.event.is_set():
-            raise ProgramStop()
+            raise ProgramStop
 
     store.environment.interceptor = callback
 
