@@ -112,7 +112,7 @@ print(a)
         foreign_functions={"custom_async_function": ff(custom_async_function)},
     )
     stdout = runner.program_run.stdout
-    assert "42\n" == stdout
+    assert stdout == "42\n"
 
 
 def test_program_runner():
