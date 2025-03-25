@@ -37,6 +37,7 @@ python-dotenv = "^1.0.1"
 typer = {extras = ["all"], version = "^0.15.2"}
 
 [tool.poetry.group.dev.dependencies]
+wandelbots-nova = { path = "../nova-python-sdk", develop = true }
 pytest = "^8.3.4"
 mypy = "^1.13.0"
 ruff = "^0.8.2"

@@ -202,13 +202,13 @@ class ProgramRunner:
 
         def state_is_estop(state_: models.RobotControllerState):
             # See: models.RobotControllerState.safety_state
-            acceptable_safety_states = ["SAFETY_NORMAL", "SAFETY_REDUCED"]
+            acceptable_safety_states = ["SAFETY_STATE_NORMAL", "SAFETY_STATE_REDUCED"]
             return (
                 isinstance(state_, models.RobotControllerState) and state_.safety_state not in acceptable_safety_states
             )
 
         with monitoring_scope:
-            cell_state_stream = self.execution_context.robot_cell.state_stream(1000)
+            cell_state_stream = self.execution_context.robot_cell.stream_state(1000)
             task_status.started()
 
             async for state in cell_state_stream:
