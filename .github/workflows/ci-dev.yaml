@@ -24,7 +24,7 @@ jobs:
       - name: Set up Python environment
         run: |
           pip install poetry
-          poetry install --with ci
+          poetry install --with ci --without dev
 
       - name: Check formatting with ruff
         run: poetry run ruff format --check .
