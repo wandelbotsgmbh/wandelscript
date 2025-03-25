@@ -65,11 +65,11 @@ move via ptp() to (150, -355, 389, 0, pi, 0)
             [
                 CombinedActions(
                     items=(
-                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=None)),
+                        cartesian_ptp((150, -355, 389), MotionSettings()),
                         linear((150, -355, 392), MotionSettings(position_zone_radius=2)),
                         cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=100)),
                         linear((-95, -363, 387), MotionSettings(position_zone_radius=4)),
-                        cartesian_ptp((150, -355, 389), MotionSettings(tcp_velocity_limit=None)),
+                        cartesian_ptp((150, -355, 389), MotionSettings()),
                     )
                 )
             ],
