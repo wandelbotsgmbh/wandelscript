@@ -26,4 +26,14 @@ def analyze(code: str):
     Program.from_code(code)
 
 
-__all__ = ["run", "run_file", "Program", "ProgramRun", "ProgramRunner", "ProgramRunState", "Store", "__version__", "register_builtin_func"]
+__all__ = [
+    "run",
+    "run_file",
+    "Program",
+    "ProgramRun",
+    "ProgramRunner",
+    "ProgramRunState",
+    "Store",
+    "__version__",
+    "register_builtin_func",
+]
