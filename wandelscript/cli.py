@@ -10,12 +10,17 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 from nova import Nova
 from typer import Exit, FileText, Option, Typer, echo
+from wandelscript import ffi
 
 import wandelscript
 
 load_dotenv()
 
 app = Typer()
+
+
+def custom_print(message: str):
+    print(f"Custom print {message}")
 
 
 def _validate_url(url: str) -> bool:
@@ -49,8 +54,11 @@ async def main(code: str, nova_api: str):
     async with Nova(host=nova_api) as nova:
         cell = nova.cell()
         robot_cell = await cell.get_robot_cell()
-        # TODO: pass foreign functions
-        runner = wandelscript.run(code, robot_cell=robot_cell, default_tcp=None, default_robot=None)
+        # TODO: extract all functions from a python file and map them "function_name": function and pass them here
+        functions = {"custom_print": ffi.ff(custom_print)}
+        runner = wandelscript.run(
+            code, robot_cell=robot_cell, default_tcp=None, default_robot=None, foreign_functions=functions
+        )
 
     echo(f"Execution results:\n{runner.program_run.execution_results}")
 
