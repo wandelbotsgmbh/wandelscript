@@ -1,6 +1,29 @@
 # CHANGELOG
 
 
+## v0.3.5 (2025-03-28)
+
+### Chores
+
+- Consolidate 2 strings into 1
+  ([`f372fff`](https://github.com/wandelbotsgmbh/wandelscript/commit/f372fff0cef97fceebdc7cd1ce097e174a886cc0))
+
+- Properly format an assertion
+  ([`7ac3d67`](https://github.com/wandelbotsgmbh/wandelscript/commit/7ac3d676659906196112b98120d08ca24fc736b0))
+
+Autoformatter goes brrr.
+
+- Simplify Exception raises without params
+  ([`3221862`](https://github.com/wandelbotsgmbh/wandelscript/commit/322186211266db57605b95cece0c8812aff9e887))
+
+If no arguments are handed, they don't need parentheses.
+
+- Turn an assertion around
+  ([`3d8f0fc`](https://github.com/wandelbotsgmbh/wandelscript/commit/3d8f0fce58231566da25322d25ac8e4d76972eaa))
+
+More canoncial.
+
+
 ## v0.3.4 (2025-03-28)
 
 ### Bug Fixes
