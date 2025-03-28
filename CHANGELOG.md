@@ -1,6 +1,38 @@
 # CHANGELOG
 
 
+## v0.3.4 (2025-03-28)
+
+### Bug Fixes
+
+- **RPS-1217**: Runner EStop handling
+  ([`d1c8280`](https://github.com/wandelbotsgmbh/wandelscript/commit/d1c82801d03891c6d0ba2a68ab6e8fcf07dd4429))
+
+- **rRPS-1217**: Fix dependencies & CI
+  ([`12e1977`](https://github.com/wandelbotsgmbh/wandelscript/commit/12e197749fde5620668fe2dafc8aeed19066812b))
+
+- **rRPS-1217**: Fix dependencies & CI
+  ([`b0da731`](https://github.com/wandelbotsgmbh/wandelscript/commit/b0da73118b9b89137460f98ceb6b28a333f6b009))
+
+- **rRPS-1217**: Fix dependencies & CI
+  ([`e3c08af`](https://github.com/wandelbotsgmbh/wandelscript/commit/e3c08af7fb0329d1f74b3b0f65b30e5d89eebf44))
+
+- **rRPS-1217**: Fix dependencies & CI
+  ([`0870aa5`](https://github.com/wandelbotsgmbh/wandelscript/commit/0870aa54802bee631286ba78e03a4c933d881e85))
+
+- **rRPS-1217**: Fix dependencies & CI
+  ([`d6bea7d`](https://github.com/wandelbotsgmbh/wandelscript/commit/d6bea7da3eb455249e3c70540a7bb3399c953934))
+
+- **rRPS-1217**: Fix dependencies & CI
+  ([`3f7a4e9`](https://github.com/wandelbotsgmbh/wandelscript/commit/3f7a4e9f38ee645fb9b2f9f3b27f19b11574915a))
+
+- **rRPS-1217**: Fix dependencies & CI
+  ([`4eba6df`](https://github.com/wandelbotsgmbh/wandelscript/commit/4eba6df967502038e012cb5c259c055fc50dc825))
+
+- **rRPS-1217**: Fix dependencies & CI
+  ([`03afb30`](https://github.com/wandelbotsgmbh/wandelscript/commit/03afb30f678eb2e4524ebba49b5a53fd7a6fdc7f))
+
+
 ## v0.3.3 (2025-03-17)
 
 ### Chores

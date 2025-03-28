@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wandelscript"
-version = "0.3.3"
+version = "0.3.4"
 description = "Wandelscript definition, parser, type checker & runtime"
 authors = [
     "Christoph Biering <christoph.biering@wandelbots.com>",
