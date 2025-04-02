@@ -32,13 +32,15 @@ class Line(Connector.Impl, func_name="line"):
         return linear(end.to_tuple(), settings=motion_settings)
 
 
-class PointToPoint(Line, func_name="ptp"):
+@dataclass(repr=False)
+class PointToPoint(Connector.Impl, func_name="ptp"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
     ) -> CartesianPTP:
         return cartesian_ptp(end.to_tuple(), settings=motion_settings)
 
 
+@dataclass(repr=False)
 class Point2Point(PointToPoint, func_name="p2p"):
     def __call__(
         self, start: Pose | None, end: Pose, args: Connector.Impl.Args, motion_settings: MotionSettings
