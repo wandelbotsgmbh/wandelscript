@@ -123,7 +123,7 @@ class ExecutionContext:
     # Maps the motion group id to the list of recorded motion lists
     # Each motion list is a path the was planned separately
     # TODO: maybe we should make it public and helper methods to access the data
-    motion_group_recordings: dict[str, list[list[MotionState]]] = {}
+    motion_group_recordings: dict[str, list[list[MotionState]]]
 
     def __init__(  # pylint: disable=too-many-positional-arguments
         self,
@@ -135,6 +135,7 @@ class ExecutionContext:
         foreign_functions: dict[str, ForeignFunction] | None = None,
         debug: bool = False,
     ):
+        self.motion_group_recordings = {}
         self.robot_cell: RobotCell = robot_cell
         self._robot_ids = robot_ids = robot_cell.get_robot_ids()
 
