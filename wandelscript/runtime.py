@@ -9,6 +9,7 @@ from math import inf, isinf
 from typing import Any
 
 import anyio
+import pydantic
 from aiostream import stream
 from loguru import logger
 from nova.actions import Action, CombinedActions
@@ -20,7 +21,6 @@ from nova.types import MotionSettings, MotionState, Pose
 
 import wandelscript.metamodel as metamodel
 from wandelscript import exception as wsexception
-from wandelscript import serializer
 from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.frames import FrameSystem
@@ -96,8 +96,8 @@ class Store:
 
     # TODO: Do we still need this?
     @property
-    def data_dict(self) -> dict[str, serializer.ElementType]:
-        serialized_store = {k: serializer.encode(v) for k, v in self.data.items() if serializer.is_encodable(v)}
+    def data_dict(self) -> dict[str, ElementType]:
+        serialized_store = {k: v.model_dump() for k, v in self.data.items() if isinstance(v, pydantic.BaseModel)}
         serialized_store = {k: v for k, v in serialized_store.items() if not isinstance(v, float) or not isinf(v)}
         return serialized_store
 

@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from nova.types import Pose, Vector3d
 
-from wandelscript.serializer import dumps, loads
 from wandelscript.types import as_builtin_type
 
 

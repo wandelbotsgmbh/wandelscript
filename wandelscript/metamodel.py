@@ -15,7 +15,6 @@ from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAc
 from nova.core.robot_cell import (
     AbstractRobot,
     AsyncCallableDevice,
-    ConfigurablePeriphery,
     InputDevice,
     OutputDevice,
     RobotCell,

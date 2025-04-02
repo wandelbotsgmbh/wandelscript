@@ -1,8 +1,7 @@
 import httpx
 
-from wandelscript import serializer
 from wandelscript.metamodel import register_builtin_func
-from wandelscript.types import Record
+from wandelscript.types import Record, as_builtin_type
 
 
 @register_builtin_func()
@@ -68,7 +67,7 @@ async def fetch(url: str, options: Record | None = None) -> Record:
         else:
             data = response.content  # Fall back to raw bytes
 
-        parsed_data = serializer.decode(data)
+        parsed_data = as_builtin_type(data)
         return Record(data={"data": parsed_data, "status_code": response.status_code})
 
     except httpx.HTTPStatusError as exc:

@@ -21,13 +21,13 @@ from nova.core.exceptions import PlanTrajectoryFailed
 from nova.core.robot_cell import ConfigurablePeriphery, RobotCell
 from nova.types import MotionState, RobotState
 
-from wandelscript import serializer
 from wandelscript.exception import NotPlannableError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.metamodel import Program
 from wandelscript.runtime import ExecutionContext, PlannableActionQueue, current_execution_context_var
 from wandelscript.simulation import SimulatedRobotCell
 from wandelscript.utils.runtime import Tee, stoppable_run
+from wandelscript.types import ElementType
 
 
 class ProgramRunState(Enum):
@@ -90,7 +90,7 @@ class ProgramRun(pydantic.BaseModel):
     state: ProgramRunState
     logs: str = ""
     stdout: str = ""
-    store: dict[str, serializer.ElementType] = field(default_factory=dict)
+    store: dict[str, ElementType] = field(default_factory=dict)
     error: str | None = None
     traceback: str | None = None
     start_time: float | None = None
@@ -107,7 +107,7 @@ class ProgramRunner:
         robot_cell: RobotCell,
         default_robot: str | None = None,
         default_tcp: str | None = None,
-        initial_store: dict[str, serializer.ElementType] | None = None,
+        run_args: dict[str, ElementType] | None = None,
         foreign_functions: dict[str, ForeignFunction] | None = None,
         use_plannable_context: bool = False,
     ):
@@ -117,7 +117,7 @@ class ProgramRunner:
         # serialize the configuration of the robot cell
         self._robot_cell_config: list[ConfigurablePeriphery.Configuration] = robot_cell.to_configurations()
         # serialize the initial store dict
-        self._initial_store: dict[str, serializer.ElementType] = initial_store or {}
+        self._run_args: dict[str, ElementType] = run_args or {}
         self._foreign_functions: dict[str, ForeignFunction] = foreign_functions or {}
         self.execution_context: ExecutionContext | None = None
         self._program_run: ProgramRun = ProgramRun(id=str(uuid.uuid4()), state=ProgramRunState.NOT_STARTED)
@@ -256,7 +256,7 @@ class ProgramRunner:
                     stop_event,
                     default_robot=self._default_robot,
                     default_tcp=self._default_tcp,
-                    initial_vars=self._initial_store,  # type: ignore
+                    run_args=self._run_args,  # type: ignore
                     foreign_functions=self._foreign_functions,
                 )
 
@@ -425,7 +425,7 @@ def run(
     robot_cell: RobotCell,
     default_robot: str | None = None,
     default_tcp: str | None = None,
-    initial_state: dict[str, serializer.ElementType] | None = None,
+    run_args: dict[str, ElementType] | None = None,
     foreign_functions: dict[str, ForeignFunction] | None = None,
     use_plannable_context: bool = False,
 ) -> ProgramRunner:
@@ -436,7 +436,7 @@ def run(
         robot_cell (RobotCell): The RobotCell where the code is executed
         default_robot (str): The default robot that is used when no robot is active
         default_tcp (str): The default TCP that is used when no TCP is explicitly selected for a motion
-        initial_state (dict[str, Any], optional): Store will be initialized with this dict. Defaults to ().
+        run_args (dict[str, Any], optional): Store will be initialized with this dict. Defaults to ().
         use_plannable_context (bool): If True, the program runner will use a plannable context. Defaults to False.
         foreign_functions (dict[str, ForeignFunction], optional): 3rd party functions that you can
             register into the wandelscript language. Defaults to {}.
@@ -450,7 +450,7 @@ def run(
         robot_cell,
         default_robot=default_robot,
         default_tcp=default_tcp,
-        initial_store=initial_state,
+        run_args=run_args,
         foreign_functions=foreign_functions,
         use_plannable_context=use_plannable_context,
     )
@@ -459,7 +459,11 @@ def run(
 
 
 def run_file(
-    file_path: Path | str, cell: RobotCell | None, default_robot: str | None, default_tcp: str | None
+    file_path: Path | str,
+    cell: RobotCell | None,
+    default_robot: str | None,
+    default_tcp: str | None,
+    run_args: dict[str, ElementType] | None = None,
 ) -> ProgramRunner:
     path = Path(file_path)
     with open(path) as f:
@@ -467,4 +471,4 @@ def run_file(
 
     if cell is None:
         cell = SimulatedRobotCell()
-    return run(program, robot_cell=cell, default_robot=default_robot, default_tcp=default_tcp, initial_state=None)
+    return run(program, robot_cell=cell, default_robot=default_robot, default_tcp=default_tcp, run_args=run_args)
