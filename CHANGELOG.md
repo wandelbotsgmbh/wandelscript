@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.3.6 (2025-04-02)
+
+### Bug Fixes
+
+- **RPS-1490**: Make 2 motion classes dataclasses
+  ([`583c70d`](https://github.com/wandelbotsgmbh/wandelscript/commit/583c70d6a2d74f8bddabc58b1f99e5432156a8dc))
+
+Just like their siblings.
+
+Also inherit one of them from `Connector.Impl` instead of from `Line`. Don't know why it inherited
+  from Line tbh.
+
+
 ## v0.3.5 (2025-03-28)
 
 ### Chores
