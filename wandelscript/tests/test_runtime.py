@@ -105,7 +105,7 @@ def test_store_data_dict():
     store["float"] = 10.0
     store["str"] = "string"
     store["pose"] = Pose((0, 0, 0, 0, 0, 0))
-    assert store.data_dict == {"int": 4, "float": 10.0, "str": "string", "pose": Pose((0, 0, 0, 0, 0, 0))}
+    assert store.data_dict == {"int": 4, "float": 10.0, "str": "string", "pose": Pose((0, 0, 0, 0, 0, 0)).model_dump()}
 
 
 @pytest.mark.asyncio

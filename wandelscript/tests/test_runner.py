@@ -168,7 +168,8 @@ move via line() to (0, 100, 300, 0, pi, 0)
     assert last_path.poses[-1].pose.position.to_tuple() == (0, 100, 300)
     # Check store
     store = program_runner.program_run.store
-    assert np.allclose(store["home"].pose, [0, 0, 400, 0, np.pi, 0])
+    assert np.allclose(store["home"]["position"], [0, 0, 400])
+    assert np.allclose(store["home"]["orientation"], [0, np.pi, 0])
     # Check stdout
     # stdout = program_runner.program_run.stdout
     # assert "before wait" in stdout

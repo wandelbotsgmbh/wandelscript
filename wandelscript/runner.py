@@ -256,7 +256,7 @@ class ProgramRunner:
                     stop_event,
                     default_robot=self._default_robot,
                     default_tcp=self._default_tcp,
-                    run_args=self._run_args,  # type: ignore
+                    run_args=self._run_args,
                     foreign_functions=self._foreign_functions,
                 )
 

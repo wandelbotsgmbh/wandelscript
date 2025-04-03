@@ -24,7 +24,7 @@ from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.frames import FrameSystem
 from wandelscript.types import ElementType, Frame, as_builtin_type
-from wandelscript.utils.json_decode import SerializedStore, is_encodable, encode
+from wandelscript.utils.json_decode import SerializedStore, encode, is_encodable
 from wandelscript.utils.runtime import stoppable_run
 
 DEFAULT_CALL_STACK_SIZE = 64
@@ -96,8 +96,11 @@ class Store:
 
     @property
     def data_dict(self) -> dict[str, ElementType]:
-        serializable_data = {k: v for k, v in self.data.items() if is_encodable(v)}
-        serialized_store = encode(SerializedStore(items=serializable_data))
+        # serializable_data = {k: v for k, v in self.data.items() if is_encodable(v)}
+        # serialized_store = encode(SerializedStore(items=serializable_data))
+
+        serialized_store = {k: encode(v) for k, v in self.data.items() if is_encodable(v)}
+        serialized_store = {k: v for k, v in serialized_store.items() if not isinstance(v, float) or not isinf(v)}
         return serialized_store
 
     def get_motion_settings(self) -> MotionSettings:

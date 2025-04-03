@@ -32,7 +32,7 @@ def decode(obj):
 
 
 class Element(pydantic.BaseModel):
-    value: ElementType
+    value: JsonType
 
 
 class SerializedStore(pydantic.BaseModel):
@@ -75,6 +75,16 @@ def _(obj: str):
 
 
 @decode.register
+def _(obj: Pose):
+    return obj
+
+
+@decode.register
+def _(obj: Vector3d):
+    return obj
+
+
+@decode.register
 def _(obj: dict):
     # If it has the signature of a Pose, decode it as a Pose:
     if "position" in obj and "orientation" in obj:
@@ -86,7 +96,7 @@ def _(obj: dict):
 
 
 def dumps(data: ElementType) -> str:
-    return Element(value=data).model_dump_json()
+    return Element(value=encode(data)).model_dump_json()
 
 
 def loads(s: str) -> ElementType:
@@ -115,21 +125,21 @@ def encode(obj):
         obj: the object to encode
     Returns: the pydantic model
     Examples:
-    >>> encode(t.Pose((1, 2, 3, 4, 5, 6)))
-    Pose(pose=(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))
-    >>> encode(t.Vector3d(x=1, y=2, z=3))
-    Vector3d(vector3d=(1.0, 2.0, 3.0))
+    >>> encode(Pose((1, 2, 3, 4, 5, 6)))
+    {'position': [1, 2, 3], 'orientation': [4, 5, 6]}
+    >>> encode(Vector3d(x=1, y=2, z=3))
+    {'x': 1, 'y': 2, 'z': 3}
     """
     raise NotImplementedError(type(obj))
 
 
 @encode.register
-def _(obj: Pose) -> Pose:
+def _(obj: Vector3d):
     return obj.model_dump()
 
 
 @encode.register
-def _(obj: Vector3d) -> Vector3d:
+def _(obj: Pose):
     return obj.model_dump()
 
 
@@ -147,9 +157,11 @@ def _(obj: tuple):
 def _(obj: dict):
     return {k: encode(v) for k, v in obj.items()}
 
+
 @encode.register
 def _(obj: Element):
     return obj
+
 
 @encode.register
 def _(obj: int):
@@ -170,9 +182,11 @@ def _(obj: str):
 def _(obj: None):
     return obj
 
+
 @encode.register
 def _(obj: SerializedStore):
     return {k: encode(v) for k, v in obj.items.items()}
+
 
 def is_encodable(obj):
     encodables = set(encode.registry.keys())
