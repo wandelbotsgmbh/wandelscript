@@ -37,10 +37,6 @@ async def fetch(url: str, options: dict | None = None) -> dict:
     headers = options.get("headers")
 
     try:
-        # Prepare the request parameters
-        if body is not None:
-            body = body.to_dict()
-
         # Select the appropriate HTTP method using httpx
         async with httpx.AsyncClient() as client:
             match method:

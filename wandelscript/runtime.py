@@ -9,7 +9,6 @@ from math import inf, isinf
 from typing import Any
 
 import anyio
-import pydantic
 from aiostream import stream
 from loguru import logger
 from nova.actions import Action, CombinedActions
@@ -25,6 +24,7 @@ from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.frames import FrameSystem
 from wandelscript.types import ElementType, Frame, as_builtin_type
+from wandelscript.utils.json_decode import SerializedStore, is_encodable, encode
 from wandelscript.utils.runtime import stoppable_run
 
 DEFAULT_CALL_STACK_SIZE = 64
@@ -94,11 +94,10 @@ class Store:
     def data(self) -> dict[str, Any]:
         return self._data.copy()
 
-    # TODO: Do we still need this?
     @property
     def data_dict(self) -> dict[str, ElementType]:
-        serialized_store = {k: v.model_dump() for k, v in self.data.items() if isinstance(v, pydantic.BaseModel)}
-        serialized_store = {k: v for k, v in serialized_store.items() if not isinstance(v, float) or not isinf(v)}
+        serializable_data = {k: v for k, v in self.data.items() if is_encodable(v)}
+        serialized_store = encode(SerializedStore(items=serializable_data))
         return serialized_store
 
     def get_motion_settings(self) -> MotionSettings:

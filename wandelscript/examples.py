@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+
 from wandelscript.utils.json_decode import loads_store
 
 _EXAMPLE_DIR = Path(__file__).parent / "examples"

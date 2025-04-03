@@ -13,7 +13,6 @@ from nova.types import Pose, Vector3d
 from wandelscript.frames import FrameSystem
 from wandelscript.utils.pose import pose_to_versor
 
-
 # All types that can be used within Wandelscript
 ElementType = Union[float, int, bool, str, bytes, Pose, Vector3d, tuple, list, dict]
 BoundedElementType = TypeVar("BoundedElementType", bound=ElementType)
@@ -127,6 +126,11 @@ def _(data: str):
 
 @as_builtin_type.register
 def _(data: Pose):
+    return data
+
+
+@as_builtin_type.register
+def _(data: dict):
     return data
 
 

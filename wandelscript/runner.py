@@ -26,8 +26,8 @@ from wandelscript.ffi import ForeignFunction
 from wandelscript.metamodel import Program
 from wandelscript.runtime import ExecutionContext, PlannableActionQueue, current_execution_context_var
 from wandelscript.simulation import SimulatedRobotCell
-from wandelscript.utils.runtime import Tee, stoppable_run
 from wandelscript.types import ElementType
+from wandelscript.utils.runtime import Tee, stoppable_run
 
 
 class ProgramRunState(Enum):

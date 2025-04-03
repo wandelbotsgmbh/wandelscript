@@ -1,10 +1,13 @@
-from wandelscript.types import ElementType
 import json
-import pydantic
 from functools import singledispatch
+
+import pydantic
 from nova.types import Pose, Vector3d
 
+from wandelscript.types import ElementType
+
 JsonType = float | int | bool | str | bytes | tuple | list | dict
+
 
 @singledispatch
 def decode(obj):
@@ -32,7 +35,7 @@ class Element(pydantic.BaseModel):
     value: ElementType
 
 
-class Store(pydantic.BaseModel):
+class SerializedStore(pydantic.BaseModel):
     items: dict[str, JsonType]
 
 
@@ -42,7 +45,7 @@ def _(obj: Element):
 
 
 @decode.register
-def _(obj: Store):
+def _(obj: SerializedStore):
     return {k: decode(v) for k, v in obj.items.items()}
 
 
@@ -102,4 +105,77 @@ def loads_store(content: str) -> ElementType:
     {'b': {'a': 3}, 'c': [1, 2, 3]}
     """
     data = json.loads(content)
-    return decode(Store(items=data))
+    return decode(SerializedStore(items=data))
+
+
+@singledispatch
+def encode(obj):
+    """Encodes an object to a pydantic model
+    Args:
+        obj: the object to encode
+    Returns: the pydantic model
+    Examples:
+    >>> encode(t.Pose((1, 2, 3, 4, 5, 6)))
+    Pose(pose=(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))
+    >>> encode(t.Vector3d(x=1, y=2, z=3))
+    Vector3d(vector3d=(1.0, 2.0, 3.0))
+    """
+    raise NotImplementedError(type(obj))
+
+
+@encode.register
+def _(obj: Pose) -> Pose:
+    return obj.model_dump()
+
+
+@encode.register
+def _(obj: Vector3d) -> Vector3d:
+    return obj.model_dump()
+
+
+@encode.register
+def _(obj: list):
+    return list(map(encode, obj))
+
+
+@encode.register
+def _(obj: tuple):
+    return tuple(map(encode, obj))
+
+
+@encode.register
+def _(obj: dict):
+    return {k: encode(v) for k, v in obj.items()}
+
+@encode.register
+def _(obj: Element):
+    return obj
+
+@encode.register
+def _(obj: int):
+    return obj
+
+
+@encode.register
+def _(obj: float):
+    return obj
+
+
+@encode.register
+def _(obj: str):
+    return obj
+
+
+@encode.register
+def _(obj: None):
+    return obj
+
+@encode.register
+def _(obj: SerializedStore):
+    return {k: encode(v) for k, v in obj.items.items()}
+
+def is_encodable(obj):
+    encodables = set(encode.registry.keys())
+    encodables = [e for e in encodables if not isinstance(object, e)]
+    encodables = [e for e in encodables if not isinstance(None, e)]
+    return isinstance(obj, tuple(encodables))
