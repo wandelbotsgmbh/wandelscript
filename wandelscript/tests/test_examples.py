@@ -2,6 +2,7 @@ import tempfile
 from typing import Union
 
 import numpy as np
+from icecream import ic
 import pydantic
 import pytest
 from loguru import logger
@@ -11,7 +12,6 @@ from nova.types import Pose, Vector3d
 import wandelscript
 from wandelscript.examples import EXAMPLES
 from wandelscript.simulation import SimulatedRobotCell
-from wandelscript.types import Record
 
 
 def _robot_cell_from_configuration(data) -> RobotCell:
@@ -23,18 +23,6 @@ def _robot_cell_from_configuration(data) -> RobotCell:
     config = RobotCellConfiguration(devices=data)
 
     return RobotCell.from_configurations(config.devices)
-
-
-def _check_record(a: Record, b: Record, keypath=""):
-    for k, v in a.items():
-        # For the test we may not want to check every key in the record e.g. sender IP
-        if k not in b:
-            logger.warning(f"Key {k} not found in b")
-            continue
-        if isinstance(v, Record):
-            _check_record(v, b[k], f"{keypath}.{k}")  # type: ignore
-            continue
-        assert v == b[k], f"{keypath}.{k}"
 
 
 @pytest.mark.parametrize("example_name", EXAMPLES)
@@ -64,15 +52,20 @@ def test_example(example_name):
     runner = wandelscript.run(code, robot_cell, default_tcp="Flange")
     store = runner.execution_context.store
     for key, expected in data.items():
+        ic(store[key])
+        # TODO: expected needs to be a pose (encoded)
+        ic(expected)
         if isinstance(expected, list):
             expected = tuple(tuple(v) if isinstance(v, list) else v for v in expected)
         if isinstance(expected, Pose):
-            assert np.allclose(expected.position, store[key].position, atol=1e-3, rtol=1e-3)
-            assert np.allclose(expected.orientation, store[key].orientation, atol=1e-3, rtol=1e-3)
+            assert store[key] == expected
+            # assert np.allclose(expected.position, store[key].position, atol=1e-3, rtol=1e-3)
+            # assert np.allclose(expected.orientation, store[key].orientation, atol=1e-3, rtol=1e-3)
         elif isinstance(expected, Vector3d):
-            assert np.allclose(expected, store[key], atol=1e-3, rtol=1e-3)
-        elif isinstance(expected, Record):
-            _check_record(expected, store[key])
+            assert store[key] == expected
+            # assert np.allclose(expected, store[key], atol=1e-3, rtol=1e-3)
+        elif isinstance(expected, dict):
+            assert expected == store[key]
         else:
             assert expected == store[key], f"{key=}: got: {store[key]} expected: {expected}"
 

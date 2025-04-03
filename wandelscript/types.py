@@ -6,7 +6,7 @@ import uuid
 from dataclasses import dataclass, field
 import json
 from functools import singledispatch
-from typing import Any, Callable, Generic, Mapping, TypeVar, Union
+from typing import Any, Callable, Generic, TypeVar, Union
 
 import numpy as np
 import pydantic
@@ -17,8 +17,8 @@ from wandelscript.utils.pose import pose_to_versor
 
 
 # All types that can be used within Wandelscript
-FlatElementType = Union[float, int, bool, str, bytes, Pose, Vector3d]
-BoundedElementType = TypeVar("BoundedElementType", bound=FlatElementType)
+ElementType = Union[float, int, bool, str, bytes, tuple, list, dict, Pose, Vector3d]
+BoundedElementType = TypeVar("BoundedElementType", bound=ElementType)
 
 
 @singledispatch
@@ -32,9 +32,17 @@ def encode(obj):
 
     Examples:
     >>> encode(Pose((1, 2, 3, 4, 5, 6)))
-    Pose(pose=(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))
+    Pose(position=Vector3d(x=1, y=2, z=3), orientation=Vector3d(x=4, y=5, z=6))
     >>> encode(Vector3d(x=1, y=2, z=3))
-    Vector3d(vector3d=(1.0, 2.0, 3.0))
+    Vector3d(x=1, y=2, z=3)
+    >>> encode([1, 2, 3])
+    [1, 2, 3]
+    >>> encode([["a", {"b": 2}], 2, 3])
+    [['a', {'b': 2}], 2, 3]
+    >>> encode((1, 2, 3))
+    (1, 2, 3)
+    >>> encode("Hello, World!")
+    'Hello, World!'
     """
     raise NotImplementedError(type(obj))
 
@@ -49,14 +57,14 @@ def decode(obj):
     Returns: the object
 
     Examples:
-    >>> decode(Pose(pose=(1, 2, 3, 4, 5, 6)))
-    Pose(position=Vector3d(x=1.0, y=2.0, z=3.0), orientation=Vector3d(x=4.0, y=5.0, z=6.0))
-    >>> decode(Vector3d(vector3d=(1, 2, 3)))
-    Vector3d(x=1.0, y=2.0, z=3.0)
+    >>> decode(Pose((1, 2, 3, 4, 5, 6)))
+    Pose(position=Vector3d(x=1, y=2, z=3), orientation=Vector3d(x=4, y=5, z=6))
+    >>> decode(Vector3d(x=1, y=2, z=3))
+    Vector3d(x=1, y=2, z=3)
     >>> decode({ "id": "id1", "state": "stopped", "data": { "a": 1, "b": 2 } })
-    Record(data={'id': 'id1', 'state': 'stopped', 'data': Record(data={'a': 1, 'b': 2})})
+    {'id': 'id1', 'state': 'stopped', 'data': {'a': 1, 'b': 2}}
     >>> decode([{ "id": "id1", "state": "stopped"}, {"id": "id2", "state": "running"}])
-    (Record(data={'id': 'id1', 'state': 'stopped'}), Record(data={'id': 'id2', 'state': 'running'}))
+    [{'id': 'id1', 'state': 'stopped'}, {'id': 'id2', 'state': 'running'}]
     >>> decode("Hello, World!")
     'Hello, World!'
     >>> decode(42)
@@ -176,94 +184,6 @@ def _(data: Pose):
     return data
 
 
-class Record(pydantic.BaseModel, Mapping):
-    """A record that stores key-value pairs"""
-
-    model_config = pydantic.ConfigDict(frozen=True)
-
-    type: str = "record"
-    record: dict[str, ElementType] = field(default_factory=dict)
-
-    @staticmethod
-    def from_dict(d: dict[str, ElementType]) -> Record:
-        return Record(
-            record={key: Record.from_dict(value) if isinstance(value, dict) else value for key, value in d.items()}
-        )
-
-    def to_dict(self):
-        return {key: value.to_dict() if isinstance(value, Record) else value for key, value in self.data.items()}
-
-    def get(self, key: str, *args, **kwargs):
-        return self.record.get(key, *args, **kwargs)
-
-    # Support bracket notation: r['a']
-    def __getitem__(self, key: str) -> ElementType:
-        return self.record[key]
-
-    # Support dot notation: r.a
-    def __getattr__(self, key: str) -> ElementType:
-        if key in self.record:
-            return self.record[key]
-        raise AttributeError(f"Record has no attribute '{key}'")
-
-    def __iter__(self):
-        return iter(self.record)
-
-    def __len__(self):
-        return len(self.record)
-
-    def items(self):
-        return self.record.items()
-
-
-class Array(pydantic.BaseModel):
-    """A list of elements"""
-
-    model_config = pydantic.ConfigDict(frozen=True)
-
-    type: str = "array"
-    array: list[Union[FlatElementType, "Array", "Record"]]
-
-    def to_list(self):
-        return [value.to_list() if isinstance(value, Array) else value for value in self.array]
-
-    def __getitem__(self, key: int) -> FlatElementType:
-        return self.array[key]
-
-    def __len__(self):
-        return len(self.array)
-
-    def items(self):
-        return enumerate(self.array)
-
-
-@encode.register(dict)
-def _(obj: dict) -> Record:
-    return Record(record={k: encode(v) for k, v in obj.items()})
-
-
-@encode.register(Record)
-def _(obj: Record) -> Record:
-    return obj
-
-
-@decode.register
-def _(obj: Record) -> Record:
-    return obj
-
-
-@decode.register
-def _(obj: dict) -> Record:
-    return Record(record={k: decode(v) for k, v in obj.items()})
-
-
-# Necessary to resolve forward references using the new Pydantic v2 method
-Array.model_rebuild()
-Record.model_rebuild()
-
-ElementType = Union[FlatElementType, Array, Record]
-
-
 class Element(pydantic.BaseModel):
     value: ElementType
 
@@ -307,9 +227,24 @@ def _(obj: None):
     return obj
 
 
+@encode.register
+def _(obj: list):
+    return list(map(encode, obj))
+
+
+@encode.register
+def _(obj: tuple):
+    return tuple(map(encode, obj))
+
+
+@decode.register
+def _(obj: tuple):
+    return tuple(map(decode, obj))
+
+
 @decode.register
 def _(obj: list):
-    return tuple(map(decode, obj))
+    return list(map(decode, obj))
 
 
 @decode.register
@@ -327,26 +262,65 @@ def _(obj: str):
     return obj
 
 
+@encode.register
+def _(obj: Pose):
+    return obj
+
+
+@decode.register
+def _(obj: Pose):
+    return obj
+
+@encode.register
+def _(obj: Vector3d):
+    return obj
+
+
+@decode.register
+def _(obj: Vector3d):
+    return obj
+
+@encode.register
+def _(obj: dict):
+    return obj
+
+
+@decode.register
+def _(obj: dict):
+    # If it has the signature of a Pose, decode it as a Pose:
+    if "position" in obj and "orientation" in obj:
+        return Pose(**obj)
+    if "x" in obj and "y" in obj and "z" in obj:
+        return Vector3d(**obj)
+    # Otherwise just decode children (if needed) or leave it alone:
+    return {k: decode(v) for k, v in obj.items()}
+
+
 def encode_as_json_like_dict(data: ElementType):
     return Element(value=encode(data)).model_dump()["value"]
 
 
-def dumps(data: ElementType, concise=False) -> str:
-    if concise:
-        return json.dumps(encode_as_json_like_dict(data))
+def dumps(data: ElementType) -> str:
     return Element(value=encode(data)).model_dump_json()
 
 
-def loads(s: str, concise=False) -> ElementType:
+def loads(s: str) -> ElementType:
     data = json.loads(s)
-    if concise:
-        data = {"value": data}
     return decode(Element(**data))
 
 
 def loads_store(content: str) -> ElementType:
+    """
+    Example:
+    >>> json_content = '{"a": {"orientation": [1.0, 2.0, 3.0], "position": [4.0, 5.0, 6.0]}}'
+    >>> loads_store(json_content)
+    {'a': Pose(position=Vector3d(x=4.0, y=5.0, z=6.0), orientation=Vector3d(x=1.0, y=2.0, z=3.0))}
+    >>> json_content = '{"b": {"a": 3}, "c": [1, 2, 3]}'
+    >>> loads_store(json_content)
+    {'b': {'a': 3}, 'c': [1, 2, 3]}
+    """
     data = json.loads(content)
     return decode(Store(items=data))
 
 
-__all__ = ["Frame", "Closure", "as_builtin_type", "Record", "Array", "ElementType", "loads_store"]
+__all__ = ["Frame", "Closure", "as_builtin_type", "ElementType", "loads_store", "dumps", "loads"]

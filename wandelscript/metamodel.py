@@ -763,7 +763,7 @@ class Record(Atom[dict[str, t.ElementType]]):
     ... '''
     >>> store = _run_program_debug(code).store
     >>> store['record']
-    Record(data={'key1': 1, 'key2': 'value', 'key3': Vector3d(x=1.0, y=2.0, z=3.0)})
+    {'key1': 1, 'key2': 'value', 'key3': Vector3d(x=1.0, y=2.0, z=3.0)}
     >>> store['a']
     'value'
     >>> store['b']
@@ -772,8 +772,8 @@ class Record(Atom[dict[str, t.ElementType]]):
 
     items: tuple[KeyValuePair, ...]
 
-    async def call(self, context: ExecutionContext, **kwargs) -> t.Record:  # type: ignore
-        return t.Record(data={pair.key: await pair.value(context) for pair in self.items})
+    async def call(self, context: ExecutionContext, **kwargs) -> dict[str, t.ElementType]:
+        return {pair.key: await pair.value(context) for pair in self.items}
 
 
 @dataclass(frozen=True, eq=False)
@@ -1285,8 +1285,8 @@ class Program:
     def from_file(cls, filename: str) -> Program:
         return cls.from_code(open(filename, encoding="utf-8").read())
 
-    def simulate(self, initial_vars: dict[str, t.ElementType] | None = None):
-        context = asyncio.run(run_program(self, initial_vars, default_robot="0@controller"))
+    def simulate(self, run_args: dict[str, t.ElementType] | None = None):
+        context = asyncio.run(run_program(self, run_args, default_robot="0@controller"))
         return context.motion_group_recordings
 
     @staticmethod
@@ -1674,7 +1674,7 @@ async def run_program(
     cell: RobotCell | None = None,
     default_robot: str | None = None,
     default_tcp: str | None = None,
-    initial_vars: dict[str, t.ElementType] | None = None,
+    run_args: dict[str, t.ElementType] | None = None,
     debug: bool = True,
 ) -> ExecutionContext:
     if isinstance(program, str):
@@ -1683,7 +1683,7 @@ async def run_program(
         cell = SimulatedRobotCell()
     stop_event = anyio.Event()
     context = ExecutionContext(
-        cell, stop_event, default_robot=default_robot, default_tcp=default_tcp, initial_vars=initial_vars, debug=debug
+        cell, stop_event, default_robot=default_robot, default_tcp=default_tcp, run_args=run_args, debug=debug
     )
     async with cell:
         await program(context)

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from nova.types import Pose, Vector3d
 
-from wandelscript.types import as_builtin_type
+from wandelscript.types import as_builtin_type, dumps, loads
 
 
 def test_pose_to_and_from_tuple():
@@ -13,7 +13,6 @@ def test_pose_to_and_from_tuple():
     assert pose == p
 
 
-@pytest.mark.parametrize("concise", [True, False])
 @pytest.mark.parametrize(
     "data",
     [
@@ -23,10 +22,10 @@ def test_pose_to_and_from_tuple():
         (1, "asd", 2.3, Vector3d.from_tuple((1.0, 2.0, 3.0))),
     ],
 )
-def test_pose_save_and_load(data, concise):
-    s = dumps(data, concise)
+def test_pose_save_and_load(data):
+    s = dumps(data)
     print(data, s)
-    data_reloaded = loads(s, concise)
+    data_reloaded = loads(s)
     assert data_reloaded == data
 
 

@@ -1,11 +1,11 @@
 import httpx
 
 from wandelscript.metamodel import register_builtin_func
-from wandelscript.types import Record, as_builtin_type
+from wandelscript.types import as_builtin_type
 
 
 @register_builtin_func()
-async def fetch(url: str, options: Record | None = None) -> Record:
+async def fetch(url: str, options: dict | None = None) -> dict:
     """Fetch data from a URL.
 
     Args:
@@ -31,7 +31,7 @@ async def fetch(url: str, options: Record | None = None) -> Record:
         }
 
     """
-    options = options or Record()
+    options = options or {}
     method = options.get("method", "GET")
     body = options.get("body")
     headers = options.get("headers")
@@ -68,8 +68,8 @@ async def fetch(url: str, options: Record | None = None) -> Record:
             data = response.content  # Fall back to raw bytes
 
         parsed_data = as_builtin_type(data)
-        return Record(data={"data": parsed_data, "status_code": response.status_code})
+        return {"data": parsed_data, "status_code": response.status_code}
 
     except httpx.HTTPStatusError as exc:
         status_code = exc.response.status_code if exc.response else 500
-        return Record(data={"error": str(exc), "status_code": status_code})
+        return {"error": str(exc), "status_code": status_code}
