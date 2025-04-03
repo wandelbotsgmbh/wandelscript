@@ -29,7 +29,11 @@ async def main():
             cell=robot_cell,
             default_tcp=None,
             default_robot=None,
-            run_args={"pose_a": Pose((0, 0, 400, 0, 3.14, 0))},
+            run_args={
+                "pose_a": Pose((0, 0, 400, 0, 3.14, 0)),
+                "a_dict": {"nested": 3},
+                "a_list": [1, 2, {"nested": 4}],
+            },
         )
         print(run.program_run.execution_results)
 

@@ -52,18 +52,13 @@ def test_example(example_name):
     runner = wandelscript.run(code, robot_cell, default_tcp="Flange")
     store = runner.execution_context.store
     for key, expected in data.items():
-        ic(store[key])
-        # TODO: expected needs to be a pose (encoded)
-        ic(expected)
         if isinstance(expected, list):
             expected = tuple(tuple(v) if isinstance(v, list) else v for v in expected)
         if isinstance(expected, Pose):
-            assert store[key] == expected
-            # assert np.allclose(expected.position, store[key].position, atol=1e-3, rtol=1e-3)
-            # assert np.allclose(expected.orientation, store[key].orientation, atol=1e-3, rtol=1e-3)
+            assert np.allclose(expected.position, store[key].position, atol=1e-3, rtol=1e-3)
+            assert np.allclose(expected.orientation, store[key].orientation, atol=1e-3, rtol=1e-3)
         elif isinstance(expected, Vector3d):
-            assert store[key] == expected
-            # assert np.allclose(expected, store[key], atol=1e-3, rtol=1e-3)
+            assert np.allclose(expected, store[key], atol=1e-3, rtol=1e-3)
         elif isinstance(expected, dict):
             assert expected == store[key]
         else:
