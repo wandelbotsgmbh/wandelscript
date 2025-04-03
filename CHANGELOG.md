@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.3.7 (2025-04-03)
+
+### Bug Fixes
+
+- **RPS-1490**: Avoid mutable type for apparent instance var
+  ([`279d6fe`](https://github.com/wandelbotsgmbh/wandelscript/commit/279d6fe06f726c2da90de4f0a2df528323c61c27))
+
+Looks like this is an instance var, not a class-level mutable type. Instead, initialize in
+  `__init__()` function to avoid leaking of values across instances.
+
+
 ## v0.3.6 (2025-04-02)
 
 ### Bug Fixes
