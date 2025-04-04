@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.4.1 (2025-04-04)
+
+### Bug Fixes
+
+- Cleanup serializer & fixed json types
+  ([#22](https://github.com/wandelbotsgmbh/wandelscript/pull/22),
+  [`51d546c`](https://github.com/wandelbotsgmbh/wandelscript/commit/51d546c6b29cb414772d75603e2efe3c2d5b7515))
+
+Co-authored-by: cbiering <christoph.biering@wandelbots.com>
+
+
 ## v0.4.0 (2025-04-04)
 
 ### Features
