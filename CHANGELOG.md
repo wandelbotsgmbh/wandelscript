@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.4.0 (2025-04-04)
+
+### Features
+
+- **RPS-1438**: Simplified Wandelscript types
+  ([#21](https://github.com/wandelbotsgmbh/wandelscript/pull/21),
+  [`6f8d3f1`](https://github.com/wandelbotsgmbh/wandelscript/commit/6f8d3f162c326f4e2a8b772f7671f72343bc4fb4))
+
+Co-authored-by: cbiering <christoph.biering@wandelbots.com>
+
+
 ## v0.3.7 (2025-04-03)
 
 ### Bug Fixes
