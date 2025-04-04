@@ -1600,8 +1600,7 @@ class Write(Statement, Generic[ElementType]):
         if not isinstance(key, str):
             raise GenericRuntimeError(
                 self.location,
-                text=f"Key must be a string but is: {key=}. "
-                f"Use correct order: write(<device>, <key: str>, <value>)",
+                text=f"Key must be a string but is: {key=}. Use correct order: write(<device>, <key: str>, <value>)",
             )
 
         # classify write action according to user input
