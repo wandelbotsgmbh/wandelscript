@@ -24,8 +24,8 @@ from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.frames import FrameSystem
 from wandelscript.types import ElementType, Frame, as_builtin_type
-from wandelscript.utils.json_decode import SerializedStore, encode, is_encodable
 from wandelscript.utils.runtime import stoppable_run
+from wandelscript.utils.serializer import SerializedStore, encode, is_encodable
 
 DEFAULT_CALL_STACK_SIZE = 64
 """Default size of the call stack. Currently arbitrary."""

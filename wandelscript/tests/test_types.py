@@ -3,7 +3,7 @@ import pytest
 from nova.types import Pose, Vector3d
 
 from wandelscript.types import as_builtin_type
-from wandelscript.utils.json_decode import dumps, loads
+from wandelscript.utils.serializer import dumps, loads
 
 
 def test_pose_to_and_from_tuple():
