@@ -20,12 +20,12 @@ from nova.types import MotionSettings, MotionState, Pose
 
 import wandelscript.metamodel as metamodel
 from wandelscript import exception as wsexception
-from wandelscript import serializer
 from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.frames import FrameSystem
 from wandelscript.types import ElementType, Frame, as_builtin_type
 from wandelscript.utils.runtime import stoppable_run
+from wandelscript.utils.serializer import SerializedStore, encode, is_encodable
 
 DEFAULT_CALL_STACK_SIZE = 64
 """Default size of the call stack. Currently arbitrary."""
@@ -94,10 +94,9 @@ class Store:
     def data(self) -> dict[str, Any]:
         return self._data.copy()
 
-    # TODO: Do we still need this?
     @property
-    def data_dict(self) -> dict[str, serializer.ElementType]:
-        serialized_store = {k: serializer.encode(v) for k, v in self.data.items() if serializer.is_encodable(v)}
+    def data_dict(self) -> dict[str, ElementType]:
+        serialized_store = {k: encode(v) for k, v in self.data.items() if is_encodable(v)}
         serialized_store = {k: v for k, v in serialized_store.items() if not isinstance(v, float) or not isinf(v)}
         return serialized_store
 
@@ -131,7 +130,7 @@ class ExecutionContext:
         stop_event: anyio.Event,
         default_robot: str | None = None,
         default_tcp: str | None = None,
-        initial_vars: dict[str, ElementType] | None = None,
+        run_args: dict[str, ElementType] | None = None,
         foreign_functions: dict[str, ForeignFunction] | None = None,
         debug: bool = False,
     ):
@@ -149,16 +148,16 @@ class ExecutionContext:
             # If a default robot is set, use it
             self._default_robot = default_robot
 
-        if initial_vars is None:
-            initial_vars = {}
+        if run_args is None:
+            run_args = {}
 
-        initial_vars.update(__tcp__=default_tcp, **robot_cell.devices)
+        run_args.update(__tcp__=default_tcp, **robot_cell.devices)
 
         for name, ff in (foreign_functions or {}).items():
             metamodel.register_builtin_func(name=name, pass_context=ff.pass_context)(ff.function)
 
         self.call_stack = CallStack(DEFAULT_CALL_STACK_SIZE)
-        self.call_stack.push(Store(initial_vars))
+        self.call_stack.push(Store(run_args))
         self.interceptors: list[Interceptor] = []
         self.stop_event: anyio.Event = stop_event
         # this will be continuously updated by the metamodel when the program is executed
@@ -535,12 +534,12 @@ class PlannableActionQueue(ActionQueue):
     MOTION_LIMIT_OUT = 1000  # maximal length of path history to be stored
 
     async def run_action(self, action: Action):
-        # TODO: we only want to support reading from the initial args
-        # in the story https://wandelbots.atlassian.net/browse/WOS-1924 the we will update the initial arguments to be
+        # TODO: we only want to support reading from the run_args
+        # in the story https://wandelbots.atlassian.net/browse/WOS-1924 the we will update the run_args to be
         # a record in Wandelscript. On the long run we will work on removing the support for the etcd database.
         if isinstance(action, ReadAction):
             device = self._execution_context.robot_cell[action.device_id]
-            # allow reading from initial arguments & etcd database
+            # allow reading from run_args
             if device.configuration.type in ("database",):
                 return await run_action(action, self._execution_context)
         raise NotPlannableError(

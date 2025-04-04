@@ -62,7 +62,7 @@ def _(pose: Pose, key: int, val: float) -> Pose:
 # rec_frozen.a = 4 # throws error
 # rec.a = 4 # works
 @assoc.register
-def _(record: t.Record, key: str, val: Any) -> t.Record:
+def _(record: dict, key: str, val: Any) -> dict:
     tmp = dict(record)
     tmp[key] = val
-    return t.Record(data=tmp)
+    return tmp

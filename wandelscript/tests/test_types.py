@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from nova.types import Pose, Vector3d
 
-from wandelscript.serializer import dumps, loads
 from wandelscript.types import as_builtin_type
+from wandelscript.utils.serializer import dumps, loads
 
 
 def test_pose_to_and_from_tuple():
@@ -14,20 +14,21 @@ def test_pose_to_and_from_tuple():
     assert pose == p
 
 
-@pytest.mark.parametrize("concise", [True, False])
 @pytest.mark.parametrize(
     "data",
     [
         Pose((1, 2, 3, 4, 5, 6)),
         Vector3d.from_tuple((1.0, 2.0, 3.0)),
         Vector3d.from_tuple((4.0, 5.0, 6.0)),
-        (1, "asd", 2.3, Vector3d.from_tuple((1.0, 2.0, 3.0))),
+        [1, "asd", 2.3, Vector3d.from_tuple((1.0, 2.0, 3.0))],
     ],
 )
-def test_pose_save_and_load(data, concise):
-    s = dumps(data, concise)
+def test_pose_save_and_load(data):
+    print(data)
+    s = dumps(data)
     print(data, s)
-    data_reloaded = loads(s, concise)
+    data_reloaded = loads(s)
+    print(data_reloaded)
     assert data_reloaded == data
 
 

@@ -8,7 +8,6 @@ from nova.types import Pose
 from nova.types.state import MotionState, RobotState
 
 from wandelscript import exception as wsexception
-from wandelscript import serializer
 from wandelscript.exception import NameError_
 from wandelscript.metamodel import register_debug_func, run_program
 from wandelscript.runner import run
@@ -106,12 +105,7 @@ def test_store_data_dict():
     store["float"] = 10.0
     store["str"] = "string"
     store["pose"] = Pose((0, 0, 0, 0, 0, 0))
-    assert store.data_dict == {
-        "int": 4,
-        "float": 10.0,
-        "str": "string",
-        "pose": serializer.Pose(pose=(0, 0, 0, 0, 0, 0)),
-    }
+    assert store.data_dict == {"int": 4, "float": 10.0, "str": "string", "pose": Pose((0, 0, 0, 0, 0, 0)).model_dump()}
 
 
 @pytest.mark.asyncio

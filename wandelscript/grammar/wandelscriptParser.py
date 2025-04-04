@@ -230,31 +230,31 @@ class wandelscriptParser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "'('", "')'", 
-                     "'['", "']'", "'{'", "'}'", "'.'", "','", "':'", "'+'", 
-                     "'-'", "'*'", "'/'", "'|'", "'~'", "'<'", "'>'", "'='", 
-                     "'::'", "'=='", "'!='", "'<='", "'>='", "'..'", "'...'", 
-                     "'move'", "'via'", "'to'", "'movedef'", "'>-->'", "'def'", 
-                     "'return'", "'pass'", "'if'", "'elif'", "'else:'", 
-                     "'switch'", "'case'", "'default:'", "'with'", "'for'", 
-                     "'in'", "'repeat'", "'while'", "'break'", "'stop'", 
-                     "'not'", "'and'", "'or'", "'do'", "'sync'", "'except'", 
-                     "'interrupt'", "'when'", "<INVALID>", "'wait'", "'raise'", 
-                     "'print'", "'read'", "'write'", "'call'", "'True'", 
+    literalNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "'('", "')'",
+                     "'['", "']'", "'{'", "'}'", "'.'", "','", "':'", "'+'",
+                     "'-'", "'*'", "'/'", "'|'", "'~'", "'<'", "'>'", "'='",
+                     "'::'", "'=='", "'!='", "'<='", "'>='", "'..'", "'...'",
+                     "'move'", "'via'", "'to'", "'movedef'", "'>-->'", "'def'",
+                     "'return'", "'pass'", "'if'", "'elif'", "'else:'",
+                     "'switch'", "'case'", "'default:'", "'with'", "'for'",
+                     "'in'", "'repeat'", "'while'", "'break'", "'stop'",
+                     "'not'", "'and'", "'or'", "'do'", "'sync'", "'except'",
+                     "'interrupt'", "'when'", "<INVALID>", "'wait'", "'raise'",
+                     "'print'", "'read'", "'write'", "'call'", "'True'",
                      "'False'" ]
 
-    symbolicNames = [ "<INVALID>", "INDENT", "DEDENT", "OPEN_PARENS", "CLOSE_PARENS", 
-                      "OPEN_BRACKET", "CLOSE_BRACKET", "OPEN_BRACE", "CLOSE_BRACE", 
-                      "DOT", "COMMA", "COLON", "PLUS", "MINUS", "STAR", 
-                      "DIV", "BITWISE_OR", "TILDE", "LT", "GT", "OP_ASSIGNMENT", 
-                      "DOUBLE_COLON", "OP_EQ", "OP_NE", "OP_LE", "OP_GE", 
-                      "OP_RANGE", "ORIENTATION_ELLIPSIS", "MOVE", "VIA", 
-                      "TO", "MOVEDEF", "MOVEDEV_ARROW", "DEF", "RETURN", 
-                      "PASS", "IF", "ELIF", "ELSE", "SWITCH", "CASE", "DEFAULT", 
-                      "WITH", "FOR", "IN", "REPEAT", "WHILE", "BREAK", "STOP", 
-                      "NOT", "AND", "OR", "DO", "SYNC", "EXCEPT", "INTERRUPT", 
-                      "WHEN", "ACTIVATE_OR_DEACTIVATE", "WAIT", "RAISE", 
-                      "PRINT", "READ", "WRITE", "CALL", "TRUE", "FALSE", 
+    symbolicNames = [ "<INVALID>", "INDENT", "DEDENT", "OPEN_PARENS", "CLOSE_PARENS",
+                      "OPEN_BRACKET", "CLOSE_BRACKET", "OPEN_BRACE", "CLOSE_BRACE",
+                      "DOT", "COMMA", "COLON", "PLUS", "MINUS", "STAR",
+                      "DIV", "BITWISE_OR", "TILDE", "LT", "GT", "OP_ASSIGNMENT",
+                      "DOUBLE_COLON", "OP_EQ", "OP_NE", "OP_LE", "OP_GE",
+                      "OP_RANGE", "ORIENTATION_ELLIPSIS", "MOVE", "VIA",
+                      "TO", "MOVEDEF", "MOVEDEV_ARROW", "DEF", "RETURN",
+                      "PASS", "IF", "ELIF", "ELSE", "SWITCH", "CASE", "DEFAULT",
+                      "WITH", "FOR", "IN", "REPEAT", "WHILE", "BREAK", "STOP",
+                      "NOT", "AND", "OR", "DO", "SYNC", "EXCEPT", "INTERRUPT",
+                      "WHEN", "ACTIVATE_OR_DEACTIVATE", "WAIT", "RAISE",
+                      "PRINT", "READ", "WRITE", "CALL", "TRUE", "FALSE",
                       "INT", "FLOAT", "STRING", "NAME", "NEWLINE", "SKIP_" ]
 
     RULE_program = 0
@@ -318,19 +318,19 @@ class wandelscriptParser ( Parser ):
     RULE_comparisonOperator = 58
     RULE_logicalOperator = 59
 
-    ruleNames =  [ "program", "identifier", "suite", "statement", "simpleStatement", 
-                   "break_", "return_", "stop", "pass_", "motion", "switchInterrupt", 
-                   "wait", "raiseException", "complexStatement", "whileLoop", 
-                   "functionDefinition", "moveDefinition", "forLoop", "range_", 
-                   "repeatLoop", "conditional", "switch_", "interrupt", 
-                   "context", "syncContext", "robotContext", "unaryOperator", 
-                   "expression", "atom", "unary", "functionCall", "assignment", 
-                   "frameRelation", "reference", "float_", "integer", "bool_", 
-                   "array", "keyValuePair", "record", "pose", "position", 
-                   "orientation", "vector", "string", "connector", "print_", 
-                   "read", "write", "call", "identifierList", "modifier", 
-                   "expressionList", "additionOperator", "sign", "inverse", 
-                   "not", "multiplicationOperator", "comparisonOperator", 
+    ruleNames =  [ "program", "identifier", "suite", "statement", "simpleStatement",
+                   "break_", "return_", "stop", "pass_", "motion", "switchInterrupt",
+                   "wait", "raiseException", "complexStatement", "whileLoop",
+                   "functionDefinition", "moveDefinition", "forLoop", "range_",
+                   "repeatLoop", "conditional", "switch_", "interrupt",
+                   "context", "syncContext", "robotContext", "unaryOperator",
+                   "expression", "atom", "unary", "functionCall", "assignment",
+                   "frameRelation", "reference", "float_", "integer", "bool_",
+                   "array", "keyValuePair", "record", "pose", "position",
+                   "orientation", "vector", "string", "connector", "print_",
+                   "read", "write", "call", "identifierList", "modifier",
+                   "expressionList", "additionOperator", "sign", "inverse",
+                   "not", "multiplicationOperator", "comparisonOperator",
                    "logicalOperator" ]
 
     EOF = Token.EOF
@@ -608,13 +608,13 @@ class wandelscriptParser ( Parser ):
                 self.match(wandelscriptParser.NEWLINE)
                 self.state = 133
                 self.match(wandelscriptParser.INDENT)
-                self.state = 135 
+                self.state = 135
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
                     self.state = 134
                     self.statement()
-                    self.state = 137 
+                    self.state = 137
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & -2399876960646856672) != 0) or _la==69):
@@ -2081,7 +2081,7 @@ class wandelscriptParser ( Parser ):
                     self.state = 262
                     self.match(wandelscriptParser.COLON)
                     self.state = 263
-                    localctx.elif_body = self.suite() 
+                    localctx.elif_body = self.suite()
                 self.state = 269
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,12,self._ctx)
@@ -2603,7 +2603,7 @@ class wandelscriptParser ( Parser ):
                     self.state = 335
                     self.match(wandelscriptParser.COLON)
                     self.state = 336
-                    localctx.do_body = self.suite() 
+                    localctx.do_body = self.suite()
                 self.state = 342
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,18,self._ctx)
@@ -2825,7 +2825,7 @@ class wandelscriptParser ( Parser ):
                         localctx.right = self.expression(3)
                         pass
 
-             
+
                 self.state = 371
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,21,self._ctx)
@@ -3104,7 +3104,7 @@ class wandelscriptParser ( Parser ):
                         localctx.property_ = self.identifier()
                         pass
 
-             
+
                 self.state = 410
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,24,self._ctx)
@@ -3822,7 +3822,7 @@ class wandelscriptParser ( Parser ):
                         self.state = 466
                         self.match(wandelscriptParser.COMMA)
                         self.state = 467
-                        localctx.value = self.keyValuePair() 
+                        localctx.value = self.keyValuePair()
                     self.state = 472
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
@@ -5166,28 +5166,28 @@ class wandelscriptParser ( Parser ):
     def expression_sempred(self, localctx:ExpressionContext, predIndex:int):
             if predIndex == 0:
                 return self.precpred(self._ctx, 5)
-         
+
 
             if predIndex == 1:
                 return self.precpred(self._ctx, 4)
-         
+
 
             if predIndex == 2:
                 return self.precpred(self._ctx, 3)
-         
+
 
             if predIndex == 3:
                 return self.precpred(self._ctx, 2)
-         
+
 
     def atom_sempred(self, localctx:AtomContext, predIndex:int):
             if predIndex == 4:
                 return self.precpred(self._ctx, 4)
-         
+
 
             if predIndex == 5:
                 return self.precpred(self._ctx, 3)
-         
+
 
 
 
