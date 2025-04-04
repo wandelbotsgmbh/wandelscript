@@ -96,9 +96,6 @@ class Store:
 
     @property
     def data_dict(self) -> dict[str, ElementType]:
-        # serializable_data = {k: v for k, v in self.data.items() if is_encodable(v)}
-        # serialized_store = encode(SerializedStore(items=serializable_data))
-
         serialized_store = {k: encode(v) for k, v in self.data.items() if is_encodable(v)}
         serialized_store = {k: v for k, v in serialized_store.items() if not isinstance(v, float) or not isinf(v)}
         return serialized_store
