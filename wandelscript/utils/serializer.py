@@ -75,7 +75,7 @@ def _(obj: dict):
 @decode.register(tuple)
 def _(obj):
     """Decode lists/tuples by recursively decoding contents,
-       preserving the original sequence type."""
+    preserving the original sequence type."""
     return type(obj)(map(decode, obj))
 
 
@@ -128,7 +128,7 @@ def _(obj: Vector3d):
 @encode.register(tuple)
 def _(obj):
     """Encodes lists/tuples by recursively encoding the contents,
-       preserving the original sequence type."""
+    preserving the original sequence type."""
     return type(obj)(map(encode, obj))
 
 
