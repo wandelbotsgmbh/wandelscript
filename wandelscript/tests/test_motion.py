@@ -32,8 +32,8 @@ move via line() to (0, 10, 10, 0, 0, 0)
     runner = wandelscript.run(code, cell, default_robot="0@controller", default_tcp="Flange")
     path = runner.program_run.execution_results[0].paths[0]
     # The first position will be at the origin because the simulated robot assumes it as the default initial position
-    assert np.allclose(path.poses[0].pose.position, [0, 0, 0])
-    assert np.allclose(path.poses[-1].pose.position, [0, 10, 10])
+    assert np.allclose(path[0].pose.position, [0, 0, 0])
+    assert np.allclose(path[-1].pose.position, [0, 10, 10])
 
 
 def test_no_robot():

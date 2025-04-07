@@ -165,7 +165,7 @@ move via line() to (0, 100, 300, 0, pi, 0)
         program_runner.start(sync=True)
     # Check path
     last_path = program_runner.program_run.execution_results[0].paths[-1]
-    assert last_path.poses[-1].pose.position.to_tuple() == (0, 100, 300)
+    assert last_path[-1].pose.position.to_tuple() == (0, 100, 300)
     # Check store
     store = program_runner.program_run.store
     assert np.allclose(store["home"]["position"], [0, 0, 400])
