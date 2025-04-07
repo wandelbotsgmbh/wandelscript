@@ -38,24 +38,8 @@ class ProgramRunState(Enum):
     STOPPED = "stopped"
 
 
-class PosePath(pydantic.BaseModel):
-    poses: list[RobotState] = []
-
-    @classmethod
-    def from_motion_states(cls, motion_states: list[MotionState]):
-        return cls(
-            poses=[
-                RobotState(
-                    pose=motion_state.state.pose,
-                    joints=motion_state.state.joints if motion_state.state.joints is not None else None,
-                )
-                for motion_state in motion_states
-            ]
-        )
-
-
-class ExecutionResult(pydantic.BaseModel):
-    """The ExecutionResult object contains the execution results of a robot.
+class ProgramRunResult(pydantic.BaseModel):
+    """The ProgramRunResult object contains the execution results of a robot.
 
     Arguments:
         motion_group_id: The unique id of the motion group
@@ -64,9 +48,9 @@ class ExecutionResult(pydantic.BaseModel):
 
     """
 
-    motion_group_id: str
-    motion_duration: float
-    paths: list[PosePath]
+    motion_group_id: str = pydantic.Field(..., description="Unique id of the motion group that was executed")
+    motion_duration: float = pydantic.Field(..., description="Total execution duration of the motion group")
+    paths: list[list[RobotState]] = pydantic.Field(..., description="Paths of the motion group as list of Path objects")
 
 
 class ProgramRun(pydantic.BaseModel):
@@ -86,16 +70,20 @@ class ProgramRun(pydantic.BaseModel):
 
     """
 
-    id: str
-    state: ProgramRunState
-    logs: str = ""
-    stdout: str = ""
-    store: dict[str, ElementType] = field(default_factory=dict)
-    error: str | None = None
-    traceback: str | None = None
-    start_time: float | None = None
-    end_time: float | None = None
-    execution_results: list[ExecutionResult] = field(default_factory=list)
+    id: str = pydantic.Field(..., description="Unique id of the program run")
+    state: ProgramRunState = pydantic.Field(..., description="State of the program run")
+    logs: str = pydantic.Field(..., description="Logs of the program run")
+    stdout: str = pydantic.Field(..., description="Stdout of the program run")
+    store: dict[str, ElementType] = pydantic.Field(
+        default_factory=dict, description="Stores runtime variables of the run"
+    )
+    error: str | None = pydantic.Field(None, description="Error message of the program run, if any")
+    traceback: str | None = pydantic.Field(None, description="Traceback of the program run, if any")
+    start_time: float | None = pydantic.Field(None, description="Start time of the program run")
+    end_time: float | None = pydantic.Field(None, description="End time of the program run")
+    execution_results: list[ProgramRunResult] = pydantic.Field(
+        default_factory=list, description="Execution results of the program run"
+    )
 
 
 class ProgramRunner:
@@ -312,11 +300,20 @@ class ProgramRunner:
                     finally:
                         # write path to output
                         self._program_run.execution_results = [
-                            ExecutionResult(
+                            ProgramRunResult(
                                 motion_group_id=motion_group_id,
                                 motion_duration=0,
                                 paths=[
-                                    PosePath.from_motion_states(motion_states) for motion_states in motion_state_list
+                                    [
+                                        RobotState(
+                                            pose=motion_state.state.pose,
+                                            joints=motion_state.state.joints
+                                            if motion_state.state.joints is not None
+                                            else None,
+                                        )
+                                        for motion_state in motion_states
+                                    ]
+                                    for motion_states in motion_state_list
                                 ],
                             )
                             for motion_group_id, motion_state_list in execution_context.motion_group_recordings.items()
