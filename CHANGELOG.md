@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.5.0 (2025-04-07)
+
+### Features
+
+- **RPS-1438**: Improved runner models
+  ([#23](https://github.com/wandelbotsgmbh/wandelscript/pull/23),
+  [`14dbcbc`](https://github.com/wandelbotsgmbh/wandelscript/commit/14dbcbca0c100802827bf6b612f7c70c45f27e59))
+
+Co-authored-by: cbiering <christoph.biering@wandelbots.com>
+
+
 ## v0.4.1 (2025-04-04)
 
 ### Bug Fixes
