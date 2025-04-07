@@ -72,8 +72,8 @@ class ProgramRun(pydantic.BaseModel):
 
     id: str = pydantic.Field(..., description="Unique id of the program run")
     state: ProgramRunState = pydantic.Field(..., description="State of the program run")
-    logs: str = pydantic.Field(..., description="Logs of the program run")
-    stdout: str = pydantic.Field(..., description="Stdout of the program run")
+    logs: str | None = pydantic.Field(None, description="Logs of the program run")
+    stdout: str | None = pydantic.Field(None, description="Stdout of the program run")
     store: dict[str, ElementType] = pydantic.Field(
         default_factory=dict, description="Stores runtime variables of the run"
     )
@@ -108,7 +108,16 @@ class ProgramRunner:
         self._run_args: dict[str, ElementType] = run_args or {}
         self._foreign_functions: dict[str, ForeignFunction] = foreign_functions or {}
         self.execution_context: ExecutionContext | None = None
-        self._program_run: ProgramRun = ProgramRun(id=str(uuid.uuid4()), state=ProgramRunState.NOT_STARTED)
+        self._program_run: ProgramRun = ProgramRun(
+            id=str(uuid.uuid4()),
+            state=ProgramRunState.NOT_STARTED,
+            logs=None,
+            stdout=None,
+            error=None,
+            traceback=None,
+            start_time=None,
+            end_time=None,
+        )
         self._thread: threading.Thread | None = None
         self._stop_event: threading.Event | None = None
         self._exc: Exception | None = None
