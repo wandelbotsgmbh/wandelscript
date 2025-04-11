@@ -20,7 +20,7 @@ execution, and plugin extensibility, making it suitable for complex robot progra
 The Wandelscript grammar is defined under `wandelscript/grammar/`. To generate the parser, use the
 following command:
 ```bash
-cd wandelscript/grammar && poetry run antlr4 -Dlanguage=Python3 -visitor *.g4
+cd wandelscript/grammar && uv run antlr4 -Dlanguage=Python3 -visitor *.g4
 ```
 
 ## Structure
@@ -40,9 +40,9 @@ The repository is organized as follows:
 
 ## Dependencies
 
-The project uses the Poetry dependency manager. Install the dependencies using:
+The project uses the `uv` package manager. Install the dependencies using:
 ```bash
-poetry install
+uv sync
 ```
 
 Key dependencies:
@@ -60,16 +60,16 @@ Key dependencies:
 ### CLI Tool
 
 There is a CLI tool `wandelscript`, as well as its shortcut pendant `ws` that gets installed into
-the Python environment when calling `poetry install`.
+the Python environment when calling `uv sync`.
 
 Example uses of the `wandelscript` CLI tool:
 ```bash
-poetry run wandelscript --help
-poetry run wandelscript my_script.cli
-poetry run ws my_script.cli  # shortcut alternative to `poetry run wandelscript`
+uv run wandelscript --help
+uv run wandelscript my_script.cli
+uv run ws my_script.cli  # shortcut alternative to `uv run wandelscript`
 ```
 
-See `poetry run wandelscript --help` for information about available CLI arguments.
+See `uv run wandelscript --help` for information about available CLI arguments.
 
 ## Contributing
 
