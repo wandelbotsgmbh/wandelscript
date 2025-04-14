@@ -1,6 +1,29 @@
 # CHANGELOG
 
 
+## v0.5.1 (2025-04-14)
+
+### Chores
+
+- **RPS-1557**: Adjust files for use with `uv`
+  ([`8932246`](https://github.com/wandelbotsgmbh/wandelscript/commit/89322469d17072893a5b355862c9aabfbe534e5e))
+
+Notice especially in the `ci-dev.yaml` file, a certain change which I believe to fix something
+  formerly incorrect:
+
+- poetry install --without dev + pip install uv + uv sync --group dev
+
+Evidently, the CI invokes `ruff` and other dev tools, thus, dev tools should explicitly be installed
+  not ignored. The fact that this worked may be coincidental because other dependencies might have
+  pulled ruff and the other tools in by default. However, let's better be explicit.
+
+- **RPS-1557**: Migrate from `Poetry` to `uv`
+  ([`263042d`](https://github.com/wandelbotsgmbh/wandelscript/commit/263042d282c5d58533ba8e71f3ec2442c455f68d))
+
+# ymmv # install and run `migrate-to-uv` cd wandelscript poetry shell pip install migrate-to-uv uvx
+  migrate-to-uv
+
+
 ## v0.5.0 (2025-04-07)
 
 ### Features
