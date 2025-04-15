@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.5.2 (2025-04-15)
+
+### Chores
+
+- Remove an upper limit to the `nova` dependency
+  ([`52eda71`](https://github.com/wandelbotsgmbh/wandelscript/commit/52eda71e1d277ee017e1853c3881cebfc5d86fc5))
+
+
 ## v0.5.1 (2025-04-14)
 
 ### Chores
