@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.5.3 (2025-04-23)
+
+### Chores
+
+- Relax `typer` version constraints
+  ([`cac77f1`](https://github.com/wandelbotsgmbh/wandelscript/commit/cac77f11ceac5f7f3c6ee587b50b8ebf9c410de3))
+
+We want to use https://github.com/koxudaxi/fastapi-code-generator
+
+to generate Python stubs from service-manager OpenAPI YAML endpoint definitions. Problem is that
+  this tool requires `typer<0.13` to be installed.
+
+Thus relax the constraints on `typer`.
+
+
 ## v0.5.2 (2025-04-15)
 
 ### Chores
