@@ -15,10 +15,10 @@ Run the example with
 NOVA_API=<nova_api> poetry run python /examples/01_basic.py
 ```
 
-### 02_use_python
+### 02_ffi_python
 
 Run the example with
 
 ```bash
-poetry run python -m wandelscript.cli -n <nova_api> -p examples/02_use_python.py examples/02_use_python.ws
+poetry run python -m wandelscript.cli -n <nova_api> -i examples/02_ffi_python.py examples/02_ffi_python.ws
 ```

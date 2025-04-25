@@ -2,9 +2,13 @@
 """CLI tool to work with Wandelscript."""
 
 import asyncio
+from dataclasses import dataclass
+import hashlib
 import importlib.util
+import itertools
 import sys
 from pathlib import Path
+from types import ModuleType
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
@@ -14,13 +18,13 @@ from wandelscript import ffi
 
 import wandelscript
 
+from icecream import ic
+from datetime import datetime
+ic.configureOutput(includeContext=True, prefix=lambda: f"{datetime.now().time().isoformat()} | ")
+
 load_dotenv()
 
 app = Typer()
-
-
-def custom_print(message: str):
-    print(f"Custom print {message}")
 
 
 def _validate_url(url: str) -> bool:
@@ -31,33 +35,94 @@ def _validate_url(url: str) -> bool:
     return False
 
 
-def _load_python_files(python_files: list[Path]) -> None:
-    """Load Python files before executing the Wandelscript program."""
-    for file_path in python_files:
-        if not file_path.exists():
-            echo(f"Error: Python file {file_path} does not exist", err=True)
-            raise Exit(1)
-
-        # Import the Python file as a module
-        spec = importlib.util.spec_from_file_location(file_path.stem, file_path)
-        if spec is None or spec.loader is None:
-            echo(f"Error: Could not load {file_path}", err=True)
-            raise Exit(1)
-
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[file_path.stem] = module
-        spec.loader.exec_module(module)
+@dataclass
+class _ForeignFunctionHandle:
+    function: ffi.ForeignFunction
+    path: Path
 
 
-async def main(code: str, nova_api: str):
+def _import_module_from_file(path: Path) -> ModuleType:
+    # Generate a unique name for the module based on the full path.
+    module_name = f"ffi_module_{path.stem}_{hashlib.sha1(str(path.resolve()).encode()).hexdigest()}"
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        echo(f"Error: Could not load module from {path}", err=True)
+        raise Exit(1)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _import_module_from_path(path: Path) -> ModuleType:
+    # We assume the module_path is in the form "path/to/module.py" or "path/to/module/__init__.py"
+    # Then we consider everything before the last '/' as the path and everything after as the module name
+    path_str = str(path)
+    path_part, dot_module = path_str.rsplit('/', 1)
+    path_part = Path(path_part).resolve()
+    if not path_part.exists():
+       echo(f"Error: Path {path_part} to module {dot_module} does not exist", err=True)
+       raise Exit(1)
+    
+    echo(f"Importing module {dot_module} from path {path_part}")
+    # Temporarily add the path to sys.path so importlib can find it
+    sys.path.insert(0, str(path_part))
+    try:
+        module = importlib.import_module(dot_module)
+    finally:
+        # Clean up sys.path regardless of import success
+        sys.path.pop(0)
+    return module
+
+
+def _load_ffs_from_path(path: Path) -> list[_ForeignFunctionHandle]:
+    """Load foreign functions from the provided Python file or module path."""
+
+    echo(f"Importing foreign functions from {path}")
+    if path.is_file() and path.suffix == '.py':
+        module = _import_module_from_file(path)
+    else:
+        module = _import_module_from_path(path)
+    
+    foreign_functions = []
+    for symbol in dir(module):
+        if symbol.startswith("_"):
+            # exclude private and magic symbols
+            continue
+        obj = getattr(module, symbol)
+        #ic(obj, callable(obj), ffi.is_foreign_function(obj))
+        if callable(obj) and ffi.is_foreign_function(obj):
+            foreign_functions.append(_ForeignFunctionHandle(ffi.get_foreign_function(obj), path))
+    echo(f"Found {len(foreign_functions)} marked function(s): {', '.join([handle.function.name for handle in foreign_functions])}")
+    return foreign_functions
+
+
+
+def _load_included_ffs(paths: list[Path]) -> dict[str, ffi.ForeignFunction]:
+    """Load foreign functions from the provided paths."""
+    already_seen = {}
+    foreign_functions = {}
+    for path in paths:
+        func_handles = _load_ffs_from_path(path)
+        for handle in func_handles:
+            func_name = handle.function.name
+            if func_name in already_seen:
+                # TODO do we want to allow overwriting builtins? Currently this is not prevented.
+                already_seen_handle = already_seen[func_name]
+                echo(f"Error: Foreign function '{func_name}' from {already_seen_handle.path} redefined in {path}", err=True)
+                raise Exit(1)
+            already_seen[func_name] = handle
+            foreign_functions[func_name] = handle.function
+    return foreign_functions            
+
+
+async def main(code: str, nova_api: str, foreign_functions: dict[str, ffi.ForeignFunction] = None):
     """Main program logic."""
     async with Nova(host=nova_api) as nova:
         cell = nova.cell()
         robot_cell = await cell.get_robot_cell()
-        # TODO: extract all functions from a python file and map them "function_name": function and pass them here
-        functions = {"custom_print": ffi.ff(custom_print)}
         runner = wandelscript.run(
-            code, robot_cell=robot_cell, default_tcp=None, default_robot=None, foreign_functions=functions
+            code, robot_cell=robot_cell, default_tcp=None, default_robot=None, foreign_functions=foreign_functions
         )
 
     echo(f"Execution results:\n{runner.program_run.execution_results}")
@@ -67,11 +132,11 @@ async def main(code: str, nova_api: str):
 def run(
     script: FileText,
     nova_api: str = Option(None, "--nova-api", "-n", envvar="NOVA_API", help="URL to NOVA API"),
-    python_files: list[Path] = Option(
+    import_ffs: list[Path] = Option(
         None,
-        "--python-file",
-        "-p",
-        help="Python files to load before executing the program. Can be specified multiple times.",
+        "--import-ffs",
+        "-i",
+        help="Python file or module path to load foreign functions from before executing the program. Can be specified multiple times.",
     ),
 ):
     """Run Wandelscript programs."""
@@ -85,14 +150,12 @@ def run(
 
     echo(f"NOVA_API: {nova_api}")
 
-    # Load Python files if provided
-    if python_files:
-        _load_python_files(python_files)
-
+    foreign_functions = _load_included_ffs(import_ffs)
+  
     code = script.read()
     script.close()
 
-    asyncio.run(main(code=code, nova_api=nova_api))
+    asyncio.run(main(code=code, nova_api=nova_api, foreign_functions=foreign_functions))
 
 
 if __name__ == "__main__":
