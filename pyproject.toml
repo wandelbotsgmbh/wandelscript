@@ -47,6 +47,7 @@ glom = "^24.11.0"
 # This does not work in the CI so we leave it here for convenience but comment it out
 #wandelbots-nova = { path = "../nova-python-sdk", develop = true }
 antlr4-tools = "^0.2.1"
+ipython = "<9"
 
 [tool.pytest.ini_options]
 log_cli = false
