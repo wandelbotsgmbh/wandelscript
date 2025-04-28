@@ -12,7 +12,7 @@ To run the examples you can add the
 Run the example with
 
 ```bash
-NOVA_API=<nova_api> poetry run python /examples/01_basic.py
+NOVA_API=<nova_api> uv run python /examples/01_basic.py
 ```
 
 ### 02_ffi_python
@@ -20,5 +20,5 @@ NOVA_API=<nova_api> poetry run python /examples/01_basic.py
 Run the example with
 
 ```bash
-poetry run python -m wandelscript.cli -n <nova_api> -i examples/02_ffi_python.py examples/02_ffi_python.ws
+uv run python -m wandelscript.cli -n <nova_api> -i examples/02_ffi_python.py examples/02_ffi_python.ws
 ```

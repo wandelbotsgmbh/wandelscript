@@ -1,6 +1,52 @@
 # CHANGELOG
 
 
+## v0.5.3 (2025-04-23)
+
+### Chores
+
+- Relax `typer` version constraints
+  ([`cac77f1`](https://github.com/wandelbotsgmbh/wandelscript/commit/cac77f11ceac5f7f3c6ee587b50b8ebf9c410de3))
+
+We want to use https://github.com/koxudaxi/fastapi-code-generator
+
+to generate Python stubs from service-manager OpenAPI YAML endpoint definitions. Problem is that
+  this tool requires `typer<0.13` to be installed.
+
+Thus relax the constraints on `typer`.
+
+
+## v0.5.2 (2025-04-15)
+
+### Chores
+
+- Remove an upper limit to the `nova` dependency
+  ([`52eda71`](https://github.com/wandelbotsgmbh/wandelscript/commit/52eda71e1d277ee017e1853c3881cebfc5d86fc5))
+
+
+## v0.5.1 (2025-04-14)
+
+### Chores
+
+- **RPS-1557**: Adjust files for use with `uv`
+  ([`8932246`](https://github.com/wandelbotsgmbh/wandelscript/commit/89322469d17072893a5b355862c9aabfbe534e5e))
+
+Notice especially in the `ci-dev.yaml` file, a certain change which I believe to fix something
+  formerly incorrect:
+
+- poetry install --without dev + pip install uv + uv sync --group dev
+
+Evidently, the CI invokes `ruff` and other dev tools, thus, dev tools should explicitly be installed
+  not ignored. The fact that this worked may be coincidental because other dependencies might have
+  pulled ruff and the other tools in by default. However, let's better be explicit.
+
+- **RPS-1557**: Migrate from `Poetry` to `uv`
+  ([`263042d`](https://github.com/wandelbotsgmbh/wandelscript/commit/263042d282c5d58533ba8e71f3ec2442c455f68d))
+
+# ymmv # install and run `migrate-to-uv` cd wandelscript poetry shell pip install migrate-to-uv uvx
+  migrate-to-uv
+
+
 ## v0.5.0 (2025-04-07)
 
 ### Features
