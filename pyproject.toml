@@ -49,7 +49,6 @@ default-groups = [
     "dev",
 ]
 
-ipython = "<9"
 [tool.hatch.build.targets.sdist]
 include = ["wandelscript"]
 
