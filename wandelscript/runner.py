@@ -427,7 +427,7 @@ class ProgramRunner:
 
 
 def run(
-    code: str,
+    program: str,
     robot_cell: RobotCell,
     default_robot: str | None = None,
     default_tcp: str | None = None,
@@ -438,7 +438,7 @@ def run(
     """Helper function to create a ProgramRunner and start it synchronously
 
     Args:
-        code (str): Wandelscript code
+        program (str): Wandelscript code
         robot_cell (RobotCell): The RobotCell where the code is executed
         default_robot (str): The default robot that is used when no robot is active
         default_tcp (str): The default TCP that is used when no TCP is explicitly selected for a motion
@@ -452,7 +452,7 @@ def run(
 
     """
     runner = ProgramRunner(
-        code,
+        program,
         robot_cell,
         default_robot=default_robot,
         default_tcp=default_tcp,
