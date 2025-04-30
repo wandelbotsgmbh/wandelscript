@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v0.5.4 (2025-04-30)
+
+### Bug Fixes
+
+- **RPS-1543**: Rename argument in `runner.run()`
+  ([`f2d5e96`](https://github.com/wandelbotsgmbh/wandelscript/commit/f2d5e96cedb893709d9ce55c7c9d1443784e3376))
+
+...from `code` to `program`, in line with the new v2 openapi spec.
+
+
 ## v0.5.3 (2025-04-23)
 
 ### Chores
