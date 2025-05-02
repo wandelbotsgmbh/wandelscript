@@ -12,7 +12,7 @@ from nova.core.robot_cell import RobotCell
 
 from wandelscript import ProgramRun, ProgramRunner, ProgramRunState, run
 from wandelscript.exception import NameError_, ProgramSyntaxError
-from wandelscript.ffi import ForeignFunction, ff
+from wandelscript.ffi import ForeignFunction
 from wandelscript.runtime import ExecutionContext
 from wandelscript.simulation import get_robot_controller
 from wandelscript.utils.runtime import Tee
@@ -109,7 +109,7 @@ print(a)
         robot_cell,
         default_robot="0@controller",
         default_tcp="Flange",
-        foreign_functions={"custom_async_function": ff(custom_async_function)},
+        foreign_functions={"custom_async_function": ForeignFunction(custom_async_function)},
     )
     stdout = runner.program_run.stdout
     assert stdout == "42\n"
