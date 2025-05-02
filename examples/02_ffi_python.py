@@ -15,7 +15,7 @@ def basic():
     return "Hello, world!"
 
 
-# If you want your python function to have a different name in wandelscript, 
+# If you want your python function to have a different name in wandelscript,
 # use the name parameter of the decorator.
 @ffi.foreign_function(name="wandelscript_name")
 def python_name():
@@ -31,11 +31,11 @@ def function_using_context(ctx: ExecutionContext):
     # push motions or attache actions to it.
     # This here just returns the location in the wandelscript code where this function was called.
     return ctx.location_in_code
-    
+
 
 # The scalar types in Wandelscript are the same as in Python.
 # If you want to use a your own custom types, you can use dataclasses or pydantic models.
-# The decorator will automatically convert function arguments from Wandelscipt records 
+# The decorator will automatically convert function arguments from Wandelscipt records
 # to the type the parameter expects. And it will convert return values to Wandelscript records.
 class CustomTypePydantic(BaseModel):
     str_attr: str
@@ -67,6 +67,7 @@ def get_custom_dataclass():
 def dataclass_from_params(str_attr: str, int_attr: int):
     return CustomTypeDataclass(str_attr=str_attr, int_attr=int_attr)
 
+
 # Or like this:
 @ffi.foreign_function(autoconvert_types=False)
 def dataclass_from_record(record: dict):
@@ -85,7 +86,7 @@ def receive_record_of_customs(input: dict[str, CustomTypeDataclass]):
     print(input)
 
 
-# If you don't want to use the autoconvert_types feature but still want to return 
+# If you don't want to use the autoconvert_types feature but still want to return
 # a builtin type, you can use the as_builtin_type function directly.
 @ffi.foreign_function(autoconvert_types=False)
 def return_builtin_type():

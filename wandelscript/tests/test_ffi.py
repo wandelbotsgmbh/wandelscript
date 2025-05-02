@@ -12,6 +12,7 @@ class CustomTypePydantic(BaseModel):
     str_attr: str
     float_attr: float
 
+
 @dataclass
 class CustomTypeDataclass:
     str_attr: str

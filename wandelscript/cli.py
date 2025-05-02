@@ -20,6 +20,7 @@ import wandelscript
 
 from icecream import ic
 from datetime import datetime
+
 ic.configureOutput(includeContext=True, prefix=lambda: f"{datetime.now().time().isoformat()} | ")
 
 load_dotenv()
@@ -58,12 +59,12 @@ def _import_module_from_path(path: Path) -> ModuleType:
     # We assume the module_path is in the form "path/to/module.py" or "path/to/module/__init__.py"
     # Then we consider everything before the last '/' as the path and everything after as the module name
     path_str = str(path)
-    path_part, dot_module = path_str.rsplit('/', 1)
+    path_part, dot_module = path_str.rsplit("/", 1)
     path_part = Path(path_part).resolve()
     if not path_part.exists():
-       echo(f"Error: Path {path_part} to module {dot_module} does not exist", err=True)
-       raise Exit(1)
-    
+        echo(f"Error: Path {path_part} to module {dot_module} does not exist", err=True)
+        raise Exit(1)
+
     echo(f"Importing module {dot_module} from path {path_part}")
     # Temporarily add the path to sys.path so importlib can find it
     sys.path.insert(0, str(path_part))
@@ -79,23 +80,24 @@ def _load_ffs_from_path(path: Path) -> list[_ForeignFunctionHandle]:
     """Load foreign functions from the provided Python file or module path."""
 
     echo(f"Importing foreign functions from {path}")
-    if path.is_file() and path.suffix == '.py':
+    if path.is_file() and path.suffix == ".py":
         module = _import_module_from_file(path)
     else:
         module = _import_module_from_path(path)
-    
+
     foreign_functions = []
     for symbol in dir(module):
         if symbol.startswith("_"):
             # exclude private and magic symbols
             continue
         obj = getattr(module, symbol)
-        #ic(obj, callable(obj), ffi.is_foreign_function(obj))
+        # ic(obj, callable(obj), ffi.is_foreign_function(obj))
         if callable(obj) and ffi.is_foreign_function(obj):
             foreign_functions.append(_ForeignFunctionHandle(ffi.get_foreign_function(obj), path))
-    echo(f"Found {len(foreign_functions)} marked function(s): {', '.join([handle.function.name for handle in foreign_functions])}")
+    echo(
+        f"Found {len(foreign_functions)} marked function(s): {', '.join([handle.function.name for handle in foreign_functions])}"
+    )
     return foreign_functions
-
 
 
 def _load_included_ffs(paths: list[Path]) -> dict[str, ffi.ForeignFunction]:
@@ -109,11 +111,14 @@ def _load_included_ffs(paths: list[Path]) -> dict[str, ffi.ForeignFunction]:
             if func_name in already_seen:
                 # TODO do we want to allow overwriting builtins? Currently this is not prevented.
                 already_seen_handle = already_seen[func_name]
-                echo(f"Error: Foreign function '{func_name}' from {already_seen_handle.path} redefined in {path}", err=True)
+                echo(
+                    f"Error: Foreign function '{func_name}' from {already_seen_handle.path} redefined in {path}",
+                    err=True,
+                )
                 raise Exit(1)
             already_seen[func_name] = handle
             foreign_functions[func_name] = handle.function
-    return foreign_functions            
+    return foreign_functions
 
 
 async def main(code: str, nova_api: str, foreign_functions: dict[str, ffi.ForeignFunction] = None):
@@ -151,7 +156,7 @@ def run(
     echo(f"NOVA_API: {nova_api}")
 
     foreign_functions = _load_included_ffs(import_ffs)
-  
+
     code = script.read()
     script.close()
 

@@ -35,6 +35,7 @@ class ForeignFunction:
 
 FF_MARKER_ATTRIBUTE = "_wandelscript_foreign_function"
 
+
 def foreign_function(name: str | None = None, pass_context: bool = False, autoconvert_types: bool = True) -> Callable:
     """Decorator to mark a function as a foreign function for Wandelscript.
 
@@ -44,6 +45,7 @@ def foreign_function(name: str | None = None, pass_context: bool = False, autoco
     Returns:
         Callable: The same function, marked with ws_ff attribute.
     """
+
     def decorator(fn: Callable) -> Callable:
         if autoconvert_types:
             sig = inspect.signature(fn)
@@ -67,8 +69,8 @@ def foreign_function(name: str | None = None, pass_context: bool = False, autoco
 
             fn_obj = wrapper
         else:
-            fn_obj = fn        
-        
+            fn_obj = fn
+
         fn_name = name if name is not None else fn.__name__
         setattr(fn_obj, FF_MARKER_ATTRIBUTE, ForeignFunction(fn_obj, fn_name, pass_context))
         return fn_obj
