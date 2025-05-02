@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from types import NoneType
 import uuid
 from dataclasses import asdict, dataclass, field, is_dataclass
 from functools import singledispatch
+from types import NoneType
 from typing import Any, Callable, Generic, TypeVar, Union
 
 import numpy as np
-from nova.types import Pose, Vector3d
 import pydantic
+from nova.types import Pose, Vector3d
 
 from wandelscript.frames import FrameSystem
 from wandelscript.utils.pose import pose_to_versor

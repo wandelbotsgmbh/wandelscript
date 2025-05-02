@@ -16,7 +16,6 @@ import wandelscript.builtins.wait
 from wandelscript.metamodel import register_builtin_func
 from wandelscript.types import Frame, as_builtin_type
 
-
 register_builtin_func()(as_builtin_type)
 
 

@@ -4,9 +4,9 @@ Use to register your own or 3rd party Python functions with Wandelscript
 programs so that you can use those functions within your Wandelscript code.
 """
 
+import inspect
 from dataclasses import dataclass, is_dataclass
 from functools import wraps
-import inspect
 from typing import Callable
 
 import pydantic

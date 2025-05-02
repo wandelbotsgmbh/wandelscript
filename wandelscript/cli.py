@@ -2,24 +2,23 @@
 """CLI tool to work with Wandelscript."""
 
 import asyncio
-from dataclasses import dataclass
 import hashlib
 import importlib.util
 import itertools
 import sys
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from types import ModuleType
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
+from icecream import ic
 from nova import Nova
 from typer import Exit, FileText, Option, Typer, echo
-from wandelscript import ffi
 
 import wandelscript
-
-from icecream import ic
-from datetime import datetime
+from wandelscript import ffi
 
 ic.configureOutput(includeContext=True, prefix=lambda: f"{datetime.now().time().isoformat()} | ")
 

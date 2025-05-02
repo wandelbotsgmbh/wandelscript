@@ -1,11 +1,9 @@
-from pydantic import BaseModel
 from dataclasses import dataclass
 
-from wandelscript.ffi import foreign_function
-from wandelscript.ffi import is_foreign_function
-from wandelscript.ffi import get_foreign_function
-
 from icecream import ic
+from pydantic import BaseModel
+
+from wandelscript.ffi import foreign_function, get_foreign_function, is_foreign_function
 
 
 class CustomTypePydantic(BaseModel):
