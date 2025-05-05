@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, is_dataclass
 from functools import singledispatch
 from typing import Any, Callable, Generic, TypeVar, Union
 
 import numpy as np
+import pydantic
 from nova.types import Pose, Vector3d
 
 from wandelscript.frames import FrameSystem
@@ -91,7 +92,16 @@ class Closure(Generic[BoundedElementType]):
 
 @singledispatch
 def as_builtin_type(data: Any) -> ElementType:
+    if is_dataclass(data) and not isinstance(data, type):
+        # dicts are Wandelscript records
+        return asdict(data)
+
     raise TypeError(f"Datatype is not supported {type(data)}")
+
+
+@as_builtin_type.register
+def _(data: None):
+    return None
 
 
 @as_builtin_type.register
@@ -100,17 +110,12 @@ def _(data: bool):
 
 
 @as_builtin_type.register
-def _(data: tuple):
+def _(data: int):
     return data
 
 
 @as_builtin_type.register
 def _(data: float):
-    return data
-
-
-@as_builtin_type.register
-def _(data: int):
     return data
 
 
@@ -129,9 +134,20 @@ def _(data: Pose):
     return data
 
 
+@as_builtin_type.register(tuple)
+@as_builtin_type.register(list)
+def _(data):
+    return tuple(as_builtin_type(item) for item in data)
+
+
 @as_builtin_type.register
 def _(data: dict):
-    return data
+    return {key: as_builtin_type(value) for key, value in data.items()}
+
+
+@as_builtin_type.register
+def _(data: pydantic.BaseModel):
+    return data.model_dump()
 
 
 __all__ = ["Frame", "Closure", "as_builtin_type", "ElementType"]
