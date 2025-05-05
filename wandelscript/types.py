@@ -135,7 +135,7 @@ def _(data: Pose):
 
 
 @as_builtin_type.register
-def _(data: tuple | list):
+def _(data: tuple):
     return tuple(as_builtin_type(item) for item in data)
 
 
