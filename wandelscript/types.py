@@ -134,8 +134,9 @@ def _(data: Pose):
     return data
 
 
-@as_builtin_type.register
-def _(data: tuple):
+@as_builtin_type.register(tuple)
+@as_builtin_type.register(list)
+def _(data):
     return tuple(as_builtin_type(item) for item in data)
 
 
