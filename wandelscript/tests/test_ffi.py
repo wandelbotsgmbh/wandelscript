@@ -65,7 +65,7 @@ def test_decorator_no_autoconversion():
     @foreign_function(autoconvert_types=False)
     def no_auto_convert(data: CustomTypePydantic):
         assert not isinstance(data, CustomTypePydantic)
-        return data
+        return data  # type: ignore # mypy thinks this is unreachable because of the type assertion above
 
     assert is_foreign_function(no_auto_convert)
     result = no_auto_convert(dict(str_attr="test", float_attr=1.0))

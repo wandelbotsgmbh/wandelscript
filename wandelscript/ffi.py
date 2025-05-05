@@ -5,9 +5,9 @@ programs so that you can use those functions within your Wandelscript code.
 """
 
 import inspect
-from dataclasses import dataclass, is_dataclass
+from dataclasses import dataclass, field, is_dataclass
 from functools import wraps
-from typing import Callable
+from typing import Any, Callable, TypeVar
 
 import pydantic
 
@@ -25,18 +25,26 @@ class ForeignFunction:
     """
 
     function: Callable
-    name: str | None = None
+    _name: str | None = None
     pass_context: bool = False
 
     def __post_init__(self):
         if not isinstance(self.function, Callable):
             raise TypeError(f"Function of {self} must be a Callable, got {type(self.function).__name__}")
 
+    @property
+    def name(self) -> str:
+        return self._name or self.function.__name__
+
 
 FF_MARKER_ATTRIBUTE = "_wandelscript_foreign_function"
 
+F = TypeVar("F", bound=Callable[..., Any])
 
-def foreign_function(name: str | None = None, pass_context: bool = False, autoconvert_types: bool = True) -> Callable:
+
+def foreign_function(
+    name: str | None = None, pass_context: bool = False, autoconvert_types: bool = True
+) -> Callable[[F], F]:
     """Decorator to mark a function as a foreign function for Wandelscript.
 
     Args:
@@ -46,18 +54,18 @@ def foreign_function(name: str | None = None, pass_context: bool = False, autoco
         Callable: The same function, marked with ws_ff attribute.
     """
 
-    def decorator(fn: Callable) -> Callable:
+    def decorator(fn: F) -> F:
         if autoconvert_types:
             sig = inspect.signature(fn)
 
             @wraps(fn)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 bound = sig.bind_partial(*args, **kwargs)
                 converted = {}
                 for name, value in bound.arguments.items():
                     param = sig.parameters[name]
                     anno = param.annotation
-                    if is_dataclass(anno) and isinstance(value, dict):
+                    if is_dataclass(anno) and isinstance(anno, type) and isinstance(value, dict):
                         converted[name] = anno(**value)
                     elif inspect.isclass(anno) and issubclass(anno, pydantic.BaseModel) and isinstance(value, dict):
                         converted[name] = anno.model_validate(value)
@@ -67,7 +75,7 @@ def foreign_function(name: str | None = None, pass_context: bool = False, autoco
                 result = fn(**converted)
                 return as_builtin_type(result)
 
-            fn_obj = wrapper
+            fn_obj: F = wrapper  # type: ignore
         else:
             fn_obj = fn
 

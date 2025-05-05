@@ -58,8 +58,8 @@ def _import_module_from_path(path: Path) -> ModuleType:
     # We assume the module_path is in the form "path/to/module.py" or "path/to/module/__init__.py"
     # Then we consider everything before the last '/' as the path and everything after as the module name
     path_str = str(path)
-    path_part, dot_module = path_str.rsplit("/", 1)
-    path_part = Path(path_part).resolve()
+    path_part_str, dot_module = path_str.rsplit("/", 1)
+    path_part = Path(path_part_str).resolve()
     if not path_part.exists():
         echo(f"Error: Path {path_part} to module {dot_module} does not exist", err=True)
         raise Exit(1)
@@ -90,9 +90,8 @@ def _load_ffs_from_path(path: Path) -> list[_ForeignFunctionHandle]:
             # exclude private and magic symbols
             continue
         obj = getattr(module, symbol)
-        # ic(obj, callable(obj), ffi.is_foreign_function(obj))
-        if callable(obj) and ffi.is_foreign_function(obj):
-            foreign_functions.append(_ForeignFunctionHandle(ffi.get_foreign_function(obj), path))
+        if callable(obj) and (ff_obj := ffi.get_foreign_function(obj)) is not None:
+            foreign_functions.append(_ForeignFunctionHandle(ff_obj, path))
     echo(
         f"Found {len(foreign_functions)} marked function(s): {', '.join([handle.function.name for handle in foreign_functions])}"
     )
@@ -101,7 +100,7 @@ def _load_ffs_from_path(path: Path) -> list[_ForeignFunctionHandle]:
 
 def _load_included_ffs(paths: list[Path]) -> dict[str, ffi.ForeignFunction]:
     """Load foreign functions from the provided paths."""
-    already_seen = {}
+    already_seen: dict[str, _ForeignFunctionHandle] = {}
     foreign_functions = {}
     for path in paths:
         func_handles = _load_ffs_from_path(path)
@@ -120,7 +119,7 @@ def _load_included_ffs(paths: list[Path]) -> dict[str, ffi.ForeignFunction]:
     return foreign_functions
 
 
-async def main(code: str, nova_api: str, foreign_functions: dict[str, ffi.ForeignFunction] = None):
+async def main(code: str, nova_api: str, foreign_functions: dict[str, ffi.ForeignFunction] | None = None):
     """Main program logic."""
     async with Nova(host=nova_api) as nova:
         cell = nova.cell()

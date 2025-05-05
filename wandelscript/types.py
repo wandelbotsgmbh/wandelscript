@@ -5,7 +5,6 @@ from __future__ import annotations
 import uuid
 from dataclasses import asdict, dataclass, field, is_dataclass
 from functools import singledispatch
-from types import NoneType
 from typing import Any, Callable, Generic, TypeVar, Union
 
 import numpy as np
@@ -93,7 +92,7 @@ class Closure(Generic[BoundedElementType]):
 
 @singledispatch
 def as_builtin_type(data: Any) -> ElementType:
-    if is_dataclass(data):
+    if is_dataclass(data) and not isinstance(data, type):
         # dicts are Wandelscript records
         return asdict(data)
 
@@ -101,7 +100,7 @@ def as_builtin_type(data: Any) -> ElementType:
 
 
 @as_builtin_type.register
-def _(data: NoneType):
+def _(data: None):
     return None
 
 
