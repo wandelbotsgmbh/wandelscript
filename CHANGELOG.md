@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.6.0 (2025-05-05)
+
+### Features
+
+- **RPS-1482**: Foreign functions with automatic type conversion; usable via CLI
+  ([#18](https://github.com/wandelbotsgmbh/wandelscript/pull/18),
+  [`7999674`](https://github.com/wandelbotsgmbh/wandelscript/commit/7999674970b2b1fc350c777e9da12893b013d731))
+
+Co-authored-by: cbiering <christoph.biering@wandelbots.com>
+
+Co-authored-by: Dirk Sonnemann <dirk.sonnemann@wandelbots.com>
+
+
 ## v0.5.4 (2025-04-30)
 
 ### Bug Fixes
