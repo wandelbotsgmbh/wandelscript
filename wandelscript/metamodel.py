@@ -12,7 +12,7 @@ from typing import Any, ClassVar, Generic, Literal, TypeVar
 
 import anyio
 from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
-from nova.core.robot_cell import (
+from nova.cell.robot_cell import (
     AbstractRobot,
     AsyncCallableDevice,
     InputDevice,

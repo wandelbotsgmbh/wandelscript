@@ -9,8 +9,7 @@ import numpy as np
 from nova import api
 from nova.actions import Action, MovementController
 from nova.actions.motions import CartesianPTP, Circular, JointPTP, Linear
-from nova.core.io import ValueType
-from nova.core.robot_cell import (
+from nova.cell.robot_cell import (
     AbstractController,
     AbstractRobot,
     AsyncCallableDevice,
@@ -20,6 +19,7 @@ from nova.core.robot_cell import (
     RobotCell,
     Timer,
 )
+from nova.core.io import ValueType
 from nova.types import MotionState, MovementResponse, Pose, RobotState
 from scipy.spatial.transform import Rotation
 from wandelbots_api_client import models
