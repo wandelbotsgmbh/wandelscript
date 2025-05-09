@@ -15,7 +15,7 @@ from nova.actions import Action, CombinedActions
 from nova.actions.container import ActionLocation
 from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
 from nova.actions.motions import Motion
-from nova.core.robot_cell import AbstractRobot, Device, RobotCell
+from nova.cell.robot_cell import AbstractRobot, Device, RobotCell
 from nova.types import MotionSettings, MotionState, Pose
 
 import wandelscript.metamodel as metamodel

@@ -15,7 +15,7 @@ import wandelscript.antlrvisitor  # load Program.from_code
 import wandelscript.builtins
 import wandelscript.motions  # load all motion connectors
 from wandelscript.metamodel import Program, register_builtin_func
-from wandelscript.runner import ProgramRun, ProgramRunner, ProgramRunState, run, run_file
+from wandelscript.runner import ProgramRunner, ProgramRunState, run, run_file
 from wandelscript.runtime import ActionQueue, Store
 from wandelscript.version import version
 

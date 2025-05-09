@@ -8,9 +8,10 @@ from typing import Any
 import numpy as np
 import pytest
 from icecream import ic
-from nova.core.robot_cell import RobotCell
+from nova.cell.robot_cell import RobotCell
+from nova.runtime.runner import Program, ProgramRun, ProgramType
 
-from wandelscript import ProgramRun, ProgramRunner, ProgramRunState, run
+from wandelscript import ProgramRunner, ProgramRunState, run
 from wandelscript.exception import NameError_, ProgramSyntaxError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.runtime import ExecutionContext
@@ -76,12 +77,10 @@ move via line() to home :: (0, 100, 0, 0, 0, 0)
         "other_foreign_function": ForeignFunction(other_foreign_function, pass_context=True),
     }
 
-    runner = run(
-        code, robot_cell, default_robot="0@controller", default_tcp="Flange", foreign_functions=foreign_functions
-    )
+    runner = run(code, args={}, default_robot="0@controller", default_tcp="Flange", foreign_functions=foreign_functions)
     assert "home" in runner.execution_context.store
     assert runner.execution_context.store["a"] == 9
-    assert runner.program_run.state is ProgramRunState.COMPLETED
+    assert runner.program_run.state is ProgramRunState.completed
 
     stdout = runner.program_run.stdout
     assert "print something" in stdout
@@ -106,7 +105,7 @@ print(a)
 
     runner = run(
         code,
-        robot_cell,
+        args={},
         default_robot="0@controller",
         default_tcp="Flange",
         foreign_functions={"custom_async_function": ForeignFunction(custom_async_function)},
@@ -116,9 +115,11 @@ print(a)
 
 
 def test_program_runner():
-    program_runner = ProgramRunner("move via p2p() to [100, 0, 300, 0, pi, 0]", robot_cell)
+    program_runner = ProgramRunner(
+        Program(content="move via p2p() to [100, 0, 300, 0, pi, 0]", program_type=ProgramType.WANDELSCRIPT), args={}
+    )
     assert uuid.UUID(str(program_runner.id)) is not None
-    assert program_runner.state is ProgramRunState.NOT_STARTED
+    assert program_runner.state is ProgramRunState.not_started
 
 
 # TODO andreasl 2024-08-20: flaky
@@ -141,7 +142,9 @@ sync
 print(read(controller[0], "pose"))
 move via line() to (0, 100, 300, 0, pi, 0)
 """
-    program_runner = ProgramRunner(code, robot_cell, default_tcp="Flange")
+    program_runner = ProgramRunner(
+        Program(content=code, program_type=ProgramType.WANDELSCRIPT), args={}, default_tcp="Flange"
+    )
     assert not program_runner.is_running()
     assert program_runner.start_time is None
     assert program_runner.execution_time is None
@@ -150,14 +153,14 @@ move via line() to (0, 100, 300, 0, pi, 0)
     program_runner.start()
     ic(program_runner.program_run)
 
-    assert check_program_state(program_runner, ProgramRunState.RUNNING, 4)
+    assert check_program_state(program_runner, ProgramRunState.running, 4)
     assert program_runner.is_running()
     # It should not be possible to start the runner when it is already running
     with pytest.raises(RuntimeError):
         program_runner.start()
     ic(program_runner.program_run)
 
-    assert check_program_state(program_runner, ProgramRunState.COMPLETED, 10)
+    assert check_program_state(program_runner, ProgramRunState.completed, 10)
     assert isinstance(program_runner.start_time, datetime)
     assert program_runner.execution_time > 0
     # It should not be possible to start the runner after the runner was completed
@@ -197,14 +200,14 @@ move via p2p() to home
     ],
 )
 def test_program_runner_stop(code):
-    program_runner = ProgramRunner(code, robot_cell)
+    program_runner = ProgramRunner(Program(content=code, program_type=ProgramType.WANDELSCRIPT), args={})
     assert not program_runner.is_running()
     program_runner.start()
-    assert check_program_state(program_runner, ProgramRunState.RUNNING, 4)
+    assert check_program_state(program_runner, ProgramRunState.running, 4)
     assert program_runner.is_running()
     program_runner.stop(sync=True)
-    assert check_program_state(program_runner, ProgramRunState.STOPPED, 10)
-    assert program_runner.program_run.state is ProgramRunState.STOPPED
+    assert check_program_state(program_runner, ProgramRunState.stopped, 10)
+    assert program_runner.program_run.state is ProgramRunState.stopped
     assert not program_runner.is_running()
     assert not isinstance(sys.stdout, Tee)
 
@@ -230,8 +233,8 @@ move via p2p() to mispelled_var
 )
 def test_program_runner_failed(code, exception):
     with pytest.raises(exception):
-        runner = run(code, robot_cell)
-        assert runner.program_run.state is ProgramRunState.FAILED
+        runner = run(code, args={})
+        assert runner.program_run.state is ProgramRunState.failed
         assert runner.program_run.error is not None
         assert runner.program_run.traceback is not None
         assert not runner.is_running()
@@ -246,5 +249,5 @@ wait 4000
 move via p2p() to home :: (0, 0, 100)
 """
     with pytest.raises(Exception):
-        runner = run(code, raising_robot_cell)
-        assert runner.program_run.state is ProgramRunState.FAILED
+        runner = run(code, args={}, robot_cell_override=raising_robot_cell)
+        assert runner.program_run.state is ProgramRunState.failed
