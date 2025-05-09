@@ -1565,8 +1565,8 @@ wheels = [
 
 [[package]]
 name = "wandelbots-nova"
-version = "1.3.1"
-source = { editable = "../wandelbots-nova" }
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiostream" },
     { name = "anyio" },
@@ -1582,48 +1582,14 @@ dependencies = [
     { name = "wandelbots-api-client" },
     { name = "websockets" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiostream", specifier = ">=0.6.4,<0.7" },
-    { name = "anyio", specifier = ">=4.8.0,<5" },
-    { name = "apscheduler", marker = "extra == 'benchmark'", specifier = ">=3.11.0" },
-    { name = "apscheduler", marker = "extra == 'nova-rerun-bridge'", specifier = ">=3.11.0" },
-    { name = "asyncstdlib", specifier = ">=3.13.0,<4" },
-    { name = "asyncua", specifier = ">=1.1.5,<2" },
-    { name = "docstring-parser", specifier = ">=0.16.0" },
-    { name = "httpx", specifier = ">=0.28.0,<0.29" },
-    { name = "loguru", specifier = ">=0.7.2,<0.8" },
-    { name = "numpy", specifier = ">1.1.19" },
-    { name = "pydantic", specifier = ">=2.10.3,<3" },
-    { name = "python-decouple", specifier = "~=3.8" },
-    { name = "pyyaml", marker = "extra == 'benchmark'", specifier = ">5.3" },
-    { name = "requests", marker = "extra == 'benchmark'", specifier = ">=2.32.3" },
-    { name = "requests", marker = "extra == 'nova-rerun-bridge'", specifier = ">=2.32.3" },
-    { name = "rerun-sdk", marker = "extra == 'benchmark'", specifier = "==0.22.1" },
-    { name = "rerun-sdk", marker = "extra == 'nova-rerun-bridge'", specifier = "==0.22.1" },
-    { name = "scipy", specifier = ">=1.14.1,<2" },
-    { name = "trimesh", marker = "extra == 'benchmark'", specifier = ">=4.5.3" },
-    { name = "trimesh", marker = "extra == 'nova-rerun-bridge'", specifier = ">=4.5.3" },
-    { name = "wandelbots-api-client", specifier = "==25.1.0" },
-    { name = "websockets", specifier = ">=14.1.0,<15" },
-]
-provides-extras = ["nova-rerun-bridge", "benchmark"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "icecream", specifier = ">=2.1.4,<3" },
-    { name = "ipython", specifier = "<9" },
-    { name = "mypy", specifier = ">=1.13.0,<2" },
-    { name = "pre-commit", specifier = ">=4.0.1,<5" },
-    { name = "pytest", specifier = ">=8.3.4,<9" },
-    { name = "pytest-asyncio", specifier = ">=0.24,<0.26" },
-    { name = "ruff", specifier = ">=0.8.2,<0.10.0" },
+sdist = { url = "https://files.pythonhosted.org/packages/ae/a2/247f874d14107b2c08efa21e1725164b529e6e7ed9dd2d4c9027961db9c0/wandelbots_nova-1.4.0.tar.gz", hash = "sha256:951beaee9647be573a06168da83242f75546b99129d05813b355e0d4972500be", size = 16534923, upload-time = "2025-05-09T13:18:42.807Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8c/91/51ce972df4d2a90b949015777cf13912b31c19fef9077cc687211ad71a7b/wandelbots_nova-1.4.0-py3-none-any.whl", hash = "sha256:bddb04420a5b213393711d1f7846808818129aa40efd9e90e8145dd085bbac6c", size = 16758172, upload-time = "2025-05-09T13:18:39.911Z" },
 ]
 
 [[package]]
 name = "wandelscript"
-version = "0.5.4"
+version = "0.6.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiostream" },
@@ -1666,7 +1632,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.10.3,<3" },
     { name = "python-dotenv", specifier = ">=1.0.1,<2" },
     { name = "typer", extras = ["all"], specifier = ">=0.12,<0.16" },
-    { name = "wandelbots-nova", editable = "../wandelbots-nova" },
+    { name = "wandelbots-nova", specifier = ">=1.4.0" },
 ]
 
 [package.metadata.requires-dev]
