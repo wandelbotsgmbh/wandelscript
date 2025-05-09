@@ -1,5 +1,5 @@
 import pytest
-from nova.core.robot_cell import RobotCell
+from nova.cell.robot_cell import RobotCell
 from nova.types import Pose
 
 import wandelscript

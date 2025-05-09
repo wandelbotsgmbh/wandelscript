@@ -1,7 +1,7 @@
 import builtins
 
 import pytest
-from nova.core.robot_cell import AbstractController, RobotCellKeyError
+from nova.cell.robot_cell import AbstractController, RobotCellKeyError
 
 import wandelscript
 from wandelscript.runner import ProgramRunState

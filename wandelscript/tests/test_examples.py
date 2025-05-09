@@ -6,7 +6,7 @@ import pydantic
 import pytest
 from glom import glom
 from loguru import logger
-from nova.core.robot_cell import ConfigurablePeriphery, RobotCell
+from nova.cell.robot_cell import ConfigurablePeriphery, RobotCell
 from nova.types import Pose, Vector3d
 
 import wandelscript

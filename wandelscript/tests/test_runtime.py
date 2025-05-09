@@ -3,7 +3,7 @@ import asyncio
 import pytest
 from nova.actions import cartesian_ptp, circular, io_write, linear
 from nova.actions.container import ActionLocation
-from nova.core.robot_cell import RobotCell
+from nova.cell.robot_cell import RobotCell
 from nova.types import Pose
 from nova.types.state import MotionState, RobotState
 
