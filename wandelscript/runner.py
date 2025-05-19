@@ -7,13 +7,18 @@ from nova.runtime import ProgramRunner as NovaProgramRunner
 from nova.runtime.runner import ExecutionContext as NovaExecutionContext
 
 # TODO: this should come from the api package
-from nova.runtime.runner import Program, ProgramRunState, ProgramType
+from nova.runtime.runner import Program, ProgramRunState, ProgramType, ProgramRun
 
 from wandelscript.ffi import ForeignFunction
 from wandelscript.metamodel import Program as WandelscriptProgram
 from wandelscript.runtime import ExecutionContext
 from wandelscript.simulation import SimulatedRobotCell
 from wandelscript.types import ElementType
+
+
+# TODO: how to return this in the end?
+class WandelscriptProgramRun(ProgramRun):
+    store: dict
 
 
 class ProgramRunner(NovaProgramRunner):
@@ -28,8 +33,7 @@ class ProgramRunner(NovaProgramRunner):
         default_tcp: str | None = None,
         foreign_functions: dict[str, ForeignFunction] | None = None,
     ):
-        super().__init__(program, args)
-        self._robot_cell_override = robot_cell_override
+        super().__init__(program=program, args=args, robot_cell_override=robot_cell_override)
         self._default_robot: str | None = default_robot
         self._default_tcp: str | None = default_tcp
         self._foreign_functions: dict[str, ForeignFunction] = foreign_functions or {}
@@ -39,17 +43,9 @@ class ProgramRunner(NovaProgramRunner):
         # Try parsing the program and handle parsing error
         logger.info(f"Parse program {self.id}...")
         logger.debug(self._program.content)
-        # TODO(async) if this is a bottleneck make it awaitable (to_thread)
 
-        if self._robot_cell_override:
-            robot_cell = self._robot_cell_override
-        else:
-            nova = execution_context.nova
-            cell = nova.cell()
-            robot_cell = await cell.get_robot_cell()
-
-        self._ws_execution_context = execution_context = ExecutionContext(
-            robot_cell=robot_cell,
+        self._ws_execution_context = ws_execution_context = ExecutionContext(
+            robot_cell=execution_context.robot_cell,
             stop_event=self._stop_event,
             default_robot=self._default_robot,
             default_tcp=self._default_tcp,
@@ -62,7 +58,7 @@ class ProgramRunner(NovaProgramRunner):
         logger.info(f"Run program {self.id}...")
         self._program_run.state = ProgramRunState.running
         self._program_run.start_time = time.time()
-        await program(execution_context)
+        # await program(ws_execution_context)
 
 
 def run(
@@ -82,6 +78,7 @@ def run(
         default_tcp (str): The default TCP that is used when no TCP is explicitly selected for a motion
         foreign_functions (dict[str, ForeignFunction], optional): 3rd party functions that you can
             register into the wandelscript language. Defaults to {}.
+        robot_cell_override: The robot cell to use for the program. If None, the default robot cell is used.
 
     Returns:
         ProgramRunner: A new ProgramRunner object
@@ -104,14 +101,11 @@ def run_file(
     args: dict[str, ElementType] | None = None,
     default_robot: str | None = None,
     default_tcp: str | None = None,
-    robot_cell_override: RobotCell | None = None,
+    robot_cell_override: RobotCell | None = SimulatedRobotCell(),
 ) -> ProgramRunner:
     path = Path(file_path)
     with open(path) as f:
         program = f.read()
-
-    if robot_cell_override is None:
-        robot_cell_override = SimulatedRobotCell()
 
     return run(
         program,

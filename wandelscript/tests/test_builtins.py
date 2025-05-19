@@ -27,7 +27,7 @@ print(a)
 """
     robot_cell = SimulatedRobotCell()
     with pytest.raises(exception):
-        wandelscript.run(code, robot_cell)
+        wandelscript.run(code, robot_cell_override=robot_cell)
 
 
 @pytest.mark.parametrize(
@@ -48,8 +48,8 @@ new_pose = assoc(pose, {index}, 42)
 """
     robot_cell = SimulatedRobotCell()
     with pytest.raises(exception):
-        runner = wandelscript.run(code, robot_cell)
-        assert runner.state is ProgramRunState.FAILED
+        runner = wandelscript.run(code, robot_cell_override=robot_cell)
+        assert runner.state is ProgramRunState.failed
 
 
 # pylint: disable=protected-access

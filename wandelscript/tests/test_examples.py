@@ -68,10 +68,13 @@ def test_example(example_name):
     ):
         return
     logger.info(f"Running example {example_name}...")
-    code, data, config = EXAMPLES[example_name]
+    program, data, config = EXAMPLES[example_name]
     robot_cell = _robot_cell_from_configuration(config)
-    runner = wandelscript.run(code, robot_cell, default_tcp="Flange")
+    runner = wandelscript.run(program, robot_cell_override=robot_cell, default_tcp="Flange")
+    print(runner)
+    assert False
     store = runner.execution_context.store
+    print(store)
     for key, expected in data.items():
         if isinstance(expected, list):
             expected = tuple(tuple(v) if isinstance(v, list) else v for v in expected)
@@ -98,5 +101,5 @@ a = (1, 2, 3, 4, 5, 6)
 save(a, '{tempdir}/test.ws')
 b = load('{tempdir}/test.ws', 'pose')
 """
-        runner = wandelscript.run(code, SimulatedRobotCell())
+        runner = wandelscript.run(code, robot_cell_override=SimulatedRobotCell())
         print(runner.execution_context.store["b"])
