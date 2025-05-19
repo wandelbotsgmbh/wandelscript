@@ -1,7 +1,7 @@
 import httpx
 
 from wandelscript.metamodel import register_builtin_func
-from wandelscript.types import as_builtin_type
+from wandelscript.datatypes import as_builtin_type
 
 
 @register_builtin_func()

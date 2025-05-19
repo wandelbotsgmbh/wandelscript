@@ -23,7 +23,7 @@ from wandelscript import exception as wsexception
 from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.frames import FrameSystem
-from wandelscript.types import ElementType, Frame, as_builtin_type
+from wandelscript.datatypes import ElementType, Frame, as_builtin_type
 from wandelscript.utils.runtime import stoppable_run
 from wandelscript.utils.serializer import SerializedStore, encode, is_encodable
 

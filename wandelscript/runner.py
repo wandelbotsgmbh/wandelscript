@@ -13,7 +13,7 @@ from wandelscript.ffi import ForeignFunction
 from wandelscript.metamodel import Program as WandelscriptProgram
 from wandelscript.runtime import ExecutionContext
 from wandelscript.simulation import SimulatedRobotCell
-from wandelscript.types import ElementType
+from wandelscript.datatypes import ElementType
 
 
 # TODO: how to return this in the end?
@@ -58,7 +58,14 @@ class ProgramRunner(NovaProgramRunner):
         logger.info(f"Run program {self.id}...")
         self._program_run.state = ProgramRunState.running
         self._program_run.start_time = time.time()
-        # await program(ws_execution_context)
+        try:
+            await program(ws_execution_context)
+            print("I'm getting here")
+        except Exception as error:
+            logger.error(f"Error in program {self.id}: {error}")
+            # self._program_run.state = ProgramRunState.error
+            # self._program_run.execution_time = time.time() - self._program_run.start_time
+            raise error
 
 
 def run(

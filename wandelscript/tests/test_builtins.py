@@ -13,6 +13,7 @@ from wandelscript.simulation import SimulatedRobotCell
     [
         (-100, builtins.IndexError),
         (-7, builtins.IndexError),
+        (0, None),
         (6, builtins.IndexError),
         (100, builtins.IndexError),
         ("'foo'", builtins.TypeError),
@@ -26,8 +27,12 @@ a = pose[{index}]
 print(a)
 """
     robot_cell = SimulatedRobotCell()
-    with pytest.raises(exception):
-        wandelscript.run(code, robot_cell_override=robot_cell)
+    if exception is None:
+        runner = wandelscript.run(code, robot_cell_override=robot_cell)
+        assert runner.state is ProgramRunState.completed
+    else:
+        with pytest.raises(exception):
+            wandelscript.run(code, robot_cell_override=robot_cell)
 
 
 @pytest.mark.parametrize(
@@ -50,24 +55,6 @@ new_pose = assoc(pose, {index}, 42)
     with pytest.raises(exception):
         runner = wandelscript.run(code, robot_cell_override=robot_cell)
         assert runner.state is ProgramRunState.failed
-
-
-# pylint: disable=protected-access
-"""
-@pytest.mark.asyncio
-async def test_solve_point_forward():
-    # create mocks
-    mock_kinematics_service = MagicMock(spec=KinematicServiceClient)
-    mock_kinematics_service.calculate_tcp_pose.return_value = rae_types.Pose(
-        position=rae_types.Vector3D(x=0, y=1, z=2), orientation=rae_types.Vector3D(x=0, y=1, z=2)
-    )
-    mock_robot = MagicMock(spec=Robot)
-    mock_robot._kinematic_service_client = mock_kinematics_service
-
-    pose = await solve_point_forward(mock_robot, [], "tcp")
-
-    assert Pose((0, 1, 2, 0, 1, 2)) == pose
-"""
 
 
 @pytest.mark.asyncio

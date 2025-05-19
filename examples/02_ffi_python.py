@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from wandelscript import ffi
 from wandelscript.runtime import ExecutionContext
-from wandelscript.types import as_builtin_type
+from wandelscript.datatypes import as_builtin_type
 
 
 # This is how you mark a function as a foreign function.

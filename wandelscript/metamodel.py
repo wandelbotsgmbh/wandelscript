@@ -23,7 +23,7 @@ from nova.cell.robot_cell import (
 from nova.types import MotionSettings, Pose, Vector3d
 
 import wandelscript.exception
-import wandelscript.types as t
+import wandelscript.datatypes as t
 from wandelscript.exception import GenericRuntimeError, TextRange
 from wandelscript.operators import (
     AdditionOperator,
@@ -36,7 +36,7 @@ from wandelscript.operators import (
 )
 from wandelscript.runtime import ExecutionContext, Store
 from wandelscript.simulation import SimulatedRobotCell, UnknownPose
-from wandelscript.types import Closure, Frame
+from wandelscript.datatypes import Closure, Frame
 from wandelscript.utils.pose import pose_to_versor, versor_to_pose
 
 ElementType = TypeVar("ElementType", bound=t.ElementType)
