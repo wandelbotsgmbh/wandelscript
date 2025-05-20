@@ -1,3 +1,4 @@
+import asyncio
 import time
 from pathlib import Path
 
@@ -19,6 +20,13 @@ from wandelscript.datatypes import ElementType
 # TODO: how to return this in the end?
 class WandelscriptProgramRun(ProgramRun):
     store: dict
+
+
+async def run_program(execution_context: ExecutionContext):
+    """Run the program in the execution context"""
+    print(execution_context)
+    await asyncio.sleep(2)
+    print("Program finished")
 
 
 class ProgramRunner(NovaProgramRunner):
@@ -58,14 +66,8 @@ class ProgramRunner(NovaProgramRunner):
         logger.info(f"Run program {self.id}...")
         self._program_run.state = ProgramRunState.running
         self._program_run.start_time = time.time()
-        try:
-            await program(ws_execution_context)
-            print("I'm getting here")
-        except Exception as error:
-            logger.error(f"Error in program {self.id}: {error}")
-            # self._program_run.state = ProgramRunState.error
-            # self._program_run.execution_time = time.time() - self._program_run.start_time
-            raise error
+        await program(ws_execution_context)
+        # await run_program(ws_execution_context)
 
 
 def run(

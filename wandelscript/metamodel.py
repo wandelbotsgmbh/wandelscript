@@ -36,7 +36,6 @@ from wandelscript.operators import (
 )
 from wandelscript.runtime import ExecutionContext, Store
 from wandelscript.simulation import SimulatedRobotCell, UnknownPose
-from wandelscript.datatypes import Closure, Frame
 from wandelscript.utils.pose import pose_to_versor, versor_to_pose
 
 ElementType = TypeVar("ElementType", bound=t.ElementType)
@@ -429,7 +428,7 @@ class Motion(Statement):
     connector: Connector
     end: Expression[Pose] | Expression[Vector3d]
     modifier: Modifier | None = None
-    tcp: Expression[Frame] | None = None
+    tcp: Expression[t.Frame] | None = None
     frame_relation: FrameRelation | None = None
 
     def __post_init__(self):
@@ -1171,12 +1170,12 @@ class FrameRelation(Atom[Pose]):
     async def call(self, context: ExecutionContext, **kwargs) -> Pose:
         target = await self.target(context)
         source = await self.source(context)
-        if isinstance(target, Frame) and isinstance(source, Frame):
+        if isinstance(target, t.Frame) and isinstance(source, t.Frame):
             fs = context.store.frame_system.copy()
             if (current_pose_of_robot := context.action_queue.last_pose(context.active_robot)) is not None:
                 fs[context.store.ROBOT.name, context.store.FLANGE.name] = pose_to_versor(current_pose_of_robot)
             return versor_to_pose(fs.eval(target.name, source.name))
-        if isinstance(target, Frame) ^ isinstance(source, Frame):
+        if isinstance(target, t.Frame) ^ isinstance(source, t.Frame):
             raise TypeError("Either both or neither of the two arguments must be of type 'Frame'")
         raise TypeError("Both arguments must be of type 'Frame'")
         # See: https://code.wabo.run/ai/wandelbrain/-/blob/main/packages/pyjectory/pyjectory/visiontypes/body.py
@@ -1223,16 +1222,20 @@ class Assignment(Atom[ElementType], Statement):
                 raise TypeError(f"Unexpected type: Expected Pose but received: {type(value)}")
             try:
                 target = await self.name.target(context)
-                assert isinstance(target, Frame)
+                assert isinstance(target, t.Frame)
             except wandelscript.exception.NameError_:
-                target = context.store[self.name.target.name] = Frame(self.name.target.name, context.store.frame_system)
-                assert isinstance(target, Frame)
+                target = context.store[self.name.target.name] = t.Frame(
+                    self.name.target.name, context.store.frame_system
+                )
+                assert isinstance(target, t.Frame)
             try:
                 source = await self.name.source(context)
             except wandelscript.exception.NameError_:
-                source = context.store[self.name.source.name] = Frame(self.name.source.name, context.store.frame_system)
-            assert isinstance(target, Frame), (target, source)
-            assert isinstance(source, Frame), (target, source)
+                source = context.store[self.name.source.name] = t.Frame(
+                    self.name.source.name, context.store.frame_system
+                )
+            assert isinstance(target, t.Frame), (target, source)
+            assert isinstance(source, t.Frame), (target, source)
 
             context.store.frame_system[target.name, source.name] = pose_to_versor(value)
             return value
@@ -1278,7 +1281,7 @@ class Program:
 
     async def __call__(self, context: ExecutionContext):
         for tcp in await context.robot_cell.tcps:
-            context.store[tcp] = Frame(tcp, context.store.frame_system)
+            context.store[tcp] = t.Frame(tcp, context.store.frame_system)
         await self.body(context)
 
     @classmethod
@@ -1406,7 +1409,7 @@ class FunctionCall(Atom[ElementType], Statement):
         if self.name == "frame":
             assert len(arguments) == 1
             assert isinstance(arguments[0], str)
-            return Frame(arguments[0], context.store.frame_system)  # type: ignore
+            return t.Frame(arguments[0], context.store.frame_system)  # type: ignore
         if func := context.store.get(self.name, None):
             if isinstance(func, Pose):
                 if isinstance(arguments[0], Pose):
@@ -1473,7 +1476,7 @@ class Interrupt(Statement):
                 return result
 
         arguments = await self.arguments(context)
-        context.store[self.name] = (self.condition, arguments, Closure(context.store, func))
+        context.store[self.name] = (self.condition, arguments, t.Closure(context.store, func))
 
 
 @dataclass(frozen=True)
@@ -1496,7 +1499,7 @@ class FunctionDefinition(Statement):
                     result = None
                 return result
 
-        context.store[self.name] = Closure(context.store, func)
+        context.store[self.name] = t.Closure(context.store, func)
 
 
 @dataclass(frozen=True)
@@ -1562,7 +1565,7 @@ class Read(Atom[ElementType]):
                     action = ReadJointsAction(device_id=device.id)
                 else:
                     # read pose from robot with given tcp offset
-                    if isinstance(key, Frame):
+                    if isinstance(key, t.Frame):
                         key = key.name
                     action = ReadPoseAction(device_id=device.id, tcp=key)
             else:
@@ -1695,7 +1698,7 @@ def _run_program_debug(program: Program | str, default_robot: str | None = "0@co
 
 async def run_rule(rule: Rule, **kwargs):
     stop_event = anyio.Event()
-    context = ExecutionContext(SimulatedRobotCell(), stop_event)
+    context = ExecutionContext(robot_cell=SimulatedRobotCell(), stop_event=stop_event)
     return await rule(context, **kwargs)
 
 
