@@ -54,7 +54,7 @@ class ProgramRunner(NovaProgramRunner):
 
         self._ws_execution_context = ws_execution_context = ExecutionContext(
             robot_cell=execution_context.robot_cell,
-            stop_event=self._stop_event,
+            stop_event=execution_context.stop_event,
             default_robot=self._default_robot,
             default_tcp=self._default_tcp,
             run_args=self._args,
