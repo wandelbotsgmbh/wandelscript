@@ -8,25 +8,18 @@ from nova.runtime import ProgramRunner as NovaProgramRunner
 from nova.runtime.runner import ExecutionContext as NovaExecutionContext
 
 # TODO: this should come from the api package
-from nova.runtime.runner import Program, ProgramRunState, ProgramType, ProgramRun
+from nova.runtime.runner import Program, ProgramRun, ProgramRunState, ProgramType
 
+from wandelscript.datatypes import ElementType
 from wandelscript.ffi import ForeignFunction
 from wandelscript.metamodel import Program as WandelscriptProgram
 from wandelscript.runtime import ExecutionContext
 from wandelscript.simulation import SimulatedRobotCell
-from wandelscript.datatypes import ElementType
 
 
 # TODO: how to return this in the end?
 class WandelscriptProgramRun(ProgramRun):
     store: dict
-
-
-async def run_program(execution_context: ExecutionContext):
-    """Run the program in the execution context"""
-    print(execution_context)
-    await asyncio.sleep(2)
-    print("Program finished")
 
 
 class ProgramRunner(NovaProgramRunner):
@@ -67,7 +60,7 @@ class ProgramRunner(NovaProgramRunner):
         self._program_run.state = ProgramRunState.running
         self._program_run.start_time = time.time()
         await program(ws_execution_context)
-        # await run_program(ws_execution_context)
+        execution_context.motion_group_recordings = ws_execution_context.motion_group_recordings
 
 
 def run(

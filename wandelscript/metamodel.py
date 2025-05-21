@@ -22,8 +22,8 @@ from nova.cell.robot_cell import (
 )
 from nova.types import MotionSettings, Pose, Vector3d
 
-import wandelscript.exception
 import wandelscript.datatypes as t
+import wandelscript.exception
 from wandelscript.exception import GenericRuntimeError, TextRange
 from wandelscript.operators import (
     AdditionOperator,
