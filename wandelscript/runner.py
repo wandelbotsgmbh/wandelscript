@@ -60,7 +60,7 @@ class ProgramRunner(NovaProgramRunner):
         self._program_run.state = ProgramRunState.running
         self._program_run.start_time = time.time()
         await program(ws_execution_context)
-        execution_context.motion_group_recordings = ws_execution_context.motion_group_recordings
+        self._program_run.execution_results = ws_execution_context.motion_group_recordings
 
 
 def run(
