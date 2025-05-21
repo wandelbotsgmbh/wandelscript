@@ -1565,7 +1565,7 @@ wheels = [
 
 [[package]]
 name = "wandelbots-nova"
-version = "1.6.1"
+version = "1.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiostream" },
@@ -1583,9 +1583,9 @@ dependencies = [
     { name = "wandelbots-api-client" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/8a/08abaea7a0029ece00ee70e950e8f649a939a1ebf201c6b854863e4533f3/wandelbots_nova-1.6.1.tar.gz", hash = "sha256:841b5d6b671b552ab0105306184d8d3401cab9598b1359d75ae9d282c1b21de9", size = 16535548, upload-time = "2025-05-20T12:27:48.094Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9e/e5/82315df3190f94e3ffd105c605d8a038897fedd0a13b26186c3bc3fae07e/wandelbots_nova-1.8.0.tar.gz", hash = "sha256:0325c7e992686453c12b189dab5d2039c6ae7116445b65cb62dbd1a2e8d7034e", size = 16535627, upload-time = "2025-05-21T11:08:14.761Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d7/cf/14b29a3a90345132edc181c84011e9f149bc886722e3358a1b6502138482/wandelbots_nova-1.6.1-py3-none-any.whl", hash = "sha256:7021e2de69114605719a7b6369549641c22499746abe02a73251f3e91f54bad5", size = 16758699, upload-time = "2025-05-20T12:27:45.779Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/f6/b79f68ff47991f546b4b7eef17feaef10554c9286894a7bd517b530ff528/wandelbots_nova-1.8.0-py3-none-any.whl", hash = "sha256:e31abaa7bdc3ce0f699d698d96cee475b49a677f2504bdafcb7b5637ff956c9b", size = 16758822, upload-time = "2025-05-21T11:08:12.334Z" },
 ]
 
 [[package]]
@@ -1633,7 +1633,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.10.3,<3" },
     { name = "python-dotenv", specifier = ">=1.0.1,<2" },
     { name = "typer", extras = ["all"], specifier = ">=0.12,<0.16" },
-    { name = "wandelbots-nova", specifier = ">=1.6.1" },
+    { name = "wandelbots-nova", specifier = ">=1.8.0" },
 ]
 
 [package.metadata.requires-dev]
