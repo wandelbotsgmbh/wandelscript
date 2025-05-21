@@ -427,7 +427,7 @@ class ActionQueue:
     async def run_action(self, action: Action):
         return await run_action(action, self._execution_context)
 
-    async def run(self, stop_event):
+    async def run(self, stop_event: anyio.Event):
         """Execute the collected motions and actions.
         This function is not reentrant.
 
@@ -436,6 +436,7 @@ class ActionQueue:
         """
 
         async def stopper():
+            assert isinstance(stop_event, anyio.Event)
             await stop_event.wait()
             await self._execution_context.robot_cell.stop()
 
