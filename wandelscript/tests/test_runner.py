@@ -88,7 +88,7 @@ move via line() to home :: (0, 100, 0, 0, 0, 0)
     store = runner._ws_execution_context.store
     assert "home" in store
     assert store["a"] == 9
-    assert runner.program_run.state is ProgramRunState.completed
+    assert runner.program_run.state is ProgramRunState.COMPLETED
 
     stdout = runner.program_run.stdout
     assert "print something" in stdout
@@ -128,7 +128,7 @@ def test_program_runner():
         Program(content="move via p2p() to [100, 0, 300, 0, pi, 0]", program_type=ProgramType.WANDELSCRIPT), args={}
     )
     assert uuid.UUID(str(program_runner.id)) is not None
-    assert program_runner.state is ProgramRunState.not_started
+    assert program_runner.state is ProgramRunState.NOT_STARTED
 
 
 # TODO andreasl 2024-08-20: flaky
@@ -164,14 +164,14 @@ move via line() to (0, 100, 300, 0, pi, 0)
     assert isinstance(program_runner.program_run, ProgramRun)
     program_runner.start()
 
-    assert check_program_state(program_runner, ProgramRunState.running, 4)
+    assert check_program_state(program_runner, ProgramRunState.RUNNING, 4)
     assert program_runner.is_running()
     # It should not be possible to start the runner when it is already running
     with pytest.raises(RuntimeError):
         program_runner.start()
     ic(program_runner.program_run)
 
-    assert check_program_state(program_runner, ProgramRunState.completed, 10)
+    assert check_program_state(program_runner, ProgramRunState.COMPLETED, 10)
     assert isinstance(program_runner.start_time, datetime)
     assert program_runner.execution_time > 0
     # It should not be possible to start the runner after the runner was completed
@@ -217,11 +217,11 @@ def test_program_runner_stop(code):
     )
     assert not program_runner.is_running()
     program_runner.start()
-    assert check_program_state(program_runner, ProgramRunState.running, 4)
+    assert check_program_state(program_runner, ProgramRunState.RUNNING, 4)
     assert program_runner.is_running()
     program_runner.stop(sync=True)
-    assert check_program_state(program_runner, ProgramRunState.stopped, 10)
-    assert program_runner.program_run.state is ProgramRunState.stopped
+    assert check_program_state(program_runner, ProgramRunState.STOPPED, 10)
+    assert program_runner.program_run.state is ProgramRunState.STOPPED
     assert not program_runner.is_running()
     assert not isinstance(sys.stdout, Tee)
 
@@ -248,7 +248,7 @@ move via p2p() to mispelled_var
 def test_program_runner_failed(code, exception):
     with pytest.raises(exception):
         runner = run(code, args={}, robot_cell_override=SimulatedRobotCell())
-        assert runner.program_run.state is ProgramRunState.failed
+        assert runner.program_run.state is ProgramRunState.FAILED
         assert runner.program_run.error is not None
         assert runner.program_run.traceback is not None
         assert not runner.is_running()
@@ -264,4 +264,4 @@ move via p2p() to home :: (0, 0, 100)
 """
     with pytest.raises(Exception):
         runner = run(code, args={}, robot_cell_override=raising_robot_cell)
-        assert runner.program_run.state is ProgramRunState.failed
+        assert runner.program_run.state is ProgramRunState.FAILED

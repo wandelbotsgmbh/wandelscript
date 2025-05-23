@@ -29,7 +29,7 @@ print(a)
     robot_cell = SimulatedRobotCell()
     if exception is None:
         runner = wandelscript.run(code, robot_cell_override=robot_cell)
-        assert runner.state is ProgramRunState.completed
+        assert runner.state is ProgramRunState.COMPLETED
     else:
         with pytest.raises(exception):
             wandelscript.run(code, robot_cell_override=robot_cell)
@@ -54,7 +54,7 @@ new_pose = assoc(pose, {index}, 42)
     robot_cell = SimulatedRobotCell()
     with pytest.raises(exception):
         runner = wandelscript.run(code, robot_cell_override=robot_cell)
-        assert runner.state is ProgramRunState.failed
+        assert runner.state is ProgramRunState.FAILED
 
 
 @pytest.mark.asyncio

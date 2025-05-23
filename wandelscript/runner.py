@@ -56,9 +56,6 @@ class ProgramRunner(NovaProgramRunner):
 
         program = WandelscriptProgram.from_code(self._program.content)
         # Execute Wandelscript
-        logger.info(f"Run program {self.id}...")
-        self._program_run.state = ProgramRunState.running
-        self._program_run.start_time = time.time()
         await program(ws_execution_context)
         self._program_run.execution_results = ws_execution_context.motion_group_recordings
 

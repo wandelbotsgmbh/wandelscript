@@ -32,6 +32,7 @@ move via line() to (0, 10, 10, 0, 0, 0)
 """
     cell = get_robot_cell()
     runner = wandelscript.run(code, robot_cell_override=cell, default_robot="0@controller", default_tcp="Flange")
+    print(runner.program_run.execution_results)
     motion_group_0_result = runner.program_run.execution_results["0"]
     first_pose = motion_group_0_result[0][0].state.pose
     last_pose = motion_group_0_result[0][-1].state.pose
