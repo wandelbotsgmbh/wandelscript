@@ -3,8 +3,7 @@
 
 import asyncio
 import hashlib
-import importlib.util
-import itertools
+import importlib
 import sys
 from dataclasses import dataclass
 from datetime import datetime
@@ -14,7 +13,6 @@ from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from icecream import ic
-from nova import Nova
 from typer import Exit, FileText, Option, Typer, echo
 
 import wandelscript
@@ -121,13 +119,7 @@ def _load_included_ffs(paths: list[Path]) -> dict[str, ffi.ForeignFunction]:
 
 async def main(code: str, nova_api: str, foreign_functions: dict[str, ffi.ForeignFunction] | None = None):
     """Main program logic."""
-    async with Nova(host=nova_api) as nova:
-        cell = nova.cell()
-        robot_cell = await cell.get_robot_cell()
-        runner = wandelscript.run(
-            code, robot_cell=robot_cell, default_tcp=None, default_robot=None, foreign_functions=foreign_functions
-        )
-
+    runner = wandelscript.run(code, args={}, default_tcp=None, default_robot=None)
     echo(f"Execution results:\n{runner.program_run.execution_results}")
 
 

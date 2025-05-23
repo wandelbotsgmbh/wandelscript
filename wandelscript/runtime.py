@@ -15,15 +15,16 @@ from nova.actions import Action, CombinedActions
 from nova.actions.container import ActionLocation
 from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
 from nova.actions.motions import Motion
-from nova.core.robot_cell import AbstractRobot, Device, RobotCell
+from nova.cell.robot_cell import AbstractRobot, Device, RobotCell
+from nova.runtime.runner import ProgramRunResult
 from nova.types import MotionSettings, MotionState, Pose
 
 import wandelscript.metamodel as metamodel
 from wandelscript import exception as wsexception
+from wandelscript.datatypes import ElementType, Frame, as_builtin_type
 from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.frames import FrameSystem
-from wandelscript.types import ElementType, Frame, as_builtin_type
 from wandelscript.utils.runtime import stoppable_run
 from wandelscript.utils.serializer import SerializedStore, encode, is_encodable
 
@@ -122,7 +123,7 @@ class ExecutionContext:
     # Maps the motion group id to the list of recorded motion lists
     # Each motion list is a path the was planned separately
     # TODO: maybe we should make it public and helper methods to access the data
-    motion_group_recordings: dict[str, list[list[MotionState]]]
+    motion_group_recordings: dict[str, ProgramRunResult]
 
     def __init__(  # pylint: disable=too-many-positional-arguments
         self,
@@ -415,9 +416,14 @@ class ActionQueue:
             combine = stream.merge(*planned_motions.values())
             async with combine.stream() as streamer:
                 async for motion_state in streamer:
+                    print(motion_state.motion_group_id)
                     if motion_state.motion_group_id not in self._execution_context.motion_group_recordings:
-                        self._execution_context.motion_group_recordings[motion_state.motion_group_id] = [[]]
-                    self._execution_context.motion_group_recordings[motion_state.motion_group_id][-1].append(
+                        self._execution_context.motion_group_recordings[motion_state.motion_group_id] = (
+                            ProgramRunResult(
+                                motion_duration=0, motion_group_id=motion_state.motion_group_id, paths=[[]]
+                            )
+                        )
+                    self._execution_context.motion_group_recordings[motion_state.motion_group_id].paths[-1].append(
                         motion_state
                     )
 
@@ -427,7 +433,7 @@ class ActionQueue:
     async def run_action(self, action: Action):
         return await run_action(action, self._execution_context)
 
-    async def run(self, stop_event):
+    async def run(self, stop_event: anyio.Event):
         """Execute the collected motions and actions.
         This function is not reentrant.
 
@@ -436,6 +442,7 @@ class ActionQueue:
         """
 
         async def stopper():
+            assert isinstance(stop_event, anyio.Event)
             await stop_event.wait()
             await self._execution_context.robot_cell.stop()
 

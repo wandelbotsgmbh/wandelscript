@@ -11,7 +11,7 @@ from typing import Any, Callable, TypeVar
 
 import pydantic
 
-from wandelscript.types import as_builtin_type
+from wandelscript.datatypes import as_builtin_type
 
 
 @dataclass(frozen=True)

@@ -3,7 +3,7 @@ from typing import Any, TypeVar
 
 from nova.types import Pose, Vector3d
 
-import wandelscript.types as t
+import wandelscript.datatypes as t
 from wandelscript.metamodel import register_builtin_func
 
 # TODO naming. updated, updating

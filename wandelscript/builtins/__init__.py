@@ -13,8 +13,8 @@ import wandelscript.builtins.string
 
 # import wandelscript.builtins.fs
 import wandelscript.builtins.wait
+from wandelscript.datatypes import Frame, as_builtin_type
 from wandelscript.metamodel import register_builtin_func
-from wandelscript.types import Frame, as_builtin_type
 
 register_builtin_func()(as_builtin_type)
 

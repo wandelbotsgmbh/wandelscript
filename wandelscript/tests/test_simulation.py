@@ -2,8 +2,8 @@ import pytest
 from nova.actions.motions import CartesianPTP, JointPTP
 from nova.types import MotionState, RobotState
 
+from wandelscript.datatypes import Pose
 from wandelscript.simulation import SimulatedRobot, naive_joints_to_pose
-from wandelscript.types import Pose
 
 
 def test_simulated_robot():
