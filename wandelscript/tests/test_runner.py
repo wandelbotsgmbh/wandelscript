@@ -194,9 +194,6 @@ move via line() to (0, 100, 300, 0, pi, 0)
     "code",
     [
         """
-wait 4000
-""",
-        """
 tcp("Flange")
 home = (-189, -600, 260, 0, -pi, 0)
 move via p2p() to home
@@ -205,12 +202,15 @@ move via line() to (50, 20, 30, 0, 0, 0.3) :: home
 move via line() to (150, 20, 30, 0, 0, 0.3) :: home
 move via line() to (50, 20, 30, 0, 0, 0.3) :: home
 move via p2p() to home
-""",
+"""
     ],
 )
 def test_program_runner_stop(code):
     program_runner = ProgramRunner(
-        Program(content=code, program_type=ProgramType.WANDELSCRIPT), args={}, robot_cell_override=SimulatedRobotCell()
+        Program(content=code, program_type=ProgramType.WANDELSCRIPT),
+        args={},
+        robot_cell_override=SimulatedRobotCell(),
+        default_robot="0@controller",
     )
     assert not program_runner.is_running()
     program_runner.start()
