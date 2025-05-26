@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.7.0 (2025-05-26)
+
+### Features
+
+- **RPS-1615**: Implemented Nova program runner
+  ([#28](https://github.com/wandelbotsgmbh/wandelscript/pull/28),
+  [`2e6419c`](https://github.com/wandelbotsgmbh/wandelscript/commit/2e6419ce4c304ea3f12bd8e4d2ae742d5cb96342))
+
+Co-authored-by: cbiering <christoph.biering@wandelbots.com>
+
+Co-authored-by: Dirk Sonnemann <dirk.sonnemann@wandelbots.com>
+
+
 ## v0.6.0 (2025-05-05)
 
 ### Features
