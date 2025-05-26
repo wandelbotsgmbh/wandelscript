@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from nova.actions.motions import CartesianPTP, JointPTP, Linear
-from nova.core.robot_cell import RobotCell
+from nova.cell.robot_cell import RobotCell
 from nova.types import Pose
 
 import wandelscript
@@ -20,25 +20,30 @@ move frame("tool") to (2, 2, 0)
     )
     controller = SimulatedController(SimulatedController.Configuration(robots=[robot_configuration]))
     with pytest.raises(ProgramRuntimeError):
-        wandelscript.run(code, SimulatedRobotCell(controller=controller), default_robot="0@controller")
+        wandelscript.run(
+            code, robot_cell_override=SimulatedRobotCell(controller=controller), default_robot="0@controller"
+        )
 
 
 def test_simple_motion():
     code = """
 move via ptp() to (0, 0, 10, 0, 0, 0)
 move via line() to (0, 10, 10, 0, 0, 0)
+sync
 """
     cell = get_robot_cell()
-    runner = wandelscript.run(code, cell, default_robot="0@controller", default_tcp="Flange")
-    path = runner.program_run.execution_results[0].paths[0]
+    runner = wandelscript.run(code, robot_cell_override=cell, default_robot="0@controller", default_tcp="Flange")
+    assert len(runner.program_run.execution_results) == 1
+    first_pose = runner.program_run.execution_results[-1][0].state.pose
+    last_pose = runner.program_run.execution_results[-1][-1].state.pose
     # The first position will be at the origin because the simulated robot assumes it as the default initial position
-    assert np.allclose(path[0].pose.position, [0, 0, 0])
-    assert np.allclose(path[-1].pose.position, [0, 10, 10])
+    assert np.allclose(first_pose.to_tuple(), (0, 0, 0, 0, 0, 0))
+    assert np.allclose(last_pose.to_tuple(), (0, 10, 10, 0, 0, 0))
 
 
 def test_no_robot():
     code = """print("hello world")"""
-    wandelscript.run(code, RobotCell())
+    wandelscript.run(code, robot_cell_override=RobotCell())
 
 
 def test_motion_type_p2p_line():
@@ -56,7 +61,7 @@ move via ptp() to (23, 0, 626, 0, 0, 0)
     expected_motion_types = [[CartesianPTP, Linear, CartesianPTP], [CartesianPTP, Linear], [Linear, CartesianPTP]]
 
     cell = get_robot_cell()
-    runner = wandelscript.run(code, cell, default_tcp="Flange")
+    runner = wandelscript.run(code, robot_cell_override=cell, default_tcp="Flange")
 
     record_of_commands = runner.execution_context.robot_cell.get_robot("0@controller").record_of_commands
 
@@ -131,7 +136,7 @@ move via joint_p2p() to [31, 0, 626, 0, 0, 0]
     # Create a robot cell:
     cell = get_robot_cell()
     # Execute code:
-    runner = wandelscript.run(code, cell)
+    runner = wandelscript.run(code, robot_cell_override=cell)
 
     record_of_commands = runner.execution_context.robot_cell.get_robot("0@controller").record_of_commands
 
@@ -160,7 +165,7 @@ write(controller, "10010#0001", True)
 move via joint_p2p() to joints
 """
     cell = get_robot_cell()
-    runner = wandelscript.run(code, cell)
+    runner = wandelscript.run(code, robot_cell_override=cell)
     print(runner.execution_context.store)
 
     path = runner.execution_context.robot_cell.robot.record_of_commands[0]

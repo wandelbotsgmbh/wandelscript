@@ -1,7 +1,7 @@
 import asyncio
 
 import pytest
-from nova.core.robot_cell import RobotCell, Timer
+from nova.cell.robot_cell import RobotCell, Timer
 
 from wandelscript import Program
 from wandelscript.simulation import SimulatedRobot
