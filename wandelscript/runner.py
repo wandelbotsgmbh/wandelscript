@@ -57,7 +57,7 @@ class ProgramRunner(NovaProgramRunner):
         program = WandelscriptProgram.from_code(self._program.content)
         # Execute Wandelscript
         await program(ws_execution_context)
-        self._program_run.execution_results = ws_execution_context.motion_group_recordings
+        self.execution_context.motion_group_recordings = ws_execution_context.motion_group_recordings
 
 
 def run(

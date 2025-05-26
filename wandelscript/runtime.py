@@ -16,7 +16,6 @@ from nova.actions.container import ActionLocation
 from nova.actions.io import CallAction, ReadAction, ReadJointsAction, ReadPoseAction, WriteAction
 from nova.actions.motions import Motion
 from nova.cell.robot_cell import AbstractRobot, Device, RobotCell
-from nova.runtime.runner import ProgramRunResult
 from nova.types import MotionSettings, MotionState, Pose
 
 import wandelscript.metamodel as metamodel
@@ -26,7 +25,7 @@ from wandelscript.exception import MotionError, NotPlannableError
 from wandelscript.ffi import ForeignFunction
 from wandelscript.frames import FrameSystem
 from wandelscript.utils.runtime import stoppable_run
-from wandelscript.utils.serializer import SerializedStore, encode, is_encodable
+from wandelscript.utils.serializer import encode, is_encodable
 
 DEFAULT_CALL_STACK_SIZE = 64
 """Default size of the call stack. Currently arbitrary."""
@@ -123,7 +122,7 @@ class ExecutionContext:
     # Maps the motion group id to the list of recorded motion lists
     # Each motion list is a path the was planned separately
     # TODO: maybe we should make it public and helper methods to access the data
-    motion_group_recordings: dict[str, ProgramRunResult]
+    motion_group_recordings: list[list[MotionState]]
 
     def __init__(  # pylint: disable=too-many-positional-arguments
         self,
@@ -135,7 +134,7 @@ class ExecutionContext:
         foreign_functions: dict[str, ForeignFunction] | None = None,
         debug: bool = False,
     ):
-        self.motion_group_recordings = {}
+        self.motion_group_recordings = []
         self.robot_cell: RobotCell = robot_cell
         self._robot_ids = robot_ids = robot_cell.get_robot_ids()
 
@@ -414,18 +413,13 @@ class ActionQueue:
 
         if planned_motions:
             combine = stream.merge(*planned_motions.values())
+
+            # Append a empty list to the motion group recordings to start a new recording
+            self._execution_context.motion_group_recordings.append([])
+
             async with combine.stream() as streamer:
                 async for motion_state in streamer:
-                    print(motion_state.motion_group_id)
-                    if motion_state.motion_group_id not in self._execution_context.motion_group_recordings:
-                        self._execution_context.motion_group_recordings[motion_state.motion_group_id] = (
-                            ProgramRunResult(
-                                motion_duration=0, motion_group_id=motion_state.motion_group_id, paths=[[]]
-                            )
-                        )
-                    self._execution_context.motion_group_recordings[motion_state.motion_group_id].paths[-1].append(
-                        motion_state
-                    )
+                    self._execution_context.motion_group_recordings[-1].append(motion_state)
 
         self._record.clear()
         self._tcp.clear()
