@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.8.1 (2025-05-27)
+
+### Bug Fixes
+
+- **runner**: Transform store to data_dict
+  ([#30](https://github.com/wandelbotsgmbh/wandelscript/pull/30),
+  [`b190e6e`](https://github.com/wandelbotsgmbh/wandelscript/commit/b190e6ec30bef4f37122dac39f8d78c701a4ea3b))
+
+Co-authored-by: Christoph Biering <christoph.biering@wandelbots.com>
+
+
 ## v0.8.0 (2025-05-27)
 
 ### Features
