@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.8.0 (2025-05-27)
+
+### Features
+
+- **runner**: Return result of runner
+  ([#29](https://github.com/wandelbotsgmbh/wandelscript/pull/29),
+  [`fca26c4`](https://github.com/wandelbotsgmbh/wandelscript/commit/fca26c40fb665d95e919706c7f4c5d509f0be10d))
+
+Co-authored-by: Christoph Biering <christoph.biering@wandelbots.com>
+
+
 ## v0.7.0 (2025-05-26)
 
 ### Features
