@@ -71,7 +71,7 @@ def test_example(example_name):
     program, data, config = EXAMPLES[example_name]
     robot_cell = _robot_cell_from_configuration(config)
     runner = wandelscript.run(program, robot_cell_override=robot_cell, default_tcp="Flange")
-    store = runner._ws_execution_context.store
+    store = runner.program_run.result
     for key, expected in data.items():
         if isinstance(expected, list):
             expected = tuple(tuple(v) if isinstance(v, list) else v for v in expected)

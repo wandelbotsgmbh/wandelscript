@@ -85,7 +85,7 @@ move via line() to home :: (0, 100, 0, 0, 0, 0)
         default_tcp="Flange",
         foreign_functions=foreign_functions,
     )
-    store = runner._ws_execution_context.store
+    store = runner.program_run.result
     assert "home" in store
     assert store["a"] == 9
     assert runner.program_run.state is ProgramRunState.COMPLETED
@@ -180,7 +180,7 @@ move via line() to (0, 100, 300, 0, pi, 0)
     last_state = program_runner.program_run.execution_results[-1][-1]
     assert np.allclose(last_state.state.pose.to_tuple(), (0, 100, 300, 0, np.pi, 0))
     # Check store
-    store = program_runner._ws_execution_context.store
+    store = program_runner.program_run.result
     assert np.allclose(store["home"], (0, 0, 400, 0, np.pi, 0))
     # Check stdout
     stdout = program_runner.program_run.stdout
