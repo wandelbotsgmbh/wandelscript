@@ -237,7 +237,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
                 # Linear interpolation in joint space
                 interp_joints = (1 - alpha) * current_joints + alpha * final_joints
 
-                joint_positions.append(tuple(interp_joints.tolist()))  # type: ignore
+                joint_positions.append(tuple(interp_joints.tolist()))
                 times.append(current_time)
                 # "location" can be a float that indicates fraction of "action i"
                 # E.g. i + alpha
