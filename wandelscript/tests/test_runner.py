@@ -181,7 +181,7 @@ move via line() to (0, 100, 300, 0, pi, 0)
     assert np.allclose(last_state.state.pose.to_tuple(), (0, 100, 300, 0, np.pi, 0))
     # Check store
     store = program_runner.program_run.result
-    assert np.allclose(store["home"], (0, 0, 400, 0, np.pi, 0))
+    assert np.allclose(tuple(store["home"]["position"]) + tuple(store["home"]["orientation"]), (0, 0, 400, 0, np.pi, 0))
     # Check stdout
     stdout = program_runner.program_run.stdout
     assert "before wait" in stdout

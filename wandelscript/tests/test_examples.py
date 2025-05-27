@@ -72,14 +72,15 @@ def test_example(example_name):
     robot_cell = _robot_cell_from_configuration(config)
     runner = wandelscript.run(program, robot_cell_override=robot_cell, default_tcp="Flange")
     store = runner.program_run.result
+    print(store)
     for key, expected in data.items():
         if isinstance(expected, list):
             expected = tuple(tuple(v) if isinstance(v, list) else v for v in expected)
         if isinstance(expected, Pose):
-            assert np.allclose(expected.position, store[key].position, atol=1e-3, rtol=1e-3)
-            assert np.allclose(expected.orientation, store[key].orientation, atol=1e-3, rtol=1e-3)
+            assert np.allclose(expected.position, store[key]["position"], atol=1e-3, rtol=1e-3)
+            assert np.allclose(expected.orientation, store[key]["orientation"], atol=1e-3, rtol=1e-3)
         elif isinstance(expected, Vector3d):
-            assert np.allclose(expected, store[key], atol=1e-3, rtol=1e-3)
+            assert np.allclose(expected.to_tuple(), tuple(store[key].values()), atol=1e-3, rtol=1e-3)
         elif isinstance(expected, dict):
             if example_name == "fetch":
                 ignore_paths = ["headers", "origin", "data"]  # TODO: res_get_error.data should work
