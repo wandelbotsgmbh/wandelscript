@@ -256,6 +256,15 @@ wheels = [
 ]
 
 [[package]]
+name = "blinker"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/21/28/9b3f50ce0e048515135495f198351908d99540d69bfdc8c1d15b73dc55ce/blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf", size = 22460, upload-time = "2024-11-08T17:25:47.436Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/10/cb/f2ad4230dc2eb1a74edf38f1a38b9b52277f75bef262d8908e60d957e13c/blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc", size = 8458, upload-time = "2024-11-08T17:25:46.184Z" },
+]
+
+[[package]]
 name = "boltons"
 version = "25.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -875,6 +884,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
 ]
+
+[[package]]
+name = "nats-py"
+version = "2.10.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/83/2f/0f1b94844760a894659388059bc618b59fd794a3ef2f5113d710864d3fa7/nats_py-2.10.0.tar.gz", hash = "sha256:9d44265a097edb30d40e214c1dd1a7405c1451d33480ce714c041fb73bb66a10", size = 113637, upload-time = "2025-03-25T05:11:22.102Z" }
 
 [[package]]
 name = "nodeenv"
@@ -1594,7 +1609,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/91/26/430de0d8aaf5aad9f
 
 [[package]]
 name = "wandelbots-api-client"
-version = "25.1.0"
+version = "25.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1609,24 +1624,26 @@ dependencies = [
     { name = "urllib3" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ed/f8/706c615dae24fae7b247989f6b9cb655cf4ecabec44a99e71dd5059ae1d8/wandelbots_api_client-25.1.0.tar.gz", hash = "sha256:83ca6c7810f9a13d29f2cf38312932128babce1452e66d1f65e91186b22051f5", size = 385188, upload-time = "2025-01-30T15:41:57.042Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3e/93/4045cef426b59c506ce843c0339b1c4d9ef247be7cdac55256d014e8f9db/wandelbots_api_client-25.5.0.tar.gz", hash = "sha256:d36db94222f2598038c8d8f3ac828be407622e815a0ebcc44b15ef161975198d", size = 388161, upload-time = "2025-05-28T11:19:08.073Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/78/f9/a9d404e3f21c11ac4183d61419f145ed7737ab89bdb54761ea155975237d/wandelbots_api_client-25.1.0-py3-none-any.whl", hash = "sha256:1ec92d9bc4c008367e027c94154cecd97d8d350c48341eeed5f6a0ee3da19f61", size = 1107354, upload-time = "2025-01-30T15:41:52.257Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/cf/22874657727f5148157720f6447c8be14ebce9808185f8897d0eec4ff083/wandelbots_api_client-25.5.0-py3-none-any.whl", hash = "sha256:e258caf7279918f75c272798ad4e1232af8c485041101f6a51a73b3275956fcb", size = 1132336, upload-time = "2025-05-28T11:19:04.601Z" },
 ]
 
 [[package]]
 name = "wandelbots-nova"
-version = "1.9.0"
+version = "1.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiostream" },
     { name = "anyio" },
     { name = "asyncstdlib" },
     { name = "asyncua" },
+    { name = "blinker" },
     { name = "docstring-parser" },
     { name = "exceptiongroup" },
     { name = "httpx" },
     { name = "loguru" },
+    { name = "nats-py" },
     { name = "numpy" },
     { name = "pydantic" },
     { name = "python-decouple" },
@@ -1634,14 +1651,14 @@ dependencies = [
     { name = "wandelbots-api-client" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4b/21/f4d22a5c13db8246635ef2a49cd4a9a69a1db83371ab8e35a5204697fa53/wandelbots_nova-1.9.0.tar.gz", hash = "sha256:34cf70f907d5ec375faa1bc7646074bf54d88481d2e39b09ea8543bad4a82164", size = 16535321, upload-time = "2025-05-27T11:16:24.799Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/63/27/b53748971efcc68d819acc2f04624f474945421608a74481aa0691216a44/wandelbots_nova-1.11.0.tar.gz", hash = "sha256:79787d871965521eb27878fd9ba19522bbecf12875d9f25f3678b28cbbcf9bf4", size = 16538560, upload-time = "2025-06-04T13:36:32.892Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3c/c1/42a3403c5a6d9ac3bea544b4972441c20532d8ea546d14c3ad5b7edb2a62/wandelbots_nova-1.9.0-py3-none-any.whl", hash = "sha256:a9c937683b82a7c8bee8552aef453533eda3f18c8ce8206837302add6c32f743", size = 16758526, upload-time = "2025-05-27T11:16:22.414Z" },
+    { url = "https://files.pythonhosted.org/packages/df/50/0840632a611deafcbd6d40107bc2a90b7561fbfae199594a1b32abe44820/wandelbots_nova-1.11.0-py3-none-any.whl", hash = "sha256:a3ac76610578c6b30198b89311162eba461e8def0db9cdc82e29576962526e83", size = 16761952, upload-time = "2025-06-04T13:36:30.27Z" },
 ]
 
 [[package]]
 name = "wandelscript"
-version = "0.8.0"
+version = "0.8.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiostream" },
@@ -1684,7 +1701,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.10.3,<3" },
     { name = "python-dotenv", specifier = ">=1.0.1,<2" },
     { name = "typer", extras = ["all"], specifier = ">=0.12,<0.16" },
-    { name = "wandelbots-nova", specifier = ">=1.9.0" },
+    { name = "wandelbots-nova", specifier = ">=1.11.0" },
 ]
 
 [package.metadata.requires-dev]
