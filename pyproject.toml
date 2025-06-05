@@ -1,6 +1,6 @@
 [project]
 name = "wandelscript"
-version = "0.8.1"
+version = "0.9.0"
 description = "Wandelscript definition, parser, type checker & runtime"
 authors = [
     { name = "Christoph Biering", email = "christoph.biering@wandelbots.com" },

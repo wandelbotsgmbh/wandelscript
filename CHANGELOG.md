@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v0.9.0 (2025-06-05)
+
+### Features
+
+- Updated nova version ([#31](https://github.com/wandelbotsgmbh/wandelscript/pull/31),
+  [`94ce8d3`](https://github.com/wandelbotsgmbh/wandelscript/commit/94ce8d39df7d25037f4de9d125ae9254ca776f41))
+
+Co-authored-by: Christoph Biering <christoph.biering@wandelbots.com>
+
+
 ## v0.8.1 (2025-05-27)
 
 ### Bug Fixes
