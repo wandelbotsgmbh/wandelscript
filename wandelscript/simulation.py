@@ -312,12 +312,14 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
             yield api.models.ExecuteTrajectoryResponse(
                 api.models.Movement(
                     movement=api.models.MovementMovement(
+                        time_to_end=0,
                         current_location=0,
                         state=api.models.RobotControllerState(
                             controller="Simulated",
                             operation_mode="OPERATION_MODE_AUTO",
                             safety_state="SAFETY_STATE_NORMAL",
                             timestamp=datetime.now(),
+                            sequence_number="0",
                             motion_groups=[
                                 api.models.MotionGroupState(
                                     motion_group="0",
@@ -333,6 +335,7 @@ class SimulatedRobot(ConfigurablePeriphery, AbstractRobot):
                                         limit_reached=[False]
                                     ),
                                     joint_position=api.models.Joints(joints=list(motion_state.state.joints)),
+                                    sequence_number="0",
                                 )
                             ],
                         ),
